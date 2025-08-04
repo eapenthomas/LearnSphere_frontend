@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import {
@@ -19,14 +19,19 @@ import {
   FileText,
   HelpCircle,
   Target,
-  UserCheck
+  UserCheck,
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
 
 const DashboardLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -39,9 +44,54 @@ const DashboardLayout = ({ children }) => {
     { name: 'Profile & Settings', href: '/profile', icon: UserCheck },
   ];
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+    setUserMenuOpen(false);
   };
+
+  const handleLogoutConfirm = async () => {
+    setLoggingOut(true);
+    try {
+      const result = await logout();
+      if (result.success) {
+        console.log('Logout successful, redirecting to login...');
+        navigate('/login', { replace: true });
+      } else {
+        console.error('Logout failed:', result.error);
+        // Still redirect even if logout had issues
+        navigate('/login', { replace: true });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still redirect to login page
+      navigate('/login', { replace: true });
+    } finally {
+      setLoggingOut(false);
+      setShowLogoutConfirm(false);
+    }
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutConfirm(false);
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Ctrl+Shift+L or Cmd+Shift+L for logout
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'L') {
+        event.preventDefault();
+        handleLogoutClick();
+      }
+      // Escape to close logout modal
+      if (event.key === 'Escape' && showLogoutConfirm) {
+        handleLogoutCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showLogoutConfirm]);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -133,7 +183,7 @@ const DashboardLayout = ({ children }) => {
                   className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
                 >
                   <button
-                    onClick={handleLogout}
+                    onClick={handleLogoutClick}
                     className="flex items-center space-x-3 w-full p-3 hover:bg-gray-50 transition-colors text-left"
                   >
                     <LogOut className="w-4 h-4 text-gray-600" />
@@ -202,6 +252,16 @@ const DashboardLayout = ({ children }) => {
                 </div>
               </div>
 
+              {/* Quick Logout Button (Desktop) */}
+              <button
+                onClick={handleLogoutClick}
+                className="hidden lg:flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="text-sm font-medium">Logout</span>
+              </button>
+
               {/* User Menu (Mobile) */}
               <div className="lg:hidden relative">
                 <button
@@ -229,7 +289,7 @@ const DashboardLayout = ({ children }) => {
                         </p>
                       </div>
                       <button
-                        onClick={handleLogout}
+                        onClick={handleLogoutClick}
                         className="flex items-center space-x-3 w-full p-3 hover:bg-gray-50 transition-colors text-left"
                       >
                         <LogOut className="w-4 h-4 text-gray-600" />
@@ -244,17 +304,76 @@ const DashboardLayout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-gray-50 overflow-y-auto h-screen">
+        <main className="flex-1 page-container bg-gray-50 overflow-y-auto h-screen">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-7xl mx-auto"
+            className="dashboard-container"
           >
             {children}
           </motion.div>
         </main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={handleLogoutCancel}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="p-2 bg-red-100 rounded-full">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800">Confirm Logout</h3>
+              </div>
+
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to logout? You'll need to sign in again to access your dashboard.
+              </p>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleLogoutCancel}
+                  disabled={loggingOut}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogoutConfirm}
+                  disabled={loggingOut}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 flex items-center justify-center space-x-2"
+                >
+                  {loggingOut ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Logging out...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      <span>Logout</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

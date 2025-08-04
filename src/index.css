@@ -6,6 +6,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    height: 100%;
   }
 
   body {
@@ -14,12 +15,28 @@
     color: #1F2937;
     min-height: 100vh;
     overflow-x: hidden;
+    margin: 0;
+    padding: 0;
   }
 
-  /* Ensure proper layout for dashboard */
+  /* Root element should adapt to content */
   #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Dashboard specific layout */
+  .dashboard-root {
     height: 100vh;
     overflow: hidden;
+  }
+
+  /* Non-dashboard pages should scroll naturally */
+  .page-root {
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
 
@@ -113,7 +130,7 @@
   /* Mobile Optimizations */
   @media (max-width: 768px) {
     .card {
-      @apply rounded-xl mx-4;
+      @apply rounded-xl mx-2;
     }
 
     .btn-primary,
@@ -124,6 +141,28 @@
 
     .input-field {
       @apply py-4 px-4 text-base;
+    }
+
+    /* Ensure proper spacing on mobile */
+    .page-container {
+      @apply px-4 py-6;
+    }
+
+    /* Mobile-specific layout adjustments */
+    .mobile-grid {
+      @apply grid-cols-1 gap-4;
+    }
+
+    /* Reduce padding on mobile for better space utilization */
+    .mobile-padding {
+      @apply p-4;
+    }
+  }
+
+  /* Tablet Optimizations */
+  @media (min-width: 769px) and (max-width: 1023px) {
+    .page-container {
+      @apply px-6 py-8;
     }
   }
 

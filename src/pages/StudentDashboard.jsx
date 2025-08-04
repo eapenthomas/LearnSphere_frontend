@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import DashboardLayout from '../components/DashboardLayout.jsx';
+import LogoutButton from '../components/LogoutButton.jsx';
 import {
   BookOpen,
   Calendar,
@@ -176,9 +177,18 @@ const StudentDashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="hidden md:block">
+              <div className="hidden md:flex flex-col items-end space-y-4">
                 <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
                   <BookOpen className="w-12 h-12 text-white" />
+                </div>
+                {/* Quick Actions */}
+                <div className="flex items-center space-x-2">
+                  <LogoutButton
+                    variant="ghost"
+                    size="sm"
+                    className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 hover:text-white border border-white/30"
+                    showText={false}
+                  />
                 </div>
               </div>
             </div>
@@ -186,7 +196,7 @@ const StudentDashboard = () => {
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mobile-grid">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.title}
@@ -214,7 +224,7 @@ const StudentDashboard = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mobile-grid">
           {/* Performance Chart */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -323,7 +333,7 @@ const StudentDashboard = () => {
         </div>
 
         {/* Continue Learning & Achievements */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mobile-grid">
           {/* Continue Learning */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

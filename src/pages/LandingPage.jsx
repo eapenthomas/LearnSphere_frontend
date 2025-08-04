@@ -76,7 +76,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto page-container">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:scale-110 transition-transform duration-300">
@@ -104,8 +104,8 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto page-container py-12 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center mobile-grid">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -180,8 +180,8 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 lg:py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto page-container">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -198,7 +198,7 @@ const LandingPage = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mobile-grid">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -206,7 +206,7 @@ const LandingPage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="bg-white rounded-2xl mobile-padding lg:p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
                 <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6 hover:scale-110 transition-transform duration-300">
                   <div className="text-blue-600">
@@ -226,8 +226,8 @@ const LandingPage = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 lg:py-20 bg-white">
+        <div className="max-w-7xl mx-auto page-container">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -244,7 +244,7 @@ const LandingPage = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mobile-grid">
             {testimonials.map((testimonial, index) => (
               <motion.div
                 key={testimonial.name}
@@ -278,8 +278,8 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-500 to-blue-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-12 lg:py-20 bg-gradient-to-r from-blue-500 to-blue-600">
+        <div className="max-w-4xl mx-auto page-container text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}

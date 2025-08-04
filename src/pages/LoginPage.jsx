@@ -84,19 +84,19 @@ const LoginPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center page-container">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12"
+        className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mobile-grid"
       >
         {/* Left Side - Login Form */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-col justify-center w-full"
+          className="flex flex-col justify-center w-full order-2 lg:order-1"
         >
           {/* Logo and Title */}
           <div className="text-center mb-8">
@@ -133,7 +133,7 @@ const LoginPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 lg:p-10 hover:shadow-xl transition-all duration-300 w-full"
+            className="bg-white rounded-2xl shadow-lg border border-gray-100 mobile-padding sm:p-8 lg:p-10 hover:shadow-xl transition-all duration-300 w-full"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Input */}
@@ -267,9 +267,9 @@ const LoginPage = () => {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-col justify-center lg:w-full lg:max-w-lg xl:max-w-xl mx-auto"
+          className="flex flex-col justify-center lg:w-full lg:max-w-lg xl:max-w-xl mx-auto order-1 lg:order-2"
         >
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 lg:p-10 hover:shadow-xl transition-all duration-300 w-full">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 mobile-padding sm:p-8 lg:p-10 hover:shadow-xl transition-all duration-300 w-full">
             <h2 className="text-2xl font-extrabold text-gray-800 mb-6">
               Why Choose LearnSphere?
             </h2>

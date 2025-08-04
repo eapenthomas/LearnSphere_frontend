@@ -55,11 +55,14 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         // Check for existing session
         const checkSession = async () => {
+            console.log('AuthContext - Checking for existing session...');
             try {
                 const { data: { session } } = await supabase.auth.getSession();
+                console.log('AuthContext - Session found:', !!session);
                 if (session) {
                     // Fetch user profile from profiles table
                     const profile = await fetchUserProfile(session.user.id);
+                    console.log('AuthContext - Profile fetched:', profile);
 
                     setUser({
                         id: session.user.id,
@@ -68,10 +71,13 @@ export const AuthProvider = ({ children }) => {
                         fullName: profile?.full_name || session.user.email?.split('@')[0] || 'User',
                         role: profile?.role || 'student'
                     });
+                } else {
+                    console.log('AuthContext - No session found');
                 }
             } catch (error) {
                 console.error('Error checking session:', error);
             } finally {
+                console.log('AuthContext - Setting loading to false');
                 setLoading(false);
             }
         };
@@ -102,9 +108,11 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const register = async (userData) => {
+        console.log('AuthContext - Starting registration for:', userData.email);
         try {
             const response = await axios.post(`${API_BASE_URL}/register`, userData);
             const { access_token, user_id, role, full_name } = response.data;
+            console.log('AuthContext - Registration successful, setting user data');
 
             setUser({
                 id: user_id,
@@ -114,8 +122,15 @@ export const AuthProvider = ({ children }) => {
                 fullName: full_name
             });
 
+            // Ensure loading is set to false after successful registration
+            console.log('AuthContext - Setting loading to false after registration');
+            setLoading(false);
+
             return { success: true, data: response.data };
         } catch (error) {
+            console.error('AuthContext - Registration error:', error);
+            // Also set loading to false on error
+            setLoading(false);
             return {
                 success: false,
                 error: error.response?.data?.detail || 'Registration failed'
@@ -136,8 +151,13 @@ export const AuthProvider = ({ children }) => {
                 fullName: full_name
             });
 
+            // Ensure loading is set to false after successful login
+            setLoading(false);
+
             return { success: true, data: response.data };
         } catch (error) {
+            // Also set loading to false on error
+            setLoading(false);
             return {
                 success: false,
                 error: error.response?.data?.detail || 'Login failed'
@@ -170,13 +190,34 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
+        console.log('AuthContext - Starting logout process...');
         try {
-            await supabase.auth.signOut();
+            // Clear user state immediately for better UX
             setUser(null);
+            setLoading(false);
+
+            // Try to sign out from Supabase (in case there's a session)
+            try {
+                await supabase.auth.signOut();
+                console.log('AuthContext - Supabase signout successful');
+            } catch (supabaseError) {
+                console.log('AuthContext - No Supabase session to sign out from:', supabaseError.message);
+                // This is expected for backend API users, so we don't treat it as an error
+            }
+
+            // Clear any stored tokens or session data
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_data');
+            sessionStorage.clear();
+
+            console.log('AuthContext - Logout completed successfully');
             return { success: true };
         } catch (error) {
-            console.error('Logout error:', error);
-            return { success: false, error: 'Logout failed' };
+            console.error('AuthContext - Logout error:', error);
+            // Even if there's an error, we still want to clear the user state
+            setUser(null);
+            setLoading(false);
+            return { success: false, error: 'Logout completed with warnings' };
         }
     };
 
