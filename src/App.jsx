@@ -5,6 +5,7 @@ import LandingPage from './pages/LandingPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import StudentDashboard from './pages/StudentDashboard.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 // Component to handle root class changes based on route
@@ -13,7 +14,7 @@ const AppContent = () => {
 
     useEffect(() => {
         const root = document.getElementById('root');
-        if (location.pathname === '/dashboard') {
+        if (location.pathname === '/dashboard' || location.pathname === '/profile') {
             root.className = 'dashboard-root';
         } else {
             root.className = 'page-root';
@@ -30,6 +31,14 @@ const AppContent = () => {
                 element={
                     <ProtectedRoute>
                         <StudentDashboard />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <ProfilePage />
                     </ProtectedRoute>
                 }
             />
