@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS for premium UI design system */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #F9FAFB;
+    color: #1F2937;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Ensure proper layout for dashboard */
+  #root {
+    height: 100vh;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+
+  /* Premium Card Component */
+  .card {
+    @apply bg-white rounded-2xl shadow-lg border border-gray-100;
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Glass Morphism Effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/60 rounded-2xl;
+  }
+
+  /* Premium Button Styles */
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50 text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl border border-gray-200 hover:scale-[1.02] transition-all duration-200;
+  }
+
+  .btn-outline {
+    @apply bg-white border-2 border-gray-200 text-gray-800 hover:bg-gray-50 font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg;
+  }
+
+  /* Premium Input Styles */
+  .input-field {
+    @apply w-full px-4 py-4 border-2 border-gray-200 rounded-lg transition-all duration-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 focus:outline-none bg-white text-gray-800 placeholder-gray-500;
+  }
+
+  /* Sidebar Styles */
+  .sidebar-item {
+    @apply flex items-center space-x-3 px-6 py-4 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:scale-[1.02] cursor-pointer text-gray-700 relative;
+  }
+
+  .sidebar-item.active {
+    @apply bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold;
+  }
+
+  /* Stats Card */
+  .stats-card {
+    @apply bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 hover:scale-[1.02];
+  }
+
+  /* Hero Section */
+  .hero-gradient {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+  }
+
+  /* Floating Animation */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  /* Pulse Animation */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-glow {
+    from {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+
+    to {
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+    }
+  }
+
+  /* Dashboard Layout Optimizations */
+  .dashboard-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Mobile Optimizations */
+  @media (max-width: 768px) {
+    .card {
+      @apply rounded-xl mx-4;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-outline {
+      @apply py-4 px-6 text-base;
+    }
+
+    .input-field {
+      @apply py-4 px-4 text-base;
+    }
+  }
+
+  /* Laptop Screen Optimizations */
+  @media (min-width: 1024px) and (max-width: 1440px) {
+    .dashboard-container {
+      @apply max-w-6xl;
+    }
+  }
+
+  /* Large Screen Optimizations */
+  @media (min-width: 1441px) {
+    .dashboard-container {
+      @apply max-w-7xl;
+    }
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .card {
+      @apply bg-gray-900 border-gray-700;
+    }
+
+    .input-field {
+      @apply bg-gray-800 border-gray-600 text-white placeholder-gray-400;
+    }
+  }
+}
