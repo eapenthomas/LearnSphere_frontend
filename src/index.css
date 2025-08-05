@@ -12,7 +12,7 @@
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background: #F9FAFB;
-    color: #1F2937;
+    color: #acb5c3;
     min-height: 100vh;
     overflow-x: hidden;
     margin: 0;
@@ -183,11 +183,49 @@
   /* Dark mode support */
   @media (prefers-color-scheme: dark) {
     .card {
-      @apply bg-gray-900 border-gray-700;
+      background-color: #111827;
+      border-color: #374151;
     }
 
     .input-field {
-      @apply bg-gray-800 border-gray-600 text-white placeholder-gray-400;
+      background-color: #1f2937;
+      border-color: #4b5563;
+      color: #ffffff;
     }
+
+    .input-field::placeholder {
+      color: #9ca3af;
+    }
+  }
+}
+
+/* White Text for Dark Backgrounds */
+@layer utilities {
+  /* Ensure dark backgrounds have pure white text for contrast */
+  .bg-gray-900,
+  .bg-gray-800,
+  .bg-gray-700,
+  .bg-black,
+  .bg-neutral-900,
+  .bg-neutral-800,
+  .bg-slate-900,
+  .bg-slate-800,
+  .bg-zinc-900,
+  .bg-zinc-800 {
+    color: #ffffff !important;
+  }
+
+  /* Ensure all child elements in dark containers have pure white text */
+  .bg-gray-900 *,
+  .bg-gray-800 *,
+  .bg-gray-700 *,
+  .bg-black *,
+  .bg-neutral-900 *,
+  .bg-neutral-800 *,
+  .bg-slate-900 *,
+  .bg-slate-800 *,
+  .bg-zinc-900 *,
+  .bg-zinc-800 * {
+    color: #ffffff !important;
   }
 }

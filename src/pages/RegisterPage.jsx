@@ -247,7 +247,7 @@ const RegisterPage = () => {
               </div>
 
               {/* Role Selection */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   I am a
                 </label>
@@ -289,7 +289,7 @@ const RegisterPage = () => {
                     </div>
                   </label>
                 </div>
-              </div>
+              </div> */}
 
               {/* Error Message */}
               {error && (

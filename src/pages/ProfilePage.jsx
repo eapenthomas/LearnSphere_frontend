@@ -108,8 +108,8 @@ const ProfilePage = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Unable to Load Profile</h2>
-            <p className="text-gray-600 mb-4">There was an issue loading your profile data.</p>
+            <h2 className="text-2xl font-bold text-blue-800 mb-2">Unable to Load Profile</h2>
+            <p className="text-white-600 mb-4">There was an issue loading your profile data.</p>
             <button
               onClick={() => window.location.reload()}
               className="btn-primary"
@@ -131,7 +131,7 @@ const ProfilePage = () => {
           style: {
             background: '#fff',
             color: '#374151',
-            boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            boxShadow: '0 10px 25px -3px rgba(255, 255, 255, 0.1), 0 4px 6px -2px rgba(255, 255, 255, 0.05)',
             border: '1px solid #e5e7eb',
             borderRadius: '12px',
             padding: '16px',
@@ -156,12 +156,12 @@ const ProfilePage = () => {
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-2 text-sm text-gray-600"
+          className="flex items-center space-x-2 text-sm text-white-600"
         >
           <Home className="w-4 h-4" />
           <span>Dashboard</span>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-800 font-medium">Profile & Settings</span>
+          <span className="text-white-800 font-medium">Profile & Settings</span>
         </motion.nav>
 
         {/* Page Header */}
@@ -174,10 +174,10 @@ const ProfilePage = () => {
             <UserCheck className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight">
+            <h1 className="text-3xl font-extrabold text-white-800 tracking-tight">
               Profile & Settings
             </h1>
-            <p className="text-gray-600 font-medium">
+            <p className="text-white-600 font-medium">
               Manage your account information and security settings
             </p>
           </div>
@@ -231,20 +231,20 @@ const ProfilePage = () => {
               <div className="p-2 bg-green-100 rounded-lg">
                 <Shield className="w-5 h-5 text-green-600" />
               </div>
-              <h3 className="text-lg font-bold text-gray-800">Security Overview</h3>
+              <h3 className="text-lg font-bold text-white-800">Security Overview</h3>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Two-Factor Authentication</span>
-                <span className="text-sm text-gray-500">Not enabled</span>
+                <span className="text-white-600">Two-Factor Authentication</span>
+                <span className="text-sm text-white-500">Not enabled</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Login Sessions</span>
+                <span className="text-white-600">Login Sessions</span>
                 <span className="text-sm text-green-600">1 active</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Last Password Change</span>
-                <span className="text-sm text-gray-500">Never</span>
+                <span className="text-white-600">Last Password Change</span>
+                <span className="text-sm text-white-500">Never</span>
               </div>
             </div>
           </motion.div>
@@ -260,20 +260,20 @@ const ProfilePage = () => {
               <div className="p-2 bg-purple-100 rounded-lg">
                 <Settings className="w-5 h-5 text-purple-600" />
               </div>
-              <h3 className="text-lg font-bold text-gray-800">Preferences</h3>
+              <h3 className="text-lg font-bold text-white-800">Preferences</h3>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Email Notifications</span>
+                <span className="text-white-600">Email Notifications</span>
                 <span className="text-sm text-green-600">Enabled</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Theme</span>
-                <span className="text-sm text-gray-500">Light</span>
+                <span className="text-white-600">Theme</span>
+                <span className="text-sm text-white-500">Light</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Language</span>
-                <span className="text-sm text-gray-500">English</span>
+                <span className="text-white-600">Language</span>
+                <span className="text-sm text-white-500">English</span>
               </div>
             </div>
           </motion.div>

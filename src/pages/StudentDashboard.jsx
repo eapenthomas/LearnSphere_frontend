@@ -140,7 +140,7 @@ const StudentDashboard = () => {
       case 'high': return 'text-red-500 bg-red-50';
       case 'medium': return 'text-yellow-500 bg-yellow-50';
       case 'low': return 'text-green-500 bg-green-50';
-      default: return 'text-gray-500 bg-gray-50';
+      default: return 'text-white-500 bg-white-50';
     }
   };
 
@@ -213,10 +213,10 @@ const StudentDashboard = () => {
                   {stat.change}
                 </span>
               </div>
-              <h3 className="text-2xl font-extrabold text-gray-800 mb-1">
+              <h3 className="text-2xl font-extrabold text-white-800 mb-1">
                 {stat.value}
               </h3>
-              <p className="text-gray-600 text-sm font-medium">
+              <p className="text-white-600 text-sm font-medium">
                 {stat.title}
               </p>
             </motion.div>
@@ -232,17 +232,17 @@ const StudentDashboard = () => {
             className="lg:col-span-2 card p-6 hover:shadow-xl transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-extrabold text-gray-800 tracking-tight">
+              <h2 className="text-xl font-extrabold text-white-800 tracking-tight">
                 Quiz Scores Over Time
               </h2>
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span className="text-gray-600 font-medium">Your Score</span>
+                  <span className="text-white-600 font-medium">Your Score</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                  <span className="text-gray-600 font-medium">Target</span>
+                  <div className="w-3 h-3 bg-white-300 rounded-full"></div>
+                  <span className="text-white-600 font-medium">Target</span>
                 </div>
               </div>
             </div>
@@ -287,10 +287,10 @@ const StudentDashboard = () => {
             className="card p-6 hover:shadow-xl transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-extrabold text-gray-800 tracking-tight">
+              <h2 className="text-xl font-extrabold text-white-800 tracking-tight">
                 Upcoming Deadlines
               </h2>
-              <Calendar className="w-5 h-5 text-gray-400" />
+              <Calendar className="w-5 h-5 text-white-400" />
             </div>
             <div className="space-y-4">
               {upcomingDeadlines.map((deadline, index) => (
@@ -299,14 +299,14 @@ const StudentDashboard = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 hover:scale-105 transition-all duration-300 cursor-pointer"
+                  className="p-4 bg-white-50 rounded-lg hover:bg-white-100 hover:scale-105 transition-all duration-300 cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <h3 className="font-bold text-gray-800 text-sm">
+                      <h3 className="font-bold text-white-800 text-sm">
                         {deadline.title}
                       </h3>
-                      <p className="text-xs text-gray-500 font-medium">
+                      <p className="text-xs text-white-500 font-medium">
                         {deadline.course}
                       </p>
                     </div>
@@ -315,11 +315,11 @@ const StudentDashboard = () => {
                     </span>
                   </div>
                   <div className="mb-2">
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <div className="flex items-center justify-between text-xs text-white-500 mb-1">
                       <span className="font-medium">Progress</span>
                       <span className="font-bold">{deadline.progress}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-white-200 rounded-full h-2">
                       <div
                         className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${deadline.progress}%` }}
@@ -341,10 +341,10 @@ const StudentDashboard = () => {
             className="card p-6 hover:shadow-xl transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-extrabold text-gray-800 tracking-tight">
+              <h2 className="text-xl font-extrabold text-white-800 tracking-tight">
                 Continue Learning
               </h2>
-              <ArrowRight className="w-5 h-5 text-gray-400" />
+              <ArrowRight className="w-5 h-5 text-white-400" />
             </div>
             <div className="space-y-4">
               {continueLearning.map((course, index) => (
@@ -353,24 +353,24 @@ const StudentDashboard = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 hover:scale-105 transition-all duration-300 cursor-pointer group"
+                  className="flex items-center space-x-4 p-4 bg-white-50 rounded-lg hover:bg-white-100 hover:scale-105 transition-all duration-300 cursor-pointer group"
                 >
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold group-hover:scale-110 transition-transform duration-300">
                     {course.thumbnail}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-gray-800 text-sm">
+                    <h3 className="font-bold text-white-800 text-sm">
                       {course.title}
                     </h3>
-                    <p className="text-xs text-gray-500 font-medium">
+                    <p className="text-xs text-white-500 font-medium">
                       {course.instructor} • {course.category}
                     </p>
                     <div className="mt-2">
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                      <div className="flex items-center justify-between text-xs text-white-500 mb-1">
                         <span className="font-medium">Progress</span>
                         <span className="font-bold">{course.progress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-white-200 rounded-full h-2">
                         <div
                           className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${course.progress}%` }}
@@ -378,7 +378,7 @@ const StudentDashboard = () => {
                       </div>
                     </div>
                   </div>
-                  <Play className="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:scale-110 transition-all duration-300" />
+                  <Play className="w-5 h-5 text-white-400 group-hover:text-blue-500 group-hover:scale-110 transition-all duration-300" />
                 </motion.div>
               ))}
             </div>
@@ -391,10 +391,10 @@ const StudentDashboard = () => {
             className="card p-6 hover:shadow-xl transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-extrabold text-gray-800 tracking-tight">
+              <h2 className="text-xl font-extrabold text-white-800 tracking-tight">
                 Recent Achievements
               </h2>
-              <Award className="w-5 h-5 text-gray-400" />
+              <Award className="w-5 h-5 text-white-400" />  
             </div>
             <div className="space-y-4">
               {recentAchievements.map((achievement, index) => (
@@ -403,16 +403,16 @@ const StudentDashboard = () => {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-center space-x-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200 hover:scale-105 transition-all duration-300"
+                  className="flex items-center space-x-4 p-4 bg-gradient-to-r from-white-50 to-white-100 rounded-lg hover:bg-gradient-to-r hover:from-white-100 hover:to-white-200 hover:scale-105 transition-all duration-300"
                 >
                   <div className="p-3 bg-white rounded-lg shadow-sm hover:scale-110 transition-transform duration-300">
                     <achievement.icon className={`w-6 h-6 ${achievement.color}`} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-gray-800 text-sm">
+                    <h3 className="font-bold text-white-800 text-sm">
                       {achievement.title}
                     </h3>
-                    <p className="text-xs text-gray-500 font-medium">
+                    <p className="text-xs text-white-500 font-medium">
                       {achievement.description}
                     </p>
                   </div>

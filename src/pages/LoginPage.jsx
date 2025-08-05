@@ -214,6 +214,17 @@ const LoginPage = () => {
                 )}
               </motion.button>
 
+              {/* Forgot Password Link */}
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => navigate('/forgot-password')}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors duration-200"
+                >
+                  Forgot your password?
+                </button>
+              </div>
+
               {/* Divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
