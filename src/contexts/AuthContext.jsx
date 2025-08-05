@@ -30,6 +30,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [initialized, setInitialized] = useState(false);
 
     // Function to fetch user profile from Supabase
     const fetchUserProfile = async (userId) => {
@@ -52,54 +53,115 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
-        // Check for existing session
-        const checkSession = async () => {
-            console.log('AuthContext - Checking for existing session...');
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                console.log('AuthContext - Session found:', !!session);
-                if (session) {
-                    // Fetch user profile from profiles table
-                    const profile = await fetchUserProfile(session.user.id);
-                    console.log('AuthContext - Profile fetched:', profile);
+    // Function to validate stored session
+    const validateStoredSession = () => {
+        try {
+            const storedUser = localStorage.getItem('learnsphere_user');
+            const storedToken = localStorage.getItem('learnsphere_token');
 
-                    setUser({
-                        id: session.user.id,
-                        email: session.user.email,
-                        accessToken: session.access_token,
-                        fullName: profile?.full_name || session.user.email?.split('@')[0] || 'User',
-                        role: profile?.role || 'student'
-                    });
+            if (!storedUser || !storedToken) {
+                return null;
+            }
+
+            const userData = JSON.parse(storedUser);
+
+            // Basic validation
+            if (!userData.id || !userData.email) {
+                console.log('Invalid stored user data, clearing session');
+                localStorage.removeItem('learnsphere_user');
+                localStorage.removeItem('learnsphere_token');
+                return null;
+            }
+
+            return { userData, token: storedToken };
+        } catch (error) {
+            console.error('Error validating stored session:', error);
+            localStorage.removeItem('learnsphere_user');
+            localStorage.removeItem('learnsphere_token');
+            return null;
+        }
+    };
+
+    useEffect(() => {
+        // Initialize authentication state
+        const initializeAuth = () => {
+            console.log('AuthContext - Initializing authentication...');
+
+            try {
+                // Check localStorage for stored session
+                const storedUser = localStorage.getItem('learnsphere_user');
+                const storedToken = localStorage.getItem('learnsphere_token');
+
+                console.log('AuthContext - Stored user exists:', !!storedUser);
+                console.log('AuthContext - Stored token exists:', !!storedToken);
+
+                if (storedUser && storedToken) {
+                    console.log('AuthContext - Restoring session from localStorage');
+                    const userData = JSON.parse(storedUser);
+
+                    // Validate stored data
+                    if (userData.id && userData.email) {
+                        setUser({
+                            id: userData.id,
+                            email: userData.email,
+                            accessToken: storedToken,
+                            fullName: userData.fullName || 'User',
+                            role: userData.role || 'student'
+                        });
+                        console.log('AuthContext - Session restored for:', userData.fullName);
+                    } else {
+                        console.log('AuthContext - Invalid stored data, clearing...');
+                        localStorage.removeItem('learnsphere_user');
+                        localStorage.removeItem('learnsphere_token');
+                    }
                 } else {
-                    console.log('AuthContext - No session found');
+                    console.log('AuthContext - No stored session found');
                 }
             } catch (error) {
-                console.error('Error checking session:', error);
+                console.error('AuthContext - Error during initialization:', error);
+                // Clear corrupted data
+                localStorage.removeItem('learnsphere_user');
+                localStorage.removeItem('learnsphere_token');
             } finally {
-                console.log('AuthContext - Setting loading to false');
+                console.log('AuthContext - Initialization complete');
+                setInitialized(true);
                 setLoading(false);
             }
         };
 
-        checkSession();
+        // Run initialization immediately
+        initializeAuth();
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
+                console.log('AuthContext - Auth state change:', event);
                 if (event === 'SIGNED_IN' && session) {
                     // Fetch user profile from profiles table
                     const profile = await fetchUserProfile(session.user.id);
 
-                    setUser({
+                    const userData = {
                         id: session.user.id,
                         email: session.user.email,
                         accessToken: session.access_token,
                         fullName: profile?.full_name || session.user.email?.split('@')[0] || 'User',
                         role: profile?.role || 'student'
-                    });
+                    };
+
+                    setUser(userData);
+
+                    // Store in localStorage for persistence
+                    localStorage.setItem('learnsphere_user', JSON.stringify({
+                        id: userData.id,
+                        email: userData.email,
+                        fullName: userData.fullName,
+                        role: userData.role
+                    }));
+                    localStorage.setItem('learnsphere_token', userData.accessToken);
                 } else if (event === 'SIGNED_OUT') {
                     setUser(null);
+                    localStorage.removeItem('learnsphere_user');
+                    localStorage.removeItem('learnsphere_token');
                 }
             }
         );
@@ -114,13 +176,28 @@ export const AuthProvider = ({ children }) => {
             const { access_token, user_id, role, full_name } = response.data;
             console.log('AuthContext - Registration successful, setting user data');
 
-            setUser({
+            const userObj = {
                 id: user_id,
                 email: userData.email,
                 accessToken: access_token,
                 role,
-                fullName: full_name
-            });
+                fullName: full_name,
+                approvalStatus: response.data.approval_status,
+                isActive: response.data.is_active
+            };
+
+            setUser(userObj);
+
+            // Store session in localStorage for persistence
+            localStorage.setItem('learnsphere_user', JSON.stringify({
+                id: user_id,
+                email: userData.email,
+                fullName: full_name,
+                role: role,
+                approvalStatus: response.data.approval_status,
+                isActive: response.data.is_active
+            }));
+            localStorage.setItem('learnsphere_token', access_token);
 
             // Ensure loading is set to false after successful registration
             console.log('AuthContext - Setting loading to false after registration');
@@ -143,13 +220,28 @@ export const AuthProvider = ({ children }) => {
             const response = await axios.post(`${API_BASE_URL}/login`, credentials);
             const { access_token, user_id, role, full_name } = response.data;
 
-            setUser({
+            const userObj = {
                 id: user_id,
                 email: credentials.email,
                 accessToken: access_token,
                 role,
-                fullName: full_name
-            });
+                fullName: full_name,
+                approvalStatus: response.data.approval_status,
+                isActive: response.data.is_active
+            };
+
+            setUser(userObj);
+
+            // Store session in localStorage for persistence
+            localStorage.setItem('learnsphere_user', JSON.stringify({
+                id: user_id,
+                email: credentials.email,
+                fullName: full_name,
+                role: role,
+                approvalStatus: response.data.approval_status,
+                isActive: response.data.is_active
+            }));
+            localStorage.setItem('learnsphere_token', access_token);
 
             // Ensure loading is set to false after successful login
             setLoading(false);
@@ -178,7 +270,7 @@ export const AuthProvider = ({ children }) => {
             const { data: { url } } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/dashboard`
+                    redirectTo: `${window.location.origin}/auth/callback`
                 }
             });
 
@@ -208,6 +300,8 @@ export const AuthProvider = ({ children }) => {
             // Clear any stored tokens or session data
             localStorage.removeItem('access_token');
             localStorage.removeItem('user_data');
+            localStorage.removeItem('learnsphere_user');
+            localStorage.removeItem('learnsphere_token');
             sessionStorage.clear();
 
             console.log('AuthContext - Logout completed successfully');

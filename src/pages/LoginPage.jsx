@@ -20,7 +20,7 @@ import {
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, user, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -28,6 +28,24 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Debug: Check if user is already logged in
+  React.useEffect(() => {
+    console.log('LoginPage - Auth state:', { user, authLoading });
+    console.log('LoginPage - LocalStorage:', {
+      user: localStorage.getItem('learnsphere_user'),
+      token: !!localStorage.getItem('learnsphere_token')
+    });
+
+    if (user && !authLoading) {
+      console.log('LoginPage - User already logged in, redirecting...');
+      if (user.role === 'teacher') {
+        navigate('/teacher/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [user, authLoading, navigate]);
 
   const handleChange = (e) => {
     setFormData({
@@ -45,7 +63,15 @@ const LoginPage = () => {
     const result = await login(formData);
 
     if (result.success) {
-      navigate('/dashboard');
+      // Redirect based on user role
+      const userRole = result.data.role;
+      if (userRole === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (userRole === 'teacher') {
+        navigate('/teacher/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } else {
       setError(result.error);
     }

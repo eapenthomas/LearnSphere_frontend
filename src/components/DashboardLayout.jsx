@@ -35,12 +35,12 @@ const DashboardLayout = ({ children }) => {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'My Courses', href: '/courses', icon: GraduationCap },
+    { name: 'My Courses', href: '/mycourses', icon: GraduationCap },
+    { name: 'All Courses', href: '/allcourses', icon: BarChart3 },
     { name: 'Assignments', href: '/assignments', icon: FileText },
     { name: 'Quizzes', href: '/quizzes', icon: Target },
     { name: 'Doubt Forum', href: '/forum', icon: HelpCircle },
     { name: 'Calendar', href: '/calendar', icon: Calendar },
-    { name: 'Reports', href: '/reports', icon: BarChart3 },
     { name: 'Profile & Settings', href: '/profile', icon: UserCheck },
   ];
 
