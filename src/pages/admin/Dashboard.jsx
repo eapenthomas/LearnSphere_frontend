@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import AdminDashboardLayout from '../../layouts/AdminDashboardLayout.jsx';
 import { adminOperations } from '../../utils/supabaseClient.js';
@@ -12,12 +13,12 @@ import {
   AlertTriangle,
   TrendingUp,
   Activity,
-  Clock,
   CheckCircle,
   XCircle,
   Mail,
   Shield,
-  BarChart3
+  BarChart3,
+  ArrowRight
 } from 'lucide-react';
 import {
   LineChart,
@@ -67,49 +68,55 @@ const AdminDashboard = () => {
       title: 'Active Students',
       value: stats?.active_students || 0,
       icon: Users,
-      color: 'from-blue-500 to-blue-600',
+      color: 'from-indigo-500 to-blue-500',
       bgColor: 'bg-blue-50',
-      textColor: 'text-blue-700'
+      textColor: 'text-blue-700',
+      link: '/admin/users?filter=students'
     },
     {
       title: 'Active Teachers',
       value: stats?.active_teachers || 0,
       icon: UserCheck,
-      color: 'from-green-500 to-green-600',
+      color: 'from-emerald-500 to-green-500',
       bgColor: 'bg-green-50',
-      textColor: 'text-green-700'
+      textColor: 'text-green-700',
+      link: '/admin/users?filter=teachers'
     },
     {
       title: 'Pending Approvals',
       value: stats?.pending_approvals || 0,
       icon: AlertTriangle,
-      color: 'from-yellow-500 to-yellow-600',
+      color: 'from-amber-500 to-yellow-500',
       bgColor: 'bg-yellow-50',
-      textColor: 'text-yellow-700'
+      textColor: 'text-yellow-700',
+      link: '/admin/approvals'
     },
     {
       title: 'Active Courses',
       value: stats?.active_courses || 0,
       icon: BookOpen,
-      color: 'from-purple-500 to-purple-600',
+      color: 'from-purple-500 to-violet-500',
       bgColor: 'bg-purple-50',
-      textColor: 'text-purple-700'
+      textColor: 'text-purple-700',
+      link: '/admin/courses'
     },
     {
       title: 'Total Enrollments',
       value: stats?.total_enrollments || 0,
       icon: GraduationCap,
-      color: 'from-indigo-500 to-indigo-600',
-      bgColor: 'bg-indigo-50',
-      textColor: 'text-indigo-700'
+      color: 'from-cyan-500 to-blue-500',
+      bgColor: 'bg-cyan-50',
+      textColor: 'text-cyan-700',
+      link: '/admin/enrollments'
     },
     {
       title: 'Disabled Users',
       value: stats?.disabled_users || 0,
       icon: XCircle,
-      color: 'from-red-500 to-red-600',
+      color: 'from-rose-500 to-red-500',
       bgColor: 'bg-red-50',
-      textColor: 'text-red-700'
+      textColor: 'text-red-700',
+      link: '/admin/users?filter=disabled'
     }
   ];
 
@@ -153,40 +160,50 @@ const AdminDashboard = () => {
     }
   };
 
-  const username = user?.fullName?.split(' ')[0] || 'Admin';
+
 
   return (
     <AdminDashboardLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-8">
         {/* Welcome Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-500 to-red-600 p-6 text-white"
+          className="relative overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8"
         >
-          <div className="absolute inset-0 bg-white/10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-500 opacity-5"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl md:text-3xl font-extrabold mb-2 tracking-tight">
-                  Welcome back, {username}! 🛡️
+                <h1 className="text-3xl md:text-4xl font-extrabold mb-3 text-gray-800 tracking-tight">
+                  Welcome back, {user?.fullName?.split(' ')[0] || 'Admin'}! 🛡️
                 </h1>
-                <p className="text-base text-white/90 mb-4 font-medium">
+                <p className="text-lg text-gray-600 mb-6 font-medium">
                   Monitor and manage the LearnSphere platform. Keep everything running smoothly!
                 </p>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Users className="w-5 h-5" />
-                    <span className="font-semibold">{(stats?.active_students || 0) + (stats?.active_teachers || 0)} Total Users</span>
+                <div className="flex flex-wrap items-center gap-6">
+                  <div className="flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-lg">
+                    <Users className="w-5 h-5 text-blue-600" />
+                    <span className="font-semibold text-blue-700">
+                      {(stats?.active_students || 0) + (stats?.active_teachers || 0)} Total Users
+                    </span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <AlertTriangle className="w-5 h-5" />
-                    <span className="font-semibold">{stats?.pending_approvals || 0} Pending Approvals</span>
+                  <div className="flex items-center space-x-2 bg-yellow-50 px-4 py-2 rounded-lg">
+                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                    <span className="font-semibold text-yellow-700">
+                      {stats?.pending_approvals || 0} Pending Approvals
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-lg">
+                    <BookOpen className="w-5 h-5 text-green-600" />
+                    <span className="font-semibold text-green-700">
+                      {stats?.active_courses || 0} Active Courses
+                    </span>
                   </div>
                 </div>
               </div>
               <div className="hidden md:block">
-                <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center">
+                <div className="w-24 h-24 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
                   <Shield className="w-12 h-12 text-white" />
                 </div>
               </div>
@@ -202,23 +219,60 @@ const AdminDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 group"
+              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+              onClick={() => window.location.href = stat.link}
             >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 ${stat.bgColor} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
-                  <stat.icon className={`w-6 h-6 ${stat.textColor}`} />
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`p-3 ${stat.bgColor} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
+                    <stat.icon className={`w-6 h-6 ${stat.textColor}`} />
+                  </div>
+                  {stat.title === 'Pending Approvals' && stat.value > 0 && (
+                    <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full animate-pulse">
+                      Action Required
+                    </span>
+                  )}
+                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-300" />
                 </div>
-                {stat.title === 'Pending Approvals' && stat.value > 0 && (
-                  <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
-                    Action Required
-                  </span>
-                )}
+                <h3 className="text-3xl font-extrabold text-gray-800 mb-2">{stat.value.toLocaleString()}</h3>
+                <p className="text-sm text-gray-600 font-medium">{stat.title}</p>
               </div>
-              <h3 className="text-2xl font-extrabold text-gray-800 mb-1">{stat.value}</h3>
-              <p className="text-sm text-gray-600 font-medium">{stat.title}</p>
             </motion.div>
           ))}
         </div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6"
+        >
+          <h2 className="text-xl font-bold text-gray-800 mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link
+              to="/admin/approvals"
+              className="flex items-center space-x-3 p-4 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
+              <UserCheck className="w-5 h-5" />
+              <span>Review Approvals</span>
+            </Link>
+            <Link
+              to="/admin/users"
+              className="flex items-center space-x-3 p-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
+              <Users className="w-5 h-5" />
+              <span>Manage Users</span>
+            </Link>
+            <Link
+              to="/admin/activity"
+              className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-500 to-violet-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
+              <Activity className="w-5 h-5" />
+              <span>View Activity Logs</span>
+            </Link>
+          </div>
+        </motion.div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -226,24 +280,38 @@ const AdminDashboard = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
+            transition={{ delay: 0.4 }}
+            className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-extrabold text-gray-800">User Growth</h2>
-              <TrendingUp className="w-5 h-5 text-gray-400" />
+              <h2 className="text-xl font-bold text-gray-800">User Growth Over Time</h2>
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+              </div>
             </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={userGrowthData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="name"
+                    stroke="#64748b"
+                    fontSize={12}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    stroke="#64748b"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'white',
                       border: 'none',
                       borderRadius: '12px',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                      fontSize: '14px'
                     }}
                   />
                   <Line
@@ -251,17 +319,29 @@ const AdminDashboard = () => {
                     dataKey="students"
                     stroke="#3b82f6"
                     strokeWidth={3}
-                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
                   />
                   <Line
                     type="monotone"
                     dataKey="teachers"
                     stroke="#10b981"
                     strokeWidth={3}
-                    dot={{ fill: '#10b981', strokeWidth: 2, r: 6 }}
+                    dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+            <div className="flex items-center justify-center space-x-6 mt-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-sm text-gray-600 font-medium">Students</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-gray-600 font-medium">Teachers</span>
+              </div>
             </div>
           </motion.div>
 
@@ -269,11 +349,14 @@ const AdminDashboard = () => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
+            transition={{ delay: 0.5 }}
+            className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-extrabold text-gray-800">User Distribution</h2>
-              <BarChart3 className="w-5 h-5 text-gray-400" />
+              <h2 className="text-xl font-bold text-gray-800">User Distribution by Role</h2>
+              <div className="p-2 bg-purple-50 rounded-lg">
+                <BarChart3 className="w-5 h-5 text-purple-600" />
+              </div>
             </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -282,17 +365,39 @@ const AdminDashboard = () => {
                     data={userDistributionData}
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={90}
+                    innerRadius={40}
                     dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
+                    paddingAngle={5}
                   >
                     {userDistributionData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                      fontSize: '14px'
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+              {userDistributionData.map((entry, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: entry.color }}
+                  ></div>
+                  <span className="text-sm text-gray-600 font-medium">
+                    {entry.name}: {entry.value}
+                  </span>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>
@@ -301,50 +406,73 @@ const AdminDashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300"
+          transition={{ delay: 0.6 }}
+          className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6"
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-extrabold text-gray-800">Recent Activity</h2>
-            <Activity className="w-5 h-5 text-gray-400" />
+            <h2 className="text-xl font-bold text-gray-800">Recent Activity Feed</h2>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <Activity className="w-5 h-5 text-green-600" />
+              </div>
+              <Link
+                to="/admin/activity"
+                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                View All
+              </Link>
+            </div>
           </div>
-          
+
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
             </div>
           ) : recentActivity.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Activity className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>No recent activity</p>
+            <div className="text-center py-12 text-gray-500">
+              <Activity className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-lg font-medium">No recent activity</p>
+              <p className="text-sm">Activity will appear here as users interact with the system</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
+            <div className="space-y-3">
+              {recentActivity.slice(0, 5).map((activity, index) => (
                 <motion.div
                   key={activity.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-200 border border-gray-100"
                 >
                   <div className="flex-shrink-0">
                     {getActivityIcon(activity.action)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-semibold text-gray-900">
                       {activity.profiles?.full_name || 'Unknown User'}
                     </p>
-                    <p className="text-sm text-gray-500 capitalize">
+                    <p className="text-sm text-gray-600 capitalize">
                       {activity.action.replace('_', ' ')} • {activity.profiles?.role}
                     </p>
                   </div>
-                  <div className="flex-shrink-0">
-                    <p className="text-xs text-gray-400">
+                  <div className="flex-shrink-0 text-right">
+                    <p className="text-xs text-gray-500 font-medium">
                       {formatDate(activity.created_at)}
                     </p>
+                    <div className="w-2 h-2 bg-green-400 rounded-full mt-1 ml-auto"></div>
                   </div>
                 </motion.div>
               ))}
+              {recentActivity.length > 5 && (
+                <div className="text-center pt-4">
+                  <Link
+                    to="/admin/activity"
+                    className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                  >
+                    View {recentActivity.length - 5} more activities →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </motion.div>

@@ -38,7 +38,7 @@ const DashboardLayout = ({ children }) => {
     { name: 'My Courses', href: '/mycourses', icon: GraduationCap },
     { name: 'All Courses', href: '/allcourses', icon: BarChart3 },
     { name: 'Assignments', href: '/assignments', icon: FileText },
-    { name: 'Quizzes', href: '/quizzes', icon: Target },
+    { name: 'Quizzes', href: '/student/quizzes', icon: Target },
     { name: 'Doubt Forum', href: '/forum', icon: HelpCircle },
     { name: 'Calendar', href: '/calendar', icon: Calendar },
     { name: 'Profile & Settings', href: '/profile', icon: UserCheck },

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext.jsx';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { Toaster } from 'react-hot-toast';
 import LandingPage from './pages/LandingPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -10,8 +10,13 @@ import AuthCallback from './pages/AuthCallback.jsx';
 import StudentDashboard from './pages/student/Dashboard.jsx';
 import StudentAllCourses from './pages/student/AllCourses.jsx';
 import StudentMyCourses from './pages/student/MyCourses.jsx';
+import StudentQuizzes from './pages/student/Quizzes.jsx';
+import TakeQuiz from './pages/student/TakeQuiz.jsx';
+import QuizResult from './pages/student/QuizResult.jsx';
 import TeacherDashboard from './pages/teacher/Dashboard.jsx';
 import TeacherMyCourses from './pages/teacher/MyCourses.jsx';
+import TeacherQuizzes from './pages/teacher/Quizzes.jsx';
+import QuizSubmissions from './pages/teacher/QuizSubmissions.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 import TeacherApprovals from './pages/admin/TeacherApprovals.jsx';
 import UserManagement from './pages/admin/UserManagement.jsx';
@@ -19,6 +24,28 @@ import ActivityLogs from './pages/admin/ActivityLogs.jsx';
 import EmailNotifications from './pages/admin/EmailNotifications.jsx';
 import DatabaseTest from './pages/DatabaseTest.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
+
+// Component to redirect users to their appropriate dashboard
+const RoleBasedRedirect = () => {
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
+
+    // Redirect based on user role
+    if (user.role === 'admin') {
+        return <Navigate to="/admin/dashboard" replace />;
+    } else if (user.role === 'teacher') {
+        return <Navigate to="/teacher/dashboard" replace />;
+    } else {
+        return <Navigate to="/dashboard" replace />;
+    }
+};
 
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
@@ -38,6 +65,7 @@ const AppContent = () => {
     return (
         <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/home" element={<RoleBasedRedirect />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -67,6 +95,30 @@ const AppContent = () => {
                 }
             />
             <Route
+                path="/student/quizzes"
+                element={
+                    <ProtectedRoute>
+                        <StudentQuizzes />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/student/quiz/:quizId/take"
+                element={
+                    <ProtectedRoute>
+                        <TakeQuiz />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/student/quiz/:quizId/result"
+                element={
+                    <ProtectedRoute>
+                        <QuizResult />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path="/teacher/dashboard"
                 element={
                     <ProtectedRoute>
@@ -79,6 +131,22 @@ const AppContent = () => {
                 element={
                     <ProtectedRoute>
                         <TeacherMyCourses />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/teacher/quizzes"
+                element={
+                    <ProtectedRoute>
+                        <TeacherQuizzes />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/teacher/quiz/:quizId/submissions"
+                element={
+                    <ProtectedRoute>
+                        <QuizSubmissions />
                     </ProtectedRoute>
                 }
             />

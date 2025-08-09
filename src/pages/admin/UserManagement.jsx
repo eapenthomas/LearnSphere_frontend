@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import AdminDashboardLayout from '../../layouts/AdminDashboardLayout.jsx';
@@ -21,7 +21,11 @@ import {
   Settings,
   AlertTriangle,
   CheckCircle,
-  XCircle
+  XCircle,
+  User,
+  Crown,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 
 const UserManagement = () => {
@@ -38,6 +42,30 @@ const UserManagement = () => {
 
   useEffect(() => {
     fetchUsers();
+
+    // Set up real-time subscription for user updates
+    const subscription = adminOperations.subscribeToAdminUpdates((payload) => {
+      console.log('Real-time user update:', payload);
+      if (payload.table === 'profiles') {
+        // Update the specific user in the list
+        if (payload.eventType === 'UPDATE') {
+          setUsers(prev => prev.map(u =>
+            u.id === payload.new.id ? { ...u, ...payload.new } : u
+          ));
+        } else if (payload.eventType === 'INSERT') {
+          // New user added, refresh the list
+          fetchUsers();
+        } else if (payload.eventType === 'DELETE') {
+          // User deleted, remove from list
+          setUsers(prev => prev.filter(u => u.id !== payload.old.id));
+        }
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchUsers = async () => {
@@ -123,18 +151,18 @@ const UserManagement = () => {
       teacher: 'bg-blue-100 text-blue-700',
       student: 'bg-green-100 text-green-700'
     };
-    
-    return `px-2 py-1 rounded-full text-xs font-semibold ${colors[role] || 'bg-gray-100 text-gray-700'}`;
+
+    return `px-3 py-1.5 rounded-full text-xs font-semibold ${colors[role] || 'bg-gray-100 text-gray-700'}`;
   };
 
   const getStatusBadge = (isActive, approvalStatus) => {
     if (!isActive) {
-      return 'px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700';
+      return 'px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-700';
     }
     if (approvalStatus === 'pending') {
-      return 'px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700';
+      return 'px-3 py-1.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700';
     }
-    return 'px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700';
+    return 'px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700';
   };
 
   const getStatusText = (isActive, approvalStatus) => {
@@ -144,46 +172,56 @@ const UserManagement = () => {
   };
 
   const UserCard = ({ user }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border border-gray-100"
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 group">
+      <div className="flex items-start justify-between mb-6 gap-4">
+        <div className="flex items-center space-x-4 flex-1 min-w-0">
+          <div className="w-14 h-14 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
             {getRoleIcon(user.role)}
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-xl font-bold text-gray-800 mb-1 truncate">
               {user.full_name}
             </h3>
-            <p className="text-sm text-gray-600 flex items-center space-x-1">
-              <Mail className="w-4 h-4" />
-              <span>{user.email}</span>
+            <p className="text-sm text-gray-600 flex items-center space-x-2 truncate">
+              <Mail className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{user.email}</span>
             </p>
           </div>
         </div>
-        
-        <div className="flex items-center space-x-2">
-          <span className={getRoleBadge(user.role)}>
+
+        <div className="flex flex-col items-end space-y-3 min-w-0 flex-shrink-0">
+          <span className={`${getRoleBadge(user.role)} whitespace-nowrap`}>
             {user.role}
           </span>
-          <span className={getStatusBadge(user.is_active, user.approval_status)}>
-            {getStatusText(user.is_active, user.approval_status)}
+          <span className={`${getStatusBadge(user.is_active, user.approval_status)} whitespace-nowrap`}>
+            {user.is_active ? (
+              <div className="flex items-center space-x-1">
+                <ToggleRight className="w-3 h-3 flex-shrink-0" />
+                <span>{getStatusText(user.is_active, user.approval_status)}</span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1">
+                <ToggleLeft className="w-3 h-3 flex-shrink-0" />
+                <span>{getStatusText(user.is_active, user.approval_status)}</span>
+              </div>
+            )}
           </span>
         </div>
       </div>
 
-      <div className="space-y-2 mb-6">
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <Calendar className="w-4 h-4" />
-          <span>Joined: {formatDate(user.created_at)}</span>
+      <div className="space-y-3 mb-6 bg-gray-50 rounded-lg p-4">
+        <div className="flex items-center space-x-3 text-sm text-gray-700">
+          <div className="p-1 bg-blue-100 rounded">
+            <Calendar className="w-4 h-4 text-blue-600" />
+          </div>
+          <span className="font-medium">Joined: {formatDate(user.created_at)}</span>
         </div>
         {user.approved_at && (
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <CheckCircle className="w-4 h-4" />
-            <span>Approved: {formatDate(user.approved_at)}</span>
+          <div className="flex items-center space-x-3 text-sm text-gray-700">
+            <div className="p-1 bg-green-100 rounded">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+            </div>
+            <span className="font-medium">Approved: {formatDate(user.approved_at)}</span>
           </div>
         )}
       </div>
@@ -194,7 +232,7 @@ const UserManagement = () => {
             {user.is_active ? (
               <button
                 onClick={() => openActionModal(user, 'disable')}
-                className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+                className="flex-1 bg-gradient-to-r from-rose-500 to-red-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg px-4 py-3 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
               >
                 <UserX className="w-4 h-4" />
                 <span>Disable</span>
@@ -202,7 +240,7 @@ const UserManagement = () => {
             ) : (
               <button
                 onClick={() => openActionModal(user, 'enable')}
-                className="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg px-4 py-3 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
               >
                 <UserCheck className="w-4 h-4" />
                 <span>Enable</span>
@@ -210,98 +248,175 @@ const UserManagement = () => {
             )}
           </>
         )}
-        
+
         <button
           onClick={() => console.log('View user details:', user)}
-          className="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+          className="px-4 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-300 hover:scale-105"
         >
           <Eye className="w-4 h-4" />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 
   return (
     <AdminDashboardLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">User Management</h1>
-            <p className="text-gray-600">
-              Manage user accounts and permissions. {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''} found.
-            </p>
-          </div>
-          
-          <button
-            onClick={fetchUsers}
-            disabled={loading}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center space-x-2"
-          >
-            <Loader className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="p-3 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight">User Management</h1>
+                  <p className="text-lg text-gray-600 font-medium">
+                    Manage user accounts and permissions
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-lg">
+                  <Users className="w-5 h-5 text-blue-600" />
+                  <span className="font-semibold text-blue-700">
+                    {filteredUsers.length} User{filteredUsers.length !== 1 ? 's' : ''} Found
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-lg">
+                  <UserCheck className="w-5 h-5 text-green-600" />
+                  <span className="font-semibold text-green-700">
+                    {filteredUsers.filter(u => u.is_active).length} Active
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2 bg-red-50 px-4 py-2 rounded-lg">
+                  <UserX className="w-5 h-5 text-red-600" />
+                  <span className="font-semibold text-red-700">
+                    {filteredUsers.filter(u => !u.is_active).length} Disabled
+                  </span>
+                </div>
+              </div>
+            </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={fetchUsers}
+              disabled={loading}
+              className="mt-4 lg:mt-0 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg px-6 py-3 transition-all duration-300 hover:scale-105 flex items-center space-x-2 disabled:opacity-50"
+            >
+              <Loader className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Search and Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
-            <div className="relative">
+            <div className="relative md:col-span-2">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
               />
             </div>
 
             {/* Role Filter */}
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all duration-200 text-gray-900"
-            >
-              <option value="all">All Roles</option>
-              <option value="student">Students</option>
-              <option value="teacher">Teachers</option>
-              <option value="admin">Admins</option>
-            </select>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white"
+              >
+                <option value="all">All Roles</option>
+                <option value="student">Students</option>
+                <option value="teacher">Teachers</option>
+                <option value="admin">Admins</option>
+              </select>
+            </div>
 
             {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all duration-200 text-gray-900"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Disabled</option>
-            </select>
+            <div className="relative">
+              <Settings className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 text-gray-900 appearance-none bg-white"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Disabled</option>
+              </select>
+            </div>
           </div>
-        </div>
+
+          <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+            <span>
+              Showing {filteredUsers.length} of {users.length} users
+            </span>
+            <div className="flex items-center space-x-4">
+              <span className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Active</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span>Disabled</span>
+              </span>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader className="w-8 h-8 text-red-500 animate-spin" />
-            <span className="ml-3 text-gray-600">Loading users...</span>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white rounded-2xl shadow-lg p-12 text-center"
+          >
+            <Loader className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
+            <span className="text-gray-600 font-medium">Loading users...</span>
+          </motion.div>
         ) : filteredUsers.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-12 text-center"
           >
-            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Users className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">
               No users found
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-600 text-lg">
               Try adjusting your search or filter criteria
             </p>
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setRoleFilter('all');
+                setStatusFilter('all');
+              }}
+              className="mt-4 text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              Clear all filters
+            </button>
           </motion.div>
         ) : (
           <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
@@ -310,7 +425,7 @@ const UserManagement = () => {
                 key={user.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: 0.2 + index * 0.1 }}
               >
                 <UserCard user={user} />
               </motion.div>

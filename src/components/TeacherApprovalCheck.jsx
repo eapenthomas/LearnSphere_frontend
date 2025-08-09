@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import {
@@ -8,11 +8,13 @@ import {
   Mail,
   Phone,
   CheckCircle,
-  ArrowLeft
+  ArrowLeft,
+  RefreshCw
 } from 'lucide-react';
 
 const TeacherApprovalCheck = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUserData } = useAuth();
+  const [refreshing, setRefreshing] = useState(false);
 
   const getStatusInfo = () => {
     switch (user?.approvalStatus) {
@@ -57,6 +59,18 @@ const TeacherApprovalCheck = () => {
 
   const statusInfo = getStatusInfo();
   const StatusIcon = statusInfo.icon;
+
+  const handleRefreshStatus = async () => {
+    setRefreshing(true);
+    try {
+      console.log('TeacherApprovalCheck - Refreshing approval status...');
+      await refreshUserData();
+    } catch (error) {
+      console.error('TeacherApprovalCheck - Error refreshing status:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleBackToLogin = async () => {
     await logout();
@@ -153,21 +167,32 @@ const TeacherApprovalCheck = () => {
               </div>
             )}
 
-            <button
-              onClick={handleContactSupport}
-              className={`w-full ${statusInfo.buttonColor} text-white font-semibold py-3 px-6 rounded-xl transition-colors flex items-center justify-center space-x-2`}
-            >
-              <Mail className="w-5 h-5" />
-              <span>Contact Support</span>
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={handleRefreshStatus}
+                disabled={refreshing}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 hover:shadow-lg flex items-center justify-center space-x-2"
+              >
+                <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+                <span>{refreshing ? 'Checking Status...' : 'Check Status'}</span>
+              </button>
 
-            <button
-              onClick={handleBackToLogin}
-              className="w-full bg-gray-100 text-gray-700 font-semibold py-3 px-6 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back to Login</span>
-            </button>
+              <button
+                onClick={handleContactSupport}
+                className={`w-full ${statusInfo.buttonColor} text-white font-semibold py-3 px-6 rounded-xl transition-colors flex items-center justify-center space-x-2`}
+              >
+                <Mail className="w-5 h-5" />
+                <span>Contact Support</span>
+              </button>
+
+              <button
+                onClick={handleBackToLogin}
+                className="w-full bg-gray-100 text-gray-700 font-semibold py-3 px-6 rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back to Login</span>
+              </button>
+            </div>
           </motion.div>
         </div>
 

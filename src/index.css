@@ -12,7 +12,7 @@
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background: #F9FAFB;
-    color: #acb5c3;
+    color: #1F2937;
     min-height: 100vh;
     overflow-x: hidden;
     margin: 0;
@@ -199,8 +199,64 @@
   }
 }
 
-/* White Text for Dark Backgrounds */
+/* Text Contrast and Accessibility */
 @layer utilities {
+  /* Text contrast utilities for accessibility */
+  .text-contrast {
+    color: #1F2937 !important;
+  }
+
+  .text-contrast-light {
+    color: #374151 !important;
+  }
+
+  .text-contrast-muted {
+    color: #6B7280 !important;
+  }
+
+  /* Ensure white backgrounds have dark text */
+  .bg-white,
+  .bg-white * {
+    color: #1F2937 !important;
+  }
+
+  .bg-gray-50,
+  .bg-gray-50 * {
+    color: #1F2937 !important;
+  }
+
+  /* Force all input text to be full black for maximum visibility */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  textarea,
+  select {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+  }
+
+  /* Ensure placeholder text is visible but distinct */
+  input::placeholder,
+  textarea::placeholder {
+    color: #6B7280 !important;
+    opacity: 1 !important;
+  }
+
+  /* Force input focus states to maintain black text */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+  }
+
   /* Ensure dark backgrounds have pure white text for contrast */
   .bg-gray-900,
   .bg-gray-800,
@@ -227,5 +283,255 @@
   .bg-zinc-900 *,
   .bg-zinc-800 * {
     color: #ffffff !important;
+  }
+
+  /* Specific overrides for text-white class to ensure it works */
+  .text-white,
+  .text-white * {
+    color: #ffffff !important;
+  }
+
+  /* Ensure sidebar active items have white text */
+  .sidebar-item.active,
+  .sidebar-item.active * {
+    color: #ffffff !important;
+  }
+
+  /* Ensure all headings and important text are black on white backgrounds */
+  h1, h2, h3, h4, h5, h6 {
+    color: #000000 !important;
+  }
+
+  /* Ensure modal and card headings are black */
+  .bg-white h1,
+  .bg-white h2,
+  .bg-white h3,
+  .bg-white h4,
+  .bg-white h5,
+  .bg-white h6 {
+    color: #000000 !important;
+  }
+
+  /* Force specific text classes to be black on white backgrounds */
+  .bg-white .text-gray-900,
+  .bg-white .text-gray-800,
+  .bg-white .text-gray-700 {
+    color: #000000 !important;
+  }
+
+  /* Ensure gradient backgrounds have white text */
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-t,
+  .bg-gradient-to-b,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    color: #ffffff !important;
+  }
+
+  /* Ensure all text in gradient containers is white */
+  .bg-gradient-to-r *,
+  .bg-gradient-to-l *,
+  .bg-gradient-to-t *,
+  .bg-gradient-to-b *,
+  .bg-gradient-to-br *,
+  .bg-gradient-to-bl *,
+  .bg-gradient-to-tr *,
+  .bg-gradient-to-tl * {
+    color: #ffffff !important;
+  }
+
+  /* Specific overrides for dashboard elements */
+  .bg-gradient-to-r h1,
+  .bg-gradient-to-r h2,
+  .bg-gradient-to-r h3,
+  .bg-gradient-to-r p,
+  .bg-gradient-to-r span {
+    color: #ffffff !important;
+  }
+
+  /* Ensure text-white/90 works properly */
+  .text-white\/90 {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  /* Professional Button System */
+  .btn-base {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl;
+  }
+
+  /* Primary Buttons */
+  .btn-primary {
+    @apply btn-base bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 focus:ring-purple-500;
+  }
+
+  .btn-primary-solid {
+    @apply btn-base bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500;
+  }
+
+  /* Secondary Buttons */
+  .btn-secondary {
+    @apply btn-base bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 focus:ring-emerald-500;
+  }
+
+  .btn-secondary-solid {
+    @apply btn-base bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500;
+  }
+
+  /* Success Buttons */
+  .btn-success {
+    @apply btn-base bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 focus:ring-green-500;
+  }
+
+  /* Warning Buttons */
+  .btn-warning {
+    @apply btn-base bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600 focus:ring-yellow-500;
+  }
+
+  /* Danger Buttons */
+  .btn-danger {
+    @apply btn-base bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 focus:ring-red-500;
+  }
+
+  .btn-danger-solid {
+    @apply btn-base bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+
+  /* Info Buttons */
+  .btn-info {
+    @apply btn-base bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 focus:ring-blue-500;
+  }
+
+  /* Outline Buttons */
+  .btn-outline {
+    @apply btn-base bg-transparent border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white focus:ring-purple-500 shadow-none hover:shadow-lg;
+  }
+
+  .btn-outline-secondary {
+    @apply btn-base bg-transparent border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white focus:ring-emerald-500 shadow-none hover:shadow-lg;
+  }
+
+  .btn-outline-danger {
+    @apply btn-base bg-transparent border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white focus:ring-red-500 shadow-none hover:shadow-lg;
+  }
+
+  /* Ghost Buttons */
+  .btn-ghost {
+    @apply btn-base bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500 shadow-none hover:shadow-md;
+  }
+
+  .btn-ghost-primary {
+    @apply btn-base bg-transparent text-purple-600 hover:bg-purple-50 focus:ring-purple-500 shadow-none hover:shadow-md;
+  }
+
+  /* Size Variants */
+  .btn-sm {
+    @apply px-4 py-2 text-xs;
+  }
+
+  .btn-lg {
+    @apply px-8 py-4 text-base;
+  }
+
+  .btn-xl {
+    @apply px-10 py-5 text-lg;
+  }
+
+  /* Icon Buttons */
+  .btn-icon {
+    @apply p-3 rounded-xl;
+  }
+
+  .btn-icon-sm {
+    @apply p-2 rounded-lg;
+  }
+
+  /* Special Effect Buttons */
+  .btn-glow {
+    @apply shadow-glow;
+  }
+
+  .btn-glow-blue {
+    @apply shadow-glow-blue;
+  }
+
+  /* Loading State */
+  .btn-loading {
+    @apply relative overflow-hidden;
+  }
+
+  .btn-loading::after {
+    content: '';
+    @apply absolute inset-0 bg-white bg-opacity-20 animate-pulse;
+  }
+
+  /* Professional Card Buttons */
+  .btn-card {
+    @apply btn-base bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50 focus:ring-gray-500;
+  }
+
+  .btn-card-primary {
+    @apply btn-base bg-white border border-purple-200 text-purple-700 hover:border-purple-300 hover:bg-purple-50 focus:ring-purple-500;
+  }
+
+  /* Custom scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text gradient utilities */
+  .text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-purple {
+    background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animation utilities */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Backdrop blur utilities */
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+  }
+
+  /* Shadow utilities */
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  .shadow-glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Border utilities */
+  .border-gradient {
+    border: 1px solid;
+    border-image: linear-gradient(135deg, #8B5CF6, #3B82F6) 1;
   }
 }

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Test</title>
+</head>
+<body>
+    <h1>Backend Connectivity Test</h1>
+    <button onclick="testBackend()">Test Backend</button>
+    <button onclick="testApproval()">Test Approval API</button>
+    <div id="results"></div>
+
+    <script>
+        async function testBackend() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing backend connectivity...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/admin/users');
+                const data = await response.json();
+                results.innerHTML = `
+                    <h3>Backend Test Results:</h3>
+                    <p>Status: ${response.status}</p>
+                    <p>Response: ${JSON.stringify(data, null, 2)}</p>
+                `;
+            } catch (error) {
+                results.innerHTML = `
+                    <h3>Backend Test Error:</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testApproval() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing approval API...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/admin/approve-teacher', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        request_id: '45c220a7-96aa-4605-a08f-c538611bfcfd',
+                        teacher_id: '9db3441a-b033-4dd1-88aa-e526e8a821a1',
+                        admin_id: '4869ac42-4e4f-400b-8f82-1742ae9bd8f6',
+                        notes: 'Test approval from HTML'
+                    })
+                });
+                
+                const data = await response.json();
+                results.innerHTML = `
+                    <h3>Approval Test Results:</h3>
+                    <p>Status: ${response.status}</p>
+                    <p>Response: ${JSON.stringify(data, null, 2)}</p>
+                `;
+            } catch (error) {
+                results.innerHTML = `
+                    <h3>Approval Test Error:</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

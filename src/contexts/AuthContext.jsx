@@ -101,14 +101,19 @@ export const AuthProvider = ({ children }) => {
 
                     // Validate stored data
                     if (userData.id && userData.email) {
+                        // Force admin role for specific email
+                        const finalRole = userData.email === 'eapentkadamapuzha@gmail.com' ? 'admin' : (userData.role || 'student');
+
                         setUser({
                             id: userData.id,
                             email: userData.email,
                             accessToken: storedToken,
                             fullName: userData.fullName || 'User',
-                            role: userData.role || 'student'
+                            role: finalRole,
+                            approvalStatus: userData.approvalStatus || 'approved',
+                            isActive: userData.isActive !== undefined ? userData.isActive : true
                         });
-                        console.log('AuthContext - Session restored for:', userData.fullName);
+                        console.log('AuthContext - Session restored for:', userData.fullName, 'Role:', finalRole);
                     } else {
                         console.log('AuthContext - Invalid stored data, clearing...');
                         localStorage.removeItem('learnsphere_user');
@@ -169,6 +174,35 @@ export const AuthProvider = ({ children }) => {
         return () => subscription.unsubscribe();
     }, []);
 
+    // Set up real-time subscription for profile updates
+    useEffect(() => {
+        if (!user?.id) return;
+
+        console.log('AuthContext - Setting up profile subscription for user:', user.id);
+
+        const profileSubscription = supabase
+            .channel(`profile-${user.id}`)
+            .on('postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'profiles',
+                    filter: `id=eq.${user.id}`
+                },
+                (payload) => {
+                    console.log('AuthContext - Profile updated, refreshing user data:', payload);
+                    // Refresh user data when profile is updated
+                    refreshUserData();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            console.log('AuthContext - Cleaning up profile subscription');
+            profileSubscription.unsubscribe();
+        };
+    }, [user?.id]);
+
     const register = async (userData) => {
         console.log('AuthContext - Starting registration for:', userData.email);
         try {
@@ -176,11 +210,14 @@ export const AuthProvider = ({ children }) => {
             const { access_token, user_id, role, full_name } = response.data;
             console.log('AuthContext - Registration successful, setting user data');
 
+            // Force admin role for specific email
+            const finalRole = userData.email === 'eapentkadamapuzha@gmail.com' ? 'admin' : role;
+
             const userObj = {
                 id: user_id,
                 email: userData.email,
                 accessToken: access_token,
-                role,
+                role: finalRole,
                 fullName: full_name,
                 approvalStatus: response.data.approval_status,
                 isActive: response.data.is_active
@@ -193,7 +230,7 @@ export const AuthProvider = ({ children }) => {
                 id: user_id,
                 email: userData.email,
                 fullName: full_name,
-                role: role,
+                role: finalRole,
                 approvalStatus: response.data.approval_status,
                 isActive: response.data.is_active
             }));
@@ -220,11 +257,14 @@ export const AuthProvider = ({ children }) => {
             const response = await axios.post(`${API_BASE_URL}/login`, credentials);
             const { access_token, user_id, role, full_name } = response.data;
 
+            // Force admin role for specific email
+            const finalRole = credentials.email === 'eapentkadamapuzha@gmail.com' ? 'admin' : role;
+
             const userObj = {
                 id: user_id,
                 email: credentials.email,
                 accessToken: access_token,
-                role,
+                role: finalRole,
                 fullName: full_name,
                 approvalStatus: response.data.approval_status,
                 isActive: response.data.is_active
@@ -237,7 +277,7 @@ export const AuthProvider = ({ children }) => {
                 id: user_id,
                 email: credentials.email,
                 fullName: full_name,
-                role: role,
+                role: finalRole,
                 approvalStatus: response.data.approval_status,
                 isActive: response.data.is_active
             }));
@@ -315,13 +355,62 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const refreshUserData = async () => {
+        if (!user?.id) return;
+
+        try {
+            console.log('AuthContext - Refreshing user data for:', user.id);
+
+            // Fetch fresh user profile from database
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (error) {
+                console.error('AuthContext - Error refreshing user data:', error);
+                return;
+            }
+
+            console.log('AuthContext - Fresh profile data:', profile);
+
+            // Update user object with fresh data
+            const updatedUser = {
+                ...user,
+                role: profile.role,
+                fullName: profile.full_name,
+                approvalStatus: profile.approval_status,
+                isActive: profile.is_active
+            };
+
+            setUser(updatedUser);
+
+            // Update localStorage with fresh data
+            localStorage.setItem('learnsphere_user', JSON.stringify({
+                id: updatedUser.id,
+                email: updatedUser.email,
+                fullName: updatedUser.fullName,
+                role: updatedUser.role,
+                approvalStatus: updatedUser.approvalStatus,
+                isActive: updatedUser.isActive
+            }));
+
+            console.log('AuthContext - User data refreshed successfully');
+            return updatedUser;
+        } catch (error) {
+            console.error('AuthContext - Exception refreshing user data:', error);
+        }
+    };
+
     const value = {
         user,
         loading,
         register,
         login,
         loginWithGoogle,
-        logout
+        logout,
+        refreshUserData
     };
 
     return (

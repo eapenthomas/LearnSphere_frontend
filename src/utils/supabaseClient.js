@@ -276,52 +276,140 @@ export const adminOperations = {
 
   // Get pending teacher approval requests
   async getPendingApprovals() {
-    const { data, error } = await supabase
+    console.log('AdminOperations: Fetching pending approvals...');
+
+    // First, let's check what's in the teacher_approval_requests table
+    const { data: allRequests, error: allError } = await supabase
       .from('teacher_approval_requests')
-      .select(`
-        *,
-        profiles!teacher_approval_requests_teacher_id_fkey(
-          id,
-          email,
-          full_name,
-          created_at
-        )
-      `)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    console.log('All teacher approval requests:', allRequests);
+
+    // Try the simplest approach first - just get the requests and manually join
+    const { data: requests, error } = await supabase
+      .from('teacher_approval_requests')
+      .select('*')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error('Error fetching teacher approval requests:', error);
+      throw error;
+    }
+
+    console.log('Raw teacher approval requests:', requests);
+
+    // If no requests, return empty array
+    if (!requests || requests.length === 0) {
+      console.log('No pending teacher approval requests found');
+      return [];
+    }
+
+    // Get profile data for each teacher
+    const teacherIds = requests.map(req => req.teacher_id);
+    const { data: profiles, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, created_at')
+      .in('id', teacherIds);
+
+    if (profileError) {
+      console.error('Error fetching teacher profiles:', profileError);
+      throw profileError;
+    }
+
+    console.log('Teacher profiles:', profiles);
+
+    // Combine the data
+    const combinedData = requests.map(request => {
+      const profile = profiles?.find(p => p.id === request.teacher_id);
+      return {
+        ...request,
+        profiles: profile
+      };
+    });
+
+    console.log('Combined approval requests with profiles:', combinedData);
+
+    return combinedData;
   },
 
   // Approve teacher request
   async approveTeacher(requestId, teacherId, adminId, notes = '') {
-    console.log('Approving teacher:', { requestId, teacherId, adminId });
+    console.log('AdminOperations - Approving teacher:', { requestId, teacherId, adminId, notes });
 
-    // Update approval request
-    const { error: requestError } = await supabase
-      .from('teacher_approval_requests')
-      .update({
-        status: 'approved',
-        admin_id: adminId,
-        admin_notes: notes,
-        processed_at: new Date().toISOString()
-      })
-      .eq('id', requestId);
+    try {
+      // Use backend admin API for proper permissions
+      console.log('AdminOperations - Making API call to backend...');
+      const response = await fetch('http://localhost:8000/api/admin/approve-teacher', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          request_id: requestId,
+          teacher_id: teacherId,
+          admin_id: adminId,
+          notes: notes
+        })
+      });
 
-    if (requestError) throw requestError;
+      console.log('AdminOperations - API response status:', response.status);
+      console.log('AdminOperations - API response ok:', response.ok);
 
-    // Update teacher profile
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        approval_status: 'approved',
-        approved_by: adminId,
-        approved_at: new Date().toISOString()
-      })
-      .eq('id', teacherId);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('AdminOperations - API error response:', errorData);
+        throw new Error(errorData.detail || 'Failed to approve teacher');
+      }
 
-    if (profileError) throw profileError;
+      const result = await response.json();
+      console.log('AdminOperations - Teacher approved successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('AdminOperations - Exception in approveTeacher:', error);
+      throw error;
+    }
+
+    console.log('Teacher approved successfully and account activated');
+
+    // Send approval notification email
+    try {
+      const { data: teacherProfile } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', teacherId)
+        .single();
+
+      if (teacherProfile) {
+        // Get admin name
+        const { data: adminProfile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', adminId)
+          .single();
+
+        const adminName = adminProfile?.full_name || 'Administrator';
+
+        // Send notification via backend API
+        await fetch('http://localhost:8000/api/notifications/teacher-approval', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            teacher_email: teacherProfile.email,
+            teacher_name: teacherProfile.full_name,
+            admin_name: adminName
+          })
+        });
+
+        console.log('Teacher approval notification email sent');
+      }
+    } catch (emailError) {
+      console.warn('Failed to send approval notification email:', emailError);
+      // Don't fail the approval process if email fails
+    }
 
     return true;
   },
@@ -330,29 +418,66 @@ export const adminOperations = {
   async rejectTeacher(requestId, teacherId, adminId, reason) {
     console.log('Rejecting teacher:', { requestId, teacherId, adminId, reason });
 
-    // Update approval request
-    const { error: requestError } = await supabase
-      .from('teacher_approval_requests')
-      .update({
-        status: 'rejected',
+    // Use backend admin API for proper permissions
+    const response = await fetch('http://localhost:8000/api/admin/reject-teacher', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        request_id: requestId,
+        teacher_id: teacherId,
         admin_id: adminId,
-        admin_notes: reason,
-        processed_at: new Date().toISOString()
+        reason: reason
       })
-      .eq('id', requestId);
+    });
 
-    if (requestError) throw requestError;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to reject teacher');
+    }
 
-    // Update teacher profile
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        approval_status: 'rejected',
-        rejection_reason: reason
-      })
-      .eq('id', teacherId);
+    const result = await response.json();
+    console.log('Teacher rejected successfully:', result);
 
-    if (profileError) throw profileError;
+    // Send rejection notification email
+    try {
+      const { data: teacherProfile } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', teacherId)
+        .single();
+
+      if (teacherProfile) {
+        // Get admin name
+        const { data: adminProfile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', adminId)
+          .single();
+
+        const adminName = adminProfile?.full_name || 'Administrator';
+
+        // Send notification via backend API
+        await fetch('http://localhost:8000/api/notifications/teacher-rejection', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            teacher_email: teacherProfile.email,
+            teacher_name: teacherProfile.full_name,
+            reason: reason,
+            admin_name: adminName
+          })
+        });
+
+        console.log('Teacher rejection notification email sent');
+      }
+    } catch (emailError) {
+      console.warn('Failed to send rejection notification email:', emailError);
+      // Don't fail the rejection process if email fails
+    }
 
     return true;
   },
@@ -378,22 +503,80 @@ export const adminOperations = {
   async toggleUserStatus(userId, isActive, adminId) {
     console.log('Toggling user status:', { userId, isActive, adminId });
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({ is_active: isActive })
-      .eq('id', userId);
-
-    if (error) throw error;
-
-    // Log the action
-    await supabase
-      .from('user_activity_logs')
-      .insert({
+    // Use backend admin API for proper permissions
+    const response = await fetch('http://localhost:8000/api/admin/toggle-user-status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         user_id: userId,
-        action: isActive ? 'user_enabled' : 'user_disabled',
-        admin_id: adminId,
-        details: { previous_status: !isActive, new_status: isActive }
+        is_active: isActive,
+        admin_id: adminId
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to update user status');
+    }
+
+    const result = await response.json();
+    console.log('User status updated successfully:', result);
+
+    // Try to log the action (don't fail if this fails)
+    try {
+      const { error: logError } = await supabase
+        .from('user_activity_logs')
+        .insert({
+          user_id: userId,
+          action: isActive ? 'user_enabled' : 'user_disabled',
+          admin_id: adminId,
+          details: {
+            previous_status: currentUser.is_active,
+            new_status: isActive,
+            user_email: currentUser.email,
+            user_name: currentUser.full_name
+          }
+        });
+
+      if (logError) {
+        console.warn('Failed to log user action (non-critical):', logError);
+      }
+    } catch (logException) {
+      console.warn('Exception while logging user action (non-critical):', logException);
+    }
+
+    // Send user status change notification email
+    try {
+      // Get admin name
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', adminId)
+        .single();
+
+      const adminName = adminProfile?.full_name || 'Administrator';
+
+      // Send notification via backend API
+      await fetch('http://localhost:8000/api/notifications/user-status-change', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: currentUser.email,
+          user_name: currentUser.full_name,
+          is_enabled: isActive,
+          admin_name: adminName
+        })
       });
+
+      console.log('User status change notification email sent');
+    } catch (emailError) {
+      console.warn('Failed to send user status change notification email:', emailError);
+      // Don't fail the status change if email fails
+    }
 
     return true;
   },

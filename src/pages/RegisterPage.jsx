@@ -606,7 +606,7 @@ const RegisterPage = () => {
               </div>
 
               {/* Role Selection */}
-              {/* <div>
+              <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   I am a
                 </label>
@@ -648,7 +648,7 @@ const RegisterPage = () => {
                     </div>
                   </label>
                 </div>
-              </div> */}
+              </div>
 
               {/* Error Message */}
               {error && (
@@ -668,11 +668,7 @@ const RegisterPage = () => {
                 disabled={loading || emailChecking || Object.keys(validationErrors).some(key => validationErrors[key])}
                 whileHover={{ scale: loading || emailChecking || Object.keys(validationErrors).some(key => validationErrors[key]) ? 1 : 1.02 }}
                 whileTap={{ scale: loading || emailChecking || Object.keys(validationErrors).some(key => validationErrors[key]) ? 1 : 0.98 }}
-                className={`w-full font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-200 ${
-                  loading || emailChecking || Object.keys(validationErrors).some(key => validationErrors[key])
-                    ? 'bg-gray-400 cursor-not-allowed opacity-50'
-                    : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl text-white'
-                } text-white`}
+                className={`btn-primary w-full ${loading || emailChecking ? 'btn-loading' : ''}`}
               >
                 {loading ? (
                   <div className="flex items-center justify-center space-x-2">

@@ -3,22 +3,128 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { motion } from 'framer-motion';
 import { BookOpen, Loader } from 'lucide-react';
+import supabase from '../utils/supabaseClient.js';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, setUser, setLoading } = useAuth();
 
   useEffect(() => {
-    // Wait for user data to be loaded
-    if (user) {
-      // Redirect based on user role
-      if (user.role === 'teacher') {
+    const handleAuthCallback = async () => {
+      try {
+        console.log('AuthCallback - Processing Google auth callback...');
+
+        // Get the session from Supabase
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error('AuthCallback - Session error:', error);
+          navigate('/login?error=auth_failed');
+          return;
+        }
+
+        if (!session) {
+          console.log('AuthCallback - No session found, checking if user already loaded');
+          // If user is already loaded from context, redirect them
+          if (user) {
+            redirectUser(user);
+            return;
+          }
+          navigate('/login?error=no_session');
+          return;
+        }
+
+        console.log('AuthCallback - Session found:', session.user.email);
+
+        // Get user profile from database
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('AuthCallback - Profile error:', profileError);
+          navigate('/login?error=profile_not_found');
+          return;
+        }
+
+        console.log('AuthCallback - Profile found:', profile);
+
+        // Create user object
+        const userObj = {
+          id: session.user.id,
+          email: session.user.email,
+          accessToken: session.access_token,
+          role: profile.role,
+          fullName: profile.full_name,
+          approvalStatus: profile.approval_status,
+          isActive: profile.is_active
+        };
+
+        // Set user in context
+        setUser(userObj);
+
+        // Store session in localStorage for persistence
+        localStorage.setItem('learnsphere_user', JSON.stringify({
+          id: session.user.id,
+          email: session.user.email,
+          fullName: profile.full_name,
+          role: profile.role,
+          approvalStatus: profile.approval_status,
+          isActive: profile.is_active
+        }));
+        localStorage.setItem('learnsphere_token', session.access_token);
+
+        // Redirect user
+        redirectUser(userObj);
+
+      } catch (error) {
+        console.error('AuthCallback - Unexpected error:', error);
+        navigate('/login?error=unexpected_error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const redirectUser = (userData) => {
+      console.log('AuthCallback - Redirecting user with role:', userData.role);
+
+      // Check if account is disabled
+      if (!userData.isActive) {
+        console.log('AuthCallback - User account is disabled');
+        navigate('/login?error=account_disabled');
+        return;
+      }
+
+      // Check teacher approval status
+      if (userData.role === 'teacher' && userData.approvalStatus !== 'approved') {
+        console.log('AuthCallback - Teacher not approved, will show approval screen');
+        navigate('/teacher/dashboard'); // ProtectedRoute will handle approval screen
+        return;
+      }
+
+      // Redirect based on role
+      if (userData.role === 'admin') {
+        console.log('AuthCallback - Redirecting admin to admin dashboard');
+        navigate('/admin/dashboard');
+      } else if (userData.role === 'teacher') {
+        console.log('AuthCallback - Redirecting teacher to teacher dashboard');
         navigate('/teacher/dashboard');
       } else {
+        console.log('AuthCallback - Redirecting student to student dashboard');
         navigate('/dashboard');
       }
+    };
+
+    // If user is already loaded, redirect immediately
+    if (user) {
+      redirectUser(user);
+    } else {
+      // Otherwise, handle the auth callback
+      handleAuthCallback();
     }
-  }, [user, navigate]);
+  }, [user, navigate, setUser, setLoading]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">

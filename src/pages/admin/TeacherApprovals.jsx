@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import AdminDashboardLayout from '../../layouts/AdminDashboardLayout.jsx';
@@ -18,7 +18,9 @@ import {
   Filter,
   Loader,
   Eye,
-  FileText
+  FileText,
+  Users,
+  GraduationCap
 } from 'lucide-react';
 
 const TeacherApprovals = () => {
@@ -34,15 +36,32 @@ const TeacherApprovals = () => {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
+    console.log('TeacherApprovals - Component mounted, user:', user);
     fetchPendingRequests();
     setupRealTimeSubscription();
+
+    // Test backend connectivity
+    fetch('http://localhost:8000/api/admin/users')
+      .then(response => {
+        console.log('TeacherApprovals - Backend connectivity test:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('TeacherApprovals - Backend test response:', data);
+      })
+      .catch(error => {
+        console.error('TeacherApprovals - Backend connectivity error:', error);
+      });
   }, []);
 
   const fetchPendingRequests = async () => {
     try {
       setLoading(true);
+      console.log('Fetching pending teacher approval requests...');
       const requests = await adminOperations.getPendingApprovals();
-      setPendingRequests(requests);
+      console.log('Received pending requests:', requests);
+      console.log('Number of pending requests:', requests?.length || 0);
+      setPendingRequests(requests || []);
     } catch (error) {
       console.error('Error fetching pending requests:', error);
       toast.error('Failed to load pending requests');
@@ -67,6 +86,13 @@ const TeacherApprovals = () => {
   const handleApprove = async () => {
     try {
       setProcessing(true);
+      console.log('TeacherApprovals - Starting approval process:', {
+        requestId: selectedRequest.id,
+        teacherId: selectedRequest.teacher_id,
+        adminId: user.id,
+        notes: approvalNotes
+      });
+
       await adminOperations.approveTeacher(
         selectedRequest.id,
         selectedRequest.teacher_id,
@@ -84,8 +110,9 @@ const TeacherApprovals = () => {
       setApprovalNotes('');
       toast.success('Teacher approved successfully!');
     } catch (error) {
-      console.error('Error approving teacher:', error);
-      toast.error('Failed to approve teacher');
+      console.error('TeacherApprovals - Error approving teacher:', error);
+      console.error('TeacherApprovals - Error details:', error.message);
+      toast.error(`Failed to approve teacher: ${error.message}`);
     } finally {
       setProcessing(false);
     }
@@ -184,26 +211,26 @@ const TeacherApprovals = () => {
             setSelectedRequest(request);
             setShowApprovalModal(true);
           }}
-          className="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+          className="flex-1 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg px-4 py-3 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
         >
           <CheckCircle className="w-4 h-4" />
           <span>Approve</span>
         </button>
-        
+
         <button
           onClick={() => {
             setSelectedRequest(request);
             setShowRejectionModal(true);
           }}
-          className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+          className="flex-1 bg-gradient-to-r from-rose-500 to-red-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg px-4 py-3 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
         >
           <XCircle className="w-4 h-4" />
           <span>Reject</span>
         </button>
-        
+
         <button
           onClick={() => console.log('View details:', request)}
-          className="px-4 py-2 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+          className="px-4 py-3 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-300 hover:scale-105"
         >
           <Eye className="w-4 h-4" />
         </button>
@@ -213,71 +240,141 @@ const TeacherApprovals = () => {
 
   return (
     <AdminDashboardLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Teacher Approvals</h1>
-            <p className="text-gray-600">
-              Review and approve teacher registration requests. {filteredRequests.length} pending approval{filteredRequests.length !== 1 ? 's' : ''}.
-            </p>
-          </div>
-          
-          <button
-            onClick={fetchPendingRequests}
-            disabled={loading}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center space-x-2"
-          >
-            <Loader className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="p-3 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl">
+                  <UserCheck className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight">Teacher Approvals</h1>
+                  <p className="text-lg text-gray-600 font-medium">
+                    Review and approve teacher registration requests
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2 bg-yellow-50 px-4 py-2 rounded-lg">
+                  <Clock className="w-5 h-5 text-yellow-600" />
+                  <span className="font-semibold text-yellow-700">
+                    {filteredRequests.length} Pending Approval{filteredRequests.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-lg">
+                  <Users className="w-5 h-5 text-blue-600" />
+                  <span className="font-semibold text-blue-700">
+                    Teacher Applications
+                  </span>
+                </div>
+              </div>
+            </div>
 
-        {/* Search */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by name or email..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
-            />
+            <div className="flex space-x-3">
+              <button
+                onClick={fetchPendingRequests}
+                disabled={loading}
+                className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg px-6 py-3 transition-all duration-300 hover:scale-105 flex items-center space-x-2 disabled:opacity-50"
+              >
+                <Loader className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  console.log('Current pending requests state:', pendingRequests);
+                  console.log('Filtered requests:', filteredRequests);
+                  console.log('Search term:', searchTerm);
+                }}
+                className="bg-gray-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg px-4 py-3 transition-all duration-300 hover:scale-105"
+              >
+                Debug
+              </button>
+            </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Search and Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6"
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+              />
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-gray-50 rounded-lg">
+                <Filter className="w-5 h-5 text-gray-600" />
+              </div>
+              <span className="text-sm text-gray-600 font-medium">
+                {filteredRequests.length} of {pendingRequests.length} requests
+              </span>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader className="w-8 h-8 text-red-500 animate-spin" />
-            <span className="ml-3 text-gray-600">Loading pending requests...</span>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white rounded-2xl shadow-lg p-12 text-center"
+          >
+            <Loader className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
+            <span className="text-gray-600 font-medium">Loading pending requests...</span>
+          </motion.div>
         ) : filteredRequests.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-12 text-center"
           >
-            <UserCheck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <UserCheck className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">
               {searchTerm ? 'No requests found' : 'No pending approvals'}
             </h3>
-            <p className="text-gray-500">
-              {searchTerm 
+            <p className="text-gray-600 text-lg">
+              {searchTerm
                 ? 'Try adjusting your search criteria'
                 : 'All teacher requests have been processed'
               }
             </p>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="mt-4 text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                Clear search
+              </button>
+            )}
           </motion.div>
         ) : (
-          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {filteredRequests.map((request, index) => (
               <motion.div
                 key={request.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: 0.2 + index * 0.1 }}
               >
                 <RequestCard request={request} />
               </motion.div>
