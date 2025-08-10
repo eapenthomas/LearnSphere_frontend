@@ -231,7 +231,7 @@ const AdminDashboardLayout = ({ children }) => {
                   <input
                     type="text"
                     placeholder="Search users, logs..."
-                    className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-transparent w-64 text-sm"
+                    className="pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64 text-sm text-gray-900 placeholder-gray-500"
                   />
                 </div>
               </div>
@@ -251,7 +251,7 @@ const AdminDashboardLayout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 page-container bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-y-auto h-screen">
+        <main className="flex-1 page-container bg-gray-100 overflow-y-auto h-screen">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

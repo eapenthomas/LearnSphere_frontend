@@ -35,9 +35,9 @@ const Input = ({
                     placeholder={placeholder}
                     required={required}
                     className={`
-            w-full px-4 py-3 border rounded-lg transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-            ${error ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'}
+            w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500
+            focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200
+            ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}
             ${hasValue || isFocused ? 'pt-6 pb-2' : 'py-3'}
           `}
                     {...props}

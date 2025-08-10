@@ -343,12 +343,12 @@ const RegisterPage = () => {
                     onBlur={handleBlur}
                     placeholder="Enter your full name"
                     required
-                    className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 bg-white text-gray-800 ${
+                    className={`w-full pl-10 pr-10 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 ${
                       validationErrors.full_name && touched.full_name
-                        ? 'border-red-300 focus:ring-red-400'
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
                         : formData.full_name && !validationErrors.full_name && touched.full_name
-                        ? 'border-green-300 focus:ring-green-400'
-                        : 'border-gray-200 focus:ring-blue-400'
+                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                        : ''
                     }`}
                   />
                   {/* Validation Icon */}
@@ -407,12 +407,12 @@ const RegisterPage = () => {
                     onBlur={handleBlur}
                     placeholder="Enter your email"
                     required
-                    className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 bg-white text-gray-800 ${
+                    className={`w-full pl-10 pr-10 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 ${
                       validationErrors.email && touched.email
-                        ? 'border-red-300 focus:ring-red-400'
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
                         : formData.email && !validationErrors.email && touched.email
-                        ? 'border-green-300 focus:ring-green-400'
-                        : 'border-gray-200 focus:ring-blue-400'
+                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                        : ''
                     }`}
                   />
                   {/* Validation Icon */}
@@ -484,12 +484,12 @@ const RegisterPage = () => {
                     onBlur={handleBlur}
                     placeholder="Create a password"
                     required
-                    className={`w-full pl-10 pr-20 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 bg-white text-gray-800 ${
+                    className={`w-full pl-10 pr-20 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 ${
                       validationErrors.password && touched.password
-                        ? 'border-red-300 focus:ring-red-400'
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
                         : formData.password && !validationErrors.password && touched.password
-                        ? 'border-green-300 focus:ring-green-400'
-                        : 'border-gray-200 focus:ring-blue-400'
+                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                        : ''
                     }`}
                   />
                   {/* Validation Icon */}
@@ -555,12 +555,12 @@ const RegisterPage = () => {
                     onBlur={handleBlur}
                     placeholder="Confirm your password"
                     required
-                    className={`w-full pl-10 pr-20 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 bg-white text-gray-800 ${
+                    className={`w-full pl-10 pr-20 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 ${
                       validationErrors.confirm_password && touched.confirm_password
-                        ? 'border-red-300 focus:ring-red-400'
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
                         : formData.confirm_password && !validationErrors.confirm_password && touched.confirm_password
-                        ? 'border-green-300 focus:ring-green-400'
-                        : 'border-gray-200 focus:ring-blue-400'
+                        ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                        : ''
                     }`}
                   />
                   {/* Validation Icon */}

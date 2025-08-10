@@ -175,10 +175,10 @@ const AdminDashboard = () => {
           <div className="relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl md:text-4xl font-extrabold mb-3 text-gray-800 tracking-tight">
+                <h1 className="text-3xl font-semibold text-gray-900 mb-3">
                   Welcome back, {user?.fullName?.split(' ')[0] || 'Admin'}! 🛡️
                 </h1>
-                <p className="text-lg text-gray-600 mb-6 font-medium">
+                <p className="text-base text-gray-600 mb-6">
                   Monitor and manage the LearnSphere platform. Keep everything running smoothly!
                 </p>
                 <div className="flex flex-wrap items-center gap-6">
@@ -219,10 +219,10 @@ const AdminDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+              className="bg-white shadow rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300 group cursor-pointer"
               onClick={() => window.location.href = stat.link}
             >
-              <div className="p-6">
+              <div className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className={`p-3 ${stat.bgColor} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
                     <stat.icon className={`w-6 h-6 ${stat.textColor}`} />

@@ -207,10 +207,10 @@ const TeacherDashboard = () => {
           <div className="relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl md:text-3xl font-extrabold mb-2 tracking-tight">
+                <h1 className="text-3xl font-semibold text-white mb-2">
                   Welcome back, {username}! 👨‍🏫
                 </h1>
-                <p className="text-base text-white/90 mb-4 font-medium">
+                <p className="text-base text-white mb-4">
                   Ready to inspire and educate your students? You have great impact on their learning journey!
                 </p>
                 <div className="flex items-center space-x-4">
@@ -241,7 +241,7 @@ const TeacherDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="card p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 group"
+              className="bg-white shadow rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300 group"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 bg-gradient-to-br ${stat.color} rounded-xl group-hover:scale-110 transition-transform duration-300`}>

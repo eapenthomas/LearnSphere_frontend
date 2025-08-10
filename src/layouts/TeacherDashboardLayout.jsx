@@ -245,7 +245,7 @@ const TeacherDashboardLayout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 page-container bg-gray-50 overflow-y-auto h-screen">
+        <main className="flex-1 page-container bg-gray-100 overflow-y-auto h-screen">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

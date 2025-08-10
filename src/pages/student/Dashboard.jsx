@@ -143,7 +143,7 @@ const StudentDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="card p-6 hover:shadow-xl hover:scale-105 transition-all duration-300 group"
+              className="bg-white shadow rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300 group"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 bg-gradient-to-br ${stat.color} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
@@ -166,10 +166,10 @@ const StudentDashboard = () => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="card p-6 hover:shadow-xl transition-all duration-300"
+              className="bg-white shadow rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-extrabold text-gray-800 tracking-tight">
+                <h2 className="text-xl font-semibold text-gray-900">
                   Continue Learning
                 </h2>
                 <Button

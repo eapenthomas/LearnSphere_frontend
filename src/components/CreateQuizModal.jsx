@@ -254,12 +254,12 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+        className="bg-white shadow rounded-xl p-4 border border-gray-200 max-w-4xl w-full max-h-[90vh] overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-2xl font-bold" style={{ color: '#000000' }}>Create New Quiz</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Create New Quiz</h2>
             <p className="text-gray-700" style={{ color: '#374151' }}>Step {currentStep} of 2</p>
           </div>
           <button
@@ -303,8 +303,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                     type="text"
                     value={quizData.title}
                     onChange={(e) => handleQuizDataChange('title', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500"
-                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500 text-black"
+                    style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                     placeholder="Enter quiz title"
                   />
                 </div>
@@ -316,7 +316,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                   <select
                     value={quizData.course_id}
                     onChange={(e) => handleQuizDataChange('course_id', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-black bg-white"
+                    style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                   >
                     <option value="">Select a course</option>
                     {courses.map(course => (
@@ -336,8 +337,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                   value={quizData.description}
                   onChange={(e) => handleQuizDataChange('description', e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500"
-                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500 text-black"
+                  style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                   placeholder="Brief description of the quiz"
                 />
               </div>
@@ -350,8 +351,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                   value={quizData.instructions}
                   onChange={(e) => handleQuizDataChange('instructions', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500"
-                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500 text-black"
+                  style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                   placeholder="Instructions for students taking the quiz"
                 />
               </div>
@@ -366,8 +367,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                     value={quizData.duration_minutes}
                     onChange={(e) => handleQuizDataChange('duration_minutes', parseInt(e.target.value))}
                     min="1"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-black"
+                    style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                   />
                 </div>
 
@@ -379,7 +380,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                     type="datetime-local"
                     value={quizData.start_time}
                     onChange={(e) => handleQuizDataChange('start_time', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-black bg-white"
+                    style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                   />
                 </div>
 
@@ -391,7 +393,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                     type="datetime-local"
                     value={quizData.end_time}
                     onChange={(e) => handleQuizDataChange('end_time', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-black bg-white"
+                    style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                   />
                 </div>
               </div>
@@ -431,7 +434,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                             value={question.marks}
                             onChange={(e) => handleQuestionChange(questionIndex, 'marks', parseInt(e.target.value) || 1)}
                             min="1"
-                            className="w-16 px-2 py-1 border border-gray-200 rounded text-center"
+                            className="w-16 px-2 py-1 border border-gray-200 rounded text-center text-black bg-white"
+                            style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                           />
                         </div>
                         {questions.length > 1 && (
@@ -454,8 +458,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                           value={question.question_text}
                           onChange={(e) => handleQuestionChange(questionIndex, 'question_text', e.target.value)}
                           rows={2}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500"
-                          style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500 text-black"
+                          style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                           placeholder="Enter your question"
                         />
                       </div>
@@ -467,7 +471,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                         <select
                           value={question.question_type}
                           onChange={(e) => handleQuestionChange(questionIndex, 'question_type', e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-black bg-white"
+                          style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                         >
                           <option value="mcq">Multiple Choice</option>
                           <option value="true_false">True/False</option>
@@ -503,8 +508,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                                   type="text"
                                   value={option.text}
                                   onChange={(e) => handleOptionChange(questionIndex, optionIndex, 'text', e.target.value)}
-                                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500"
-                                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500 text-black"
+                                  style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                                   placeholder={`Option ${optionIndex + 1}`}
                                 />
                                 {question.options.length > 2 && (
@@ -562,8 +567,8 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                             type="text"
                             value={question.correct_answer}
                             onChange={(e) => handleQuestionChange(questionIndex, 'correct_answer', e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500"
-                            style={{ color: '#000000', backgroundColor: '#ffffff' }}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white placeholder-gray-500 text-black"
+                            style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                             placeholder="Enter the correct answer"
                           />
                         </div>

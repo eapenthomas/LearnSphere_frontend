@@ -132,11 +132,11 @@ const CourseFormModal = ({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+          className="bg-white shadow rounded-xl p-4 border border-gray-200 w-full max-w-2xl max-h-[90vh] overflow-hidden"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-xl font-semibold text-gray-900">
               {isEditing ? 'Edit Course' : 'Create New Course'}
             </h2>
             <button

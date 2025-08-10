@@ -178,7 +178,7 @@ const LoginPage = () => {
                     onChange={handleChange}
                     placeholder="Enter your email"
                     required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white text-gray-800"
+                    className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -197,7 +197,7 @@ const LoginPage = () => {
                     onChange={handleChange}
                     placeholder="Enter your password"
                     required
-                    className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white text-gray-800"
+                    className="w-full pl-10 pr-12 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200"
                   />
                   <button
                     type="button"

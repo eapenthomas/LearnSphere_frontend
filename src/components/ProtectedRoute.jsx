@@ -1,10 +1,11 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import TeacherApprovalCheck from './TeacherApprovalCheck.jsx';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, requiredRole = null }) => {
     const { user, loading } = useAuth();
+    const location = useLocation();
 
     // Enhanced debug logging
     console.log('ProtectedRoute - Loading:', loading, 'User:', user);
@@ -41,7 +42,39 @@ const ProtectedRoute = ({ children }) => {
         return <TeacherApprovalCheck />;
     }
 
-    console.log('ProtectedRoute - User authenticated and approved, rendering children');
+    // Role-based access control
+    const currentPath = location.pathname;
+
+    // Determine required role based on path if not explicitly provided
+    let pathRequiredRole = requiredRole;
+    if (!pathRequiredRole) {
+        if (currentPath.startsWith('/admin/')) {
+            pathRequiredRole = 'admin';
+        } else if (currentPath.startsWith('/teacher/')) {
+            pathRequiredRole = 'teacher';
+        } else if (currentPath.startsWith('/student/') ||
+                   currentPath === '/dashboard' ||
+                   currentPath === '/allcourses' ||
+                   currentPath === '/mycourses') {
+            pathRequiredRole = 'student';
+        }
+    }
+
+    // Check role-based access
+    if (pathRequiredRole && user.role !== pathRequiredRole) {
+        console.log(`ProtectedRoute - Access denied. User role: ${user.role}, Required: ${pathRequiredRole}`);
+
+        // Redirect to appropriate dashboard based on user's actual role
+        if (user.role === 'admin') {
+            return <Navigate to="/admin/dashboard" replace />;
+        } else if (user.role === 'teacher') {
+            return <Navigate to="/teacher/dashboard" replace />;
+        } else {
+            return <Navigate to="/dashboard" replace />;
+        }
+    }
+
+    console.log('ProtectedRoute - User authenticated, approved, and authorized, rendering children');
     return children;
 };
 

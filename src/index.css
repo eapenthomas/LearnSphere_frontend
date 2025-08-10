@@ -11,12 +11,48 @@
 
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: #F9FAFB;
-    color: #1F2937;
+    background: #f3f4f6; /* bg-gray-100 - consistent background */
+    color: #111827; /* text-gray-900 - consistent primary text */
     min-height: 100vh;
     overflow-x: hidden;
     margin: 0;
     padding: 0;
+  }
+
+  /* Consistent Typography */
+  h1 {
+    @apply text-3xl font-semibold text-gray-900;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold text-gray-900;
+  }
+
+  h3 {
+    @apply text-xl font-semibold text-gray-900;
+  }
+
+  h4 {
+    @apply text-lg font-medium text-gray-700;
+  }
+
+  h5, h6 {
+    @apply text-base font-medium text-gray-700;
+  }
+
+  p {
+    @apply text-base text-gray-800;
+  }
+
+  /* Improved focus styles */
+  *:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  /* Smooth transitions for interactive elements */
+  a, button, input, textarea, select {
+    @apply transition-colors duration-200;
   }
 
   /* Root element should adapt to content */
@@ -42,10 +78,14 @@
 
 @layer components {
 
-  /* Premium Card Component */
+  /* Consistent Card Component */
   .card {
-    @apply bg-white rounded-2xl shadow-lg border border-gray-100;
-    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    @apply bg-white shadow rounded-xl p-4 border border-gray-200;
+  }
+
+  /* Consistent Modal Component */
+  .modal {
+    @apply bg-white shadow rounded-xl p-4 border border-gray-200;
   }
 
   /* Glass Morphism Effect */
@@ -53,22 +93,52 @@
     @apply bg-white/80 backdrop-blur-md border border-white/60 rounded-2xl;
   }
 
-  /* Premium Button Styles */
+  /* Consistent Button Styles - Override all other button styles */
   .btn-primary {
-    @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200;
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
   }
 
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-gray-800 font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl border border-gray-200 hover:scale-[1.02] transition-all duration-200;
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
   }
 
   .btn-outline {
-    @apply bg-white border-2 border-gray-200 text-gray-800 hover:bg-gray-50 font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg;
+    @apply bg-transparent hover:bg-blue-50 text-blue-600 border border-blue-300 hover:border-blue-400 font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
   }
 
   /* Premium Input Styles */
   .input-field {
     @apply w-full px-4 py-4 border-2 border-gray-200 rounded-lg transition-all duration-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 focus:outline-none bg-white text-gray-800 placeholder-gray-500;
+  }
+
+  /* Consistent Form Elements */
+  .form-input {
+    @apply w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200;
+  }
+
+  .form-textarea {
+    @apply w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition-all duration-200;
+  }
+
+  .form-select {
+    @apply w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200;
+  }
+
+  /* Consistent Button Variants */
+  .btn-primary-consistent {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary-consistent {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
   }
 
   /* Sidebar Styles */
@@ -357,73 +427,17 @@
     color: rgba(255, 255, 255, 0.9) !important;
   }
 
-  /* Professional Button System */
-  .btn-base {
-    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl;
-  }
-
-  /* Primary Buttons */
-  .btn-primary {
-    @apply btn-base bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 focus:ring-purple-500;
-  }
-
-  .btn-primary-solid {
-    @apply btn-base bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500;
-  }
-
-  /* Secondary Buttons */
-  .btn-secondary {
-    @apply btn-base bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 focus:ring-emerald-500;
-  }
-
-  .btn-secondary-solid {
-    @apply btn-base bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500;
-  }
-
-  /* Success Buttons */
+  /* Additional Button Variants */
   .btn-success {
-    @apply btn-base bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 focus:ring-green-500;
+    @apply bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
   }
 
-  /* Warning Buttons */
   .btn-warning {
-    @apply btn-base bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600 focus:ring-yellow-500;
+    @apply bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2;
   }
 
-  /* Danger Buttons */
-  .btn-danger {
-    @apply btn-base bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 focus:ring-red-500;
-  }
-
-  .btn-danger-solid {
-    @apply btn-base bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
-  }
-
-  /* Info Buttons */
   .btn-info {
-    @apply btn-base bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 focus:ring-blue-500;
-  }
-
-  /* Outline Buttons */
-  .btn-outline {
-    @apply btn-base bg-transparent border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white focus:ring-purple-500 shadow-none hover:shadow-lg;
-  }
-
-  .btn-outline-secondary {
-    @apply btn-base bg-transparent border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white focus:ring-emerald-500 shadow-none hover:shadow-lg;
-  }
-
-  .btn-outline-danger {
-    @apply btn-base bg-transparent border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white focus:ring-red-500 shadow-none hover:shadow-lg;
-  }
-
-  /* Ghost Buttons */
-  .btn-ghost {
-    @apply btn-base bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500 shadow-none hover:shadow-md;
-  }
-
-  .btn-ghost-primary {
-    @apply btn-base bg-transparent text-purple-600 hover:bg-purple-50 focus:ring-purple-500 shadow-none hover:shadow-md;
+    @apply bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2 px-4 rounded-lg shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2;
   }
 
   /* Size Variants */
@@ -533,5 +547,25 @@
   .border-gradient {
     border: 1px solid;
     border-image: linear-gradient(135deg, #8B5CF6, #3B82F6) 1;
+  }
+
+  /* Ensure all form elements in modals and white backgrounds have black text */
+  .modal input, .modal textarea, .modal select,
+  [role="dialog"] input, [role="dialog"] textarea, [role="dialog"] select,
+  .bg-white input, .bg-white textarea, .bg-white select {
+    color: #000000 !important;
+    background-color: #ffffff !important;
+  }
+
+  /* Ensure form elements in white containers have proper placeholder colors */
+  .bg-white input::placeholder,
+  .bg-white textarea::placeholder {
+    color: #6b7280 !important;
+  }
+
+  /* Ensure select options have black text */
+  .bg-white select option {
+    color: #000000 !important;
+    background-color: #ffffff !important;
   }
 }
