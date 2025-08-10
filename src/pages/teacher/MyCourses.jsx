@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext.jsx';
 import TeacherDashboardLayout from '../../layouts/TeacherDashboardLayout.jsx';
 import CourseCard from '../../components/CourseCard.jsx';
 import CourseFormModal from '../../components/CourseFormModal.jsx';
+import CourseViewModal from '../../components/CourseViewModal.jsx';
 import { courseOperations } from '../../utils/supabaseClient.js';
 import { toast } from 'react-hot-toast';
 import {
@@ -16,7 +17,8 @@ import {
   Loader,
   AlertCircle,
   Trash2,
-  Eye
+  Eye,
+  RefreshCw
 } from 'lucide-react';
 
 const TeacherMyCourses = () => {
@@ -29,43 +31,223 @@ const TeacherMyCourses = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+
+  // Direct Supabase fetch with service role (for testing)
+  const simpleFetchCourses = async () => {
+    try {
+      setLoading(true);
+      console.log('=== DIRECT SUPABASE FETCH TEST ===');
+      console.log('User ID:', user?.id);
+
+      if (!user?.id) {
+        toast.error('User not authenticated');
+        setLoading(false);
+        return;
+      }
+
+      // Create a direct Supabase client for testing
+      const { createClient } = await import('@supabase/supabase-js');
+      const directSupabase = createClient(
+        'https://ffspaottcgyalpagbxvx.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmc3Bhb3R0Y2d5YWxwYWdieHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyMDAyNzQsImV4cCI6MjA2OTc3NjI3NH0.eFhKNCnQtQz3WX4Rtz3Z0-51HFXL50b8iDFtszitVVE'
+      );
+
+      console.log('Making direct Supabase query...');
+      const { data, error } = await directSupabase
+        .from('courses')
+        .select('*')
+        .eq('teacher_id', user.id)
+        .order('created_at', { ascending: false });
+
+      console.log('Direct Supabase result - Data:', data);
+      console.log('Direct Supabase result - Error:', error);
+
+      if (error) {
+        console.error('Direct Supabase fetch error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+        toast.error(`Supabase error: ${error.message}`);
+        setCourses([]);
+      } else {
+        console.log('Direct Supabase fetch success:', data);
+        setCourses(data || []);
+        if (data && data.length > 0) {
+          toast.success(`Found ${data.length} courses via Supabase!`);
+        } else {
+          toast.info('No courses found in Supabase');
+        }
+      }
+    } catch (error) {
+      console.error('Direct Supabase fetch exception:', error);
+      toast.error(`Supabase Error: ${error.message}`);
+      setCourses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Backend API fetch - primary method
+  const fetchCoursesFromAPI = async () => {
+    try {
+      setLoading(true);
+      console.log('=== BACKEND API FETCH ===');
+      console.log('User ID:', user?.id);
+      console.log('Fetching from:', `http://localhost:8000/api/quizzes/courses/${user.id}`);
+
+      if (!user?.id) {
+        toast.error('User not authenticated');
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8000/api/quizzes/courses/${user.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('API Response status:', response.status);
+      console.log('API Response headers:', response.headers);
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('API Result:', result);
+      console.log('API Data:', result.data);
+
+      if (result.success && result.data) {
+        // Transform API data to match expected format
+        const transformedCourses = result.data.map(course => ({
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          code: course.code,
+          status: 'active', // API doesn't return status, default to active
+          created_at: new Date().toISOString(), // API doesn't return created_at
+          teacher_id: user.id
+        }));
+
+        console.log('Transformed courses:', transformedCourses);
+        setCourses(transformedCourses);
+        toast.success(`Successfully loaded ${transformedCourses.length} courses!`);
+      } else {
+        console.log('No courses in API response');
+        setCourses([]);
+        toast.info('No courses found. Create your first course!');
+      }
+    } catch (error) {
+      console.error('API fetch error:', error);
+      toast.error(`Failed to load courses: ${error.message}`);
+      setCourses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch courses on component mount
   useEffect(() => {
     if (user?.id) {
-      fetchCourses();
+      // Use API as primary method since it's working
+      console.log('Component mounted, fetching courses via API...');
+      fetchCoursesFromAPI();
+
+      // Setup real-time subscription (optional)
       const cleanup = setupRealTimeSubscription();
-      
+
       // Cleanup subscription on unmount
       return cleanup;
     }
   }, [user?.id]);
 
   const fetchCourses = async () => {
+    const timeoutId = setTimeout(() => {
+      console.error('Course fetch timeout - forcing loading to false');
+      setLoading(false);
+      toast.error('Request timed out. Please try again.');
+    }, 10000); // 10 second timeout
+
     try {
       setLoading(true);
-      console.log('Fetching courses for user:', user.id);
-      
-      // Test Supabase connection first
-      const { data: testData, error: testError } = await courseOperations.supabase
+      console.log('=== COURSE FETCH DEBUG ===');
+      console.log('Current user object:', user);
+      console.log('User ID:', user?.id);
+      console.log('User role:', user?.role);
+
+      // Check if user exists
+      if (!user?.id) {
+        console.error('No user ID found');
+        toast.error('User not authenticated');
+        clearTimeout(timeoutId);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Step 1: Testing Supabase connection...');
+      // Test Supabase connection first with timeout
+      const connectionPromise = courseOperations.supabase
         .from('courses')
         .select('count', { count: 'exact', head: true });
-      
+
+      const { data: testData, error: testError } = await Promise.race([
+        connectionPromise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Connection test timeout')), 5000)
+        )
+      ]);
+
       if (testError) {
         console.error('Supabase connection test failed:', testError);
         toast.error('Database connection failed. Please check if the courses table exists.');
+        clearTimeout(timeoutId);
+        setLoading(false);
         return;
       }
-      
-      console.log('Supabase connection successful');
-      const data = await courseOperations.fetchTeacherCourses(user.id);
+
+      console.log('Step 2: Connection successful, total courses in DB:', testData);
+
+      console.log('Step 3: Fetching teacher courses...');
+      // Fetch teacher courses with timeout
+      const fetchPromise = courseOperations.fetchTeacherCourses(user.id);
+      const data = await Promise.race([
+        fetchPromise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Fetch courses timeout')), 5000)
+        )
+      ]);
+
+      console.log('Step 4: Courses fetched successfully:', data);
       setCourses(data || []);
-      console.log('Fetched courses:', data);
+      console.log('=== END COURSE FETCH DEBUG ===');
+
+      // If no courses found, show a helpful message
+      if (!data || data.length === 0) {
+        console.log('No courses found for teacher. This is normal for new teachers.');
+        toast.info('No courses found. Click "Create New Course" to get started!');
+      } else {
+        toast.success(`Loaded ${data.length} courses successfully!`);
+      }
+
+      clearTimeout(timeoutId);
     } catch (error) {
       console.error('Error fetching courses:', error);
-      toast.error(`Failed to load courses: ${error.message}`);
+      clearTimeout(timeoutId);
+
+      if (error.message.includes('timeout')) {
+        toast.error('Request timed out. Please check your internet connection and try again.');
+      } else {
+        toast.error(`Failed to load courses: ${error.message}`);
+      }
+      setCourses([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -123,47 +305,63 @@ const TeacherMyCourses = () => {
   const handleCreateCourse = async (formData) => {
     try {
       setFormLoading(true);
-      
+
+      console.log('=== COURSE CREATION VIA API ===');
       console.log('Creating course with form data:', formData);
       console.log('Current user:', user);
-      
-      let thumbnailUrl = null;
-      
-      // Upload thumbnail if provided
-      if (formData.thumbnailFile) {
-        console.log('Uploading thumbnail...');
-        const tempId = Date.now().toString();
-        thumbnailUrl = await courseOperations.uploadThumbnail(formData.thumbnailFile, tempId);
-        console.log('Thumbnail uploaded:', thumbnailUrl);
+
+      // Validate required fields
+      if (!user?.id) {
+        throw new Error('User not authenticated');
       }
+
+      if (!formData.title) {
+        throw new Error('Course title is required');
+      }
+
+      // Generate a unique course code
+      const courseCode = `COURSE_${Date.now()}_${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
       const courseData = {
         teacher_id: user.id,
-        title: formData.title,
-        description: formData.description || null,
-        thumbnail_url: thumbnailUrl,
-        status: formData.status
+        title: formData.title.trim(),
+        description: formData.description?.trim() || '',
+        code: courseCode,
+        status: formData.status || 'active'
       };
 
-      console.log('Final course data:', courseData);
-      const newCourse = await courseOperations.createCourse(courseData);
-      console.log('Course created:', newCourse);
-      
-      // Manually add to state if real-time doesn't work
-      setCourses(prev => [newCourse, ...prev]);
-      
-      setShowCreateModal(false);
-      toast.success('Course created successfully!');
-    } catch (error) {
-      console.error('Error creating course:', error);
-      
-      // Check for specific RLS error
-      if (error.message.includes('row-level security policy')) {
-        toast.error('Database permission error. Please run the RLS fix script.');
-        console.error('RLS Policy Error - Run backend/fix_rls_policies.sql in Supabase');
-      } else {
-        toast.error(`Failed to create course: ${error.message}`);
+      console.log('Sending course data to API:', courseData);
+
+      // Use backend API to create course
+      const response = await fetch('http://localhost:8000/api/courses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(courseData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `API request failed: ${response.status}`);
       }
+
+      const result = await response.json();
+      console.log('Course creation API result:', result);
+
+      if (result.success && result.data) {
+        // Add to local state
+        setCourses(prev => [result.data, ...prev]);
+        setShowCreateModal(false);
+        toast.success('Course created successfully!');
+        console.log('=== COURSE CREATION SUCCESS ===');
+      } else {
+        throw new Error(result.message || 'Failed to create course');
+      }
+    } catch (error) {
+      console.error('=== COURSE CREATION ERROR ===');
+      console.error('Error creating course:', error);
+      toast.error(`Failed to create course: ${error.message}`);
     } finally {
       setFormLoading(false);
     }
@@ -172,40 +370,52 @@ const TeacherMyCourses = () => {
   const handleEditCourse = async (formData) => {
     try {
       setFormLoading(true);
-      
+
+      console.log('=== COURSE UPDATE VIA API ===');
       console.log('Updating course:', selectedCourse.id, 'with data:', formData);
-      
-      let thumbnailUrl = selectedCourse.thumbnail_url;
-      
-      // Upload new thumbnail if provided
-      if (formData.thumbnailFile) {
-        console.log('Uploading new thumbnail...');
-        thumbnailUrl = await courseOperations.uploadThumbnail(formData.thumbnailFile, selectedCourse.id);
-        console.log('New thumbnail URL:', thumbnailUrl);
-      }
 
       const updates = {
-        title: formData.title,
-        description: formData.description || null,
-        thumbnail_url: thumbnailUrl,
-        status: formData.status
+        title: formData.title.trim(),
+        description: formData.description?.trim() || '',
+        status: formData.status || 'active'
       };
 
-      console.log('Sending updates:', updates);
-      const updatedCourse = await courseOperations.updateCourse(selectedCourse.id, updates);
-      console.log('Course updated:', updatedCourse);
-      
-      // Immediately update local state (fallback if real-time doesn't work)
-      setCourses(prev => prev.map(course => 
-        course.id === selectedCourse.id ? updatedCourse : course
-      ));
-      
-      setShowEditModal(false);
-      setSelectedCourse(null);
-      toast.success('Course updated successfully!');
+      console.log('Sending update data to API:', updates);
+
+      // Use backend API to update course
+      const response = await fetch(`http://localhost:8000/api/courses/${selectedCourse.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `API request failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Course update API result:', result);
+
+      if (result.success && result.data) {
+        // Update local state
+        setCourses(prev => prev.map(course =>
+          course.id === selectedCourse.id ? result.data : course
+        ));
+
+        setShowEditModal(false);
+        setSelectedCourse(null);
+        toast.success('Course updated successfully!');
+        console.log('=== COURSE UPDATE SUCCESS ===');
+      } else {
+        throw new Error(result.message || 'Failed to update course');
+      }
     } catch (error) {
+      console.error('=== COURSE UPDATE ERROR ===');
       console.error('Error updating course:', error);
-      toast.error('Failed to update course');
+      toast.error(`Failed to update course: ${error.message}`);
     } finally {
       setFormLoading(false);
     }
@@ -213,34 +423,54 @@ const TeacherMyCourses = () => {
 
   const handleDeleteCourse = async () => {
     try {
+      console.log('=== COURSE DELETE VIA API ===');
       console.log('Deleting course:', selectedCourse.id);
-      
+
       // Store the course ID for immediate UI update
       const courseIdToDelete = selectedCourse.id;
-      
-      // Delete from database
-      await courseOperations.deleteCourse(courseIdToDelete);
-      
-      // Immediately update local state (fallback if real-time doesn't work)
-      setCourses(prev => {
-        const updated = prev.filter(course => course.id !== courseIdToDelete);
-        console.log('Updated courses after delete:', updated.length);
-        return updated;
+
+      // Use backend API to delete course
+      const response = await fetch(`http://localhost:8000/api/courses/${courseIdToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
       });
-      
-      setShowDeleteModal(false);
-      setSelectedCourse(null);
-      toast.success('Course deleted successfully!');
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `API request failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Course delete API result:', result);
+
+      if (result.success) {
+        // Update local state
+        setCourses(prev => {
+          const updated = prev.filter(course => course.id !== courseIdToDelete);
+          console.log('Updated courses after delete:', updated.length);
+          return updated;
+        });
+
+        setShowDeleteModal(false);
+        setSelectedCourse(null);
+        toast.success('Course deleted successfully!');
+        console.log('=== COURSE DELETE SUCCESS ===');
+      } else {
+        throw new Error(result.message || 'Failed to delete course');
+      }
     } catch (error) {
+      console.error('=== COURSE DELETE ERROR ===');
       console.error('Error deleting course:', error);
-      toast.error('Failed to delete course');
+      toast.error(`Failed to delete course: ${error.message}`);
     }
   };
 
   const handleViewCourse = (course) => {
-    // Navigate to course details page
     console.log('View course:', course);
-    toast.info('Course details page coming soon!');
+    setSelectedCourse(course);
+    setShowViewModal(true);
   };
 
   // Filter courses based on search and status
@@ -257,30 +487,38 @@ const TeacherMyCourses = () => {
 
   return (
     <TeacherDashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen teacher-page-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div className="mb-4 lg:mb-0">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">My Courses</h1>
-              <p className="text-gray-600">
+              <h1 className="text-heading-xl font-bold mb-2 font-serif" style={{color: '#000000'}}>My Courses</h1>
+              <p className="text-body-lg" style={{color: '#000000'}}>
                 Manage and organize your courses. You have {courses.length} course{courses.length !== 1 ? 's' : ''} total.
               </p>
             </div>
             
             <div className="flex items-center space-x-3">
               <button
-                onClick={fetchCourses}
+                onClick={fetchCoursesFromAPI}
                 disabled={loading}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center space-x-2"
+                className="btn-primary px-4 py-3 border-2 border-border-primary rounded-lg transition-all duration-300 flex items-center space-x-2 font-medium"
               >
-                <Loader className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
               </button>
-              
+
+              <button
+                onClick={simpleFetchCourses}
+                disabled={loading}
+                className="btn-primary px-4 py-3 border-2 border-blue-200 rounded-lg transition-all duration-300 flex items-center space-x-2 font-medium"
+              >
+                <span>Supabase Test</span>
+              </button>
+
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-indigo-600 hover:to-blue-600 transition-all duration-300 flex items-center space-x-2"
+                className="btn-primary px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center space-x-2 shadow-elegant hover:shadow-lg"
               >
                 <Plus className="w-5 h-5" />
                 <span>Create Course</span>
@@ -289,17 +527,17 @@ const TeacherMyCourses = () => {
           </div>
 
           {/* Filters and Search */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div className="bg-background-secondary rounded-lg shadow-elegant p-6 mb-8 border border-border-primary">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
               {/* Search */}
               <div className="relative flex-1 lg:max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-secondary" />
                 <input
                   type="text"
                   placeholder="Search courses..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+                  className="form-input pl-10"
                 />
               </div>
 
@@ -308,7 +546,7 @@ const TeacherMyCourses = () => {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 text-gray-900"
+                  className="form-select"
                 >
                   <option value="all">All Courses ({getStatusCount('all')})</option>
                   <option value="active">Active ({getStatusCount('active')})</option>
@@ -316,23 +554,23 @@ const TeacherMyCourses = () => {
                 </select>
 
                 {/* View Mode Toggle */}
-                <div className="flex items-center bg-gray-100 rounded-xl p-1">
+                <div className="flex items-center bg-background-tertiary rounded-lg p-1 border border-border-primary">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-lg transition-all duration-200 ${
-                      viewMode === 'grid' 
-                        ? 'bg-white shadow-sm text-indigo-600' 
-                        : 'text-gray-500 hover:text-gray-700'
+                    className={`p-2 rounded-lg transition-all duration-300 ${
+                      viewMode === 'grid'
+                        ? 'bg-background-secondary shadow-elegant text-secondary-600'
+                        : 'text-text-secondary hover:text-text-heading'
                     }`}
                   >
                     <Grid3X3 className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-lg transition-all duration-200 ${
-                      viewMode === 'list' 
-                        ? 'bg-white shadow-sm text-indigo-600' 
-                        : 'text-gray-500 hover:text-gray-700'
+                    className={`p-2 rounded-lg transition-all duration-300 ${
+                      viewMode === 'list'
+                        ? 'bg-background-secondary shadow-elegant text-secondary-600'
+                        : 'text-text-secondary hover:text-text-heading'
                     }`}
                   >
                     <List className="w-5 h-5" />
@@ -422,6 +660,15 @@ const TeacherMyCourses = () => {
         onSubmit={handleEditCourse}
         course={selectedCourse}
         loading={formLoading}
+      />
+
+      <CourseViewModal
+        isOpen={showViewModal}
+        onClose={() => {
+          setShowViewModal(false);
+          setSelectedCourse(null);
+        }}
+        course={selectedCourse}
       />
 
       {/* Delete Confirmation Modal */}

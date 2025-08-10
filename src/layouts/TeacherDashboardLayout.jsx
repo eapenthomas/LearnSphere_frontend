@@ -86,26 +86,26 @@ const TeacherDashboardLayout = ({ children }) => {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 lg:static lg:z-auto ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-background-secondary border-r border-border-primary lg:static lg:z-auto shadow-elegant ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-border-primary">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg">
+            <div className="p-2 bg-gradient-to-r from-navy-900 to-navy-800 rounded-lg shadow-elegant">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-gray-800 tracking-tight">LearnSphere</span>
+            <span className="text-xl font-bold text-text-heading tracking-tight font-serif">LearnSphere</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-background-tertiary transition-colors"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-text-secondary" />
           </button>
         </div>
 
         <nav className="mt-8 px-6 flex-1">
-          <div className="space-y-3">
+          <div className="space-y-2">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -114,15 +114,15 @@ const TeacherDashboardLayout = ({ children }) => {
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={`sidebar-item group ${
-                    isActive ? 'active' : 'text-gray-700 hover:text-gray-800'
+                    isActive ? 'active' : ''
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
-                  <span className="font-bold">{item.name}</span>
+                  <span className="font-medium">{item.name}</span>
                   {isActive && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute right-0 w-1 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-l-full"
+                      className="absolute right-0 w-1 h-8 bg-gradient-to-b from-navy-600 to-navy-700 rounded-l-full"
                     />
                   )}
                 </Link>
@@ -146,23 +146,23 @@ const TeacherDashboardLayout = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Navigation */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="bg-background-secondary border-b border-border-primary px-6 py-4 shadow-elegant">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-background-tertiary transition-colors"
               >
-                <Menu className="w-5 h-5 text-gray-600" />
+                <Menu className="w-5 h-5 text-text-secondary" />
               </button>
 
               {/* Welcome Message */}
               <div className="hidden md:block">
-                <h1 className="text-xl font-bold text-gray-800">
+                <h1 className="text-heading-md font-semibold text-text-heading font-serif">
                   Welcome back, {user?.fullName?.split(' ')[0] || 'Teacher'}!
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-body-md text-text-secondary">
                   Ready to inspire and educate your students today?
                 </p>
               </div>
@@ -245,11 +245,11 @@ const TeacherDashboardLayout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 page-container bg-gray-100 overflow-y-auto h-screen">
+        <main className="flex-1 page-container bg-background-primary overflow-y-auto h-screen">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6 }}
             className="dashboard-container"
           >
             {children}

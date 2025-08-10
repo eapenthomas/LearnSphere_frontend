@@ -94,7 +94,7 @@ const DashboardLayout = ({ children }) => {
   }, [showLogoutConfirm]);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background-primary">
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -102,32 +102,32 @@ const DashboardLayout = ({ children }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-gray-600/50 z-40 lg:hidden"
+            className="fixed inset-0 bg-navy-900/50 z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
       </AnimatePresence>
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 lg:static lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-navy-900 border-r border-navy-800 lg:static lg:z-auto shadow-elegant ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-navy-800">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg">
+            <div className="p-2 bg-gradient-to-r from-secondary-600 to-secondary-700 rounded-lg shadow-elegant">
               <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-extrabold text-gray-800 tracking-tight">LearnSphere</span>
+            <span className="text-xl font-bold text-white tracking-tight font-serif">LearnSphere</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg hover:bg-navy-800 transition-colors"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-white" />
           </button>
         </div>
 
         <nav className="mt-8 px-6 flex-1">
-          <div className="space-y-3">
+          <div className="space-y-2">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -135,15 +135,18 @@ const DashboardLayout = ({ children }) => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`sidebar-item group ${isActive ? 'active' : 'text-gray-700 hover:text-gray-800'
-                    }`}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 relative group ${
+                    isActive
+                      ? 'bg-secondary-600 text-white shadow-elegant'
+                      : 'text-navy-200 hover:text-white hover:bg-navy-800'
+                  }`}
                 >
                   <item.icon className="w-5 h-5" />
-                  <span className="font-bold">{item.name}</span>
+                  <span className="font-medium">{item.name}</span>
                   {isActive && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute right-0 w-1 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-l-full"
+                      className="absolute right-0 w-1 h-8 bg-gradient-to-b from-secondary-500 to-secondary-600 rounded-l-full"
                     />
                   )}
                 </Link>
@@ -199,16 +202,16 @@ const DashboardLayout = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+        <header className="bg-background-secondary border-b border-border-primary sticky top-0 z-30 shadow-elegant">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-background-tertiary transition-colors"
               >
-                <Menu className="w-5 h-5 text-gray-600" />
+                <Menu className="w-5 h-5 text-text-secondary" />
               </button>
-              <h1 className="text-xl font-extrabold text-gray-800 tracking-tight">
+              <h1 className="text-heading-md font-bold text-text-heading tracking-tight font-serif">
                 {navigation.find(item => item.href === location.pathname)?.name || 'Dashboard'}
               </h1>
             </div>
@@ -216,8 +219,8 @@ const DashboardLayout = ({ children }) => {
             <div className="flex items-center space-x-4">
               {/* Welcome Message */}
               <div className="hidden md:block">
-                <p className="text-sm text-gray-600">
-                  Welcome back, <span className="font-semibold text-gray-800">
+                <p className="text-body-md text-text-secondary">
+                  Welcome back, <span className="font-semibold text-text-heading">
                     {user?.fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'Student'}
                   </span>!
                 </p>
@@ -225,28 +228,28 @@ const DashboardLayout = ({ children }) => {
 
               {/* Search */}
               <div className="relative hidden sm:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-text-secondary" />
                 <input
                   type="text"
                   placeholder="Search courses, assignments..."
-                  className="w-64 pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-200"
+                  className="form-input w-64"
                 />
               </div>
 
               {/* Notifications */}
-              <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              <button className="relative p-2 rounded-lg hover:bg-background-tertiary transition-colors">
+                <Bell className="w-5 h-5 text-text-secondary" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-error-500 rounded-full"></span>
               </button>
 
               {/* User Profile Picture/Initials */}
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                   {user?.fullName ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase() :
                     user?.email ? user.email[0].toUpperCase() : 'U'}
                 </div>
                 <div className="hidden md:block">
-                  <p className="text-sm font-semibold text-gray-800">
+                  <p className="text-body-sm font-semibold text-text-heading">
                     {user?.fullName || user?.email || 'User'}
                   </p>
                 </div>
@@ -255,11 +258,11 @@ const DashboardLayout = ({ children }) => {
               {/* Quick Logout Button (Desktop) */}
               <button
                 onClick={handleLogoutClick}
-                className="hidden lg:flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 group"
+                className="hidden lg:flex items-center space-x-2 px-3 py-2 text-text-secondary hover:text-error-600 hover:bg-error-50 rounded-lg transition-all duration-200 group"
                 title="Logout"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="text-sm font-medium">Logout</span>
+                <span className="text-body-sm font-medium">Logout</span>
               </button>
 
               {/* User Menu (Mobile) */}
@@ -304,11 +307,11 @@ const DashboardLayout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 page-container bg-gray-100 overflow-y-auto h-screen">
+        <main className="flex-1 page-container bg-background-primary overflow-y-auto h-screen">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6 }}
             className="dashboard-container"
           >
             {children}

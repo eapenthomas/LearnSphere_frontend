@@ -138,10 +138,10 @@ const Quizzes = () => {
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-black-700 mb-2 line-clamp-2">
+            <h3 className="text-xl font-bold text-text-heading mb-2 line-clamp-2">
               {quiz.title}
             </h3>
-            <div className="flex items-center space-x-4 text-sm text-gray-700 mb-3">
+            <div className="flex items-center space-x-4 text-sm text-text-primary mb-3">
               <div className="flex items-center space-x-1">
                 <BookOpen className="w-4 h-4" />
                 <span>{quiz.courses?.title || 'No Course'}</span>
@@ -155,7 +155,7 @@ const Quizzes = () => {
                 <span>{quiz.total_marks} Marks</span>
               </div>
             </div>
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-4 text-sm text-text-secondary">
               <div className="flex items-center space-x-1">
                 <Clock className="w-4 h-4" />
                 <span>{quiz.duration_minutes} min</span>
@@ -178,20 +178,20 @@ const Quizzes = () => {
             </div>
             
             <div className="relative">
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <MoreVertical className="w-4 h-4 text-gray-600" />
+              <button className="p-2 hover:bg-background-tertiary rounded-lg transition-colors">
+                <MoreVertical className="w-4 h-4 text-text-secondary" />
               </button>
             </div>
           </div>
         </div>
 
         {quiz.description && (
-          <p className="text-gray-700 text-sm mb-4 line-clamp-2">
+          <p className="text-text-primary text-sm mb-4 line-clamp-2">
             {quiz.description}
           </p>
         )}
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-4 border-t border-border-primary">
           <div className="flex items-center space-x-2">
             <button
               onClick={() => window.location.href = `/teacher/quiz/${quiz.id}/edit`}
@@ -246,12 +246,12 @@ const Quizzes = () => {
 
   return (
     <TeacherDashboardLayout>
-      <div className="p-6 space-y-8">
+      <div className="p-6 space-y-8 teacher-page-bg min-h-screen">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-8"
+          className="teacher-course-card rounded-2xl shadow-lg p-8"
         >
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -261,7 +261,7 @@ const Quizzes = () => {
                 </div>
                 <div>
                   <h1 className="text-3xl font-extrabold" style={{ color: '#000000' }}>My Quizzes</h1>
-                  <p className="text-lg" style={{ color: '#374151' }}>Create and manage your course quizzes</p>
+                  <p className="text-lg" style={{ color: '#000000' }}>Create and manage your course quizzes</p>
                 </div>
               </div>
               
@@ -309,24 +309,24 @@ const Quizzes = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
             <div className="flex-1 max-w-md">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-tertiary w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Search quizzes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="form-input pl-10"
                 />
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Filter className="w-5 h-5 text-gray-600" />
+                <Filter className="w-5 h-5 text-text-secondary" />
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="form-input"
                 >
                   <option value="all">All Status</option>
                   <option value="published">Published</option>
@@ -349,11 +349,11 @@ const Quizzes = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-12 bg-white rounded-2xl shadow-lg"
           >
-            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            <FileText className="w-16 h-16 text-text-tertiary mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-text-heading mb-2">
               {searchTerm || statusFilter !== 'all' ? 'No quizzes found' : 'No quizzes yet'}
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-text-secondary mb-6">
               {searchTerm || statusFilter !== 'all' 
                 ? 'Try adjusting your search or filter criteria'
                 : 'Create your first quiz to get started'
@@ -399,8 +399,8 @@ const Quizzes = () => {
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Trash2 className="w-8 h-8 text-red-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Quiz</h3>
-                <p className="text-gray-700 mb-6">
+                <h3 className="text-xl font-bold text-text-heading mb-2">Delete Quiz</h3>
+                <p className="text-text-primary mb-6">
                   Are you sure you want to delete "{selectedQuiz.title}"? This action cannot be undone.
                 </p>
                 <div className="flex items-center space-x-4">

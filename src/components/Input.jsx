@@ -35,9 +35,8 @@ const Input = ({
                     placeholder={placeholder}
                     required={required}
                     className={`
-            w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 placeholder-gray-500
-            focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200
-            ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}
+            form-input font-sans
+            ${error ? 'border-error-500 focus:border-error-500 focus:ring-error-500/20' : ''}
             ${hasValue || isFocused ? 'pt-6 pb-2' : 'py-3'}
           `}
                     {...props}
@@ -47,12 +46,12 @@ const Input = ({
                         initial={{ opacity: 0, y: 0 }}
                         animate={{ opacity: 1, y: -8 }}
                         className={`
-              absolute left-4 top-2 text-xs font-medium transition-colors duration-200
-              ${error ? 'text-red-500' : 'text-blue-600'}
+              absolute left-4 top-2 text-body-sm font-medium transition-colors duration-300 font-sans
+              ${error ? 'text-error-500' : 'text-secondary-600'}
             `}
                     >
                         {label}
-                        {required && <span className="text-red-500 ml-1">*</span>}
+                        {required && <span className="text-error-500 ml-1">*</span>}
                     </motion.label>
                 )}
             </div>
@@ -60,7 +59,7 @@ const Input = ({
                 <motion.p
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-red-500 text-sm mt-1 ml-1"
+                    className="text-error-500 text-body-md mt-1 ml-1 font-sans"
                 >
                     {error}
                 </motion.p>

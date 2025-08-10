@@ -13,39 +13,130 @@ export const supabase = createClient(
   supabaseAnonKey || 'placeholder_key'
 );
 
+// Function to set authentication token
+export const setSupabaseAuth = (accessToken) => {
+  if (accessToken) {
+    console.log('Setting Supabase auth token');
+    supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: accessToken // Using same token for both
+    });
+  }
+};
+
+// Initialize auth from localStorage
+const initializeAuth = () => {
+  try {
+    const storedToken = localStorage.getItem('learnsphere_token');
+    if (storedToken) {
+      console.log('Initializing Supabase auth from localStorage');
+      setSupabaseAuth(storedToken);
+    }
+  } catch (error) {
+    console.warn('Failed to initialize Supabase auth:', error);
+  }
+};
+
+// Initialize on module load
+initializeAuth();
+
 // Course operations
 export const courseOperations = {
   // Export supabase client for direct access
   supabase,
   // Fetch all courses for a teacher
   async fetchTeacherCourses(teacherId) {
-    const { data, error } = await supabase
-      .from('courses')
-      .select('*')
-      .eq('teacher_id', teacherId)
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data;
+    console.log('=== FETCH TEACHER COURSES ===');
+    console.log('Fetching courses for teacher ID:', teacherId);
+
+    if (!teacherId) {
+      throw new Error('Teacher ID is required');
+    }
+
+    try {
+      console.log('Making Supabase query...');
+      const startTime = Date.now();
+
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('teacher_id', teacherId)
+        .order('created_at', { ascending: false });
+
+      const endTime = Date.now();
+      console.log(`Query completed in ${endTime - startTime}ms`);
+
+      if (error) {
+        console.error('Supabase error fetching teacher courses:', error);
+        console.error('Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+        throw error;
+      }
+
+      console.log('Successfully fetched courses:', data);
+      console.log('Number of courses found:', data?.length || 0);
+      console.log('=== FETCH TEACHER COURSES SUCCESS ===');
+      return data || [];
+    } catch (error) {
+      console.error('=== FETCH TEACHER COURSES ERROR ===');
+      console.error('Error in fetchTeacherCourses:', error);
+      throw error;
+    }
   },
 
   // Create a new course
   async createCourse(courseData) {
+    console.log('=== SUPABASE CREATE COURSE ===');
     console.log('Creating course with data:', courseData);
 
-    const { data, error } = await supabase
-      .from('courses')
-      .insert([courseData])
-      .select()
-      .single();
+    try {
+      // Check authentication status
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      console.log('Current session:', session);
+      console.log('Session error:', sessionError);
 
-    if (error) {
-      console.error('Supabase error creating course:', error);
+      if (!session) {
+        throw new Error('User not authenticated. Please log in again.');
+      }
+
+      // Validate required fields
+      if (!courseData.teacher_id) {
+        throw new Error('Teacher ID is required');
+      }
+      if (!courseData.title) {
+        throw new Error('Course title is required');
+      }
+
+      console.log('Attempting to insert course...');
+      const { data, error } = await supabase
+        .from('courses')
+        .insert([courseData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase error creating course:', error);
+        console.error('Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+        throw error;
+      }
+
+      console.log('Course created successfully:', data);
+      console.log('=== SUPABASE CREATE COURSE SUCCESS ===');
+      return data;
+    } catch (error) {
+      console.error('=== SUPABASE CREATE COURSE ERROR ===');
+      console.error('Error in createCourse:', error);
       throw error;
     }
-
-    console.log('Course created successfully:', data);
-    return data;
   },
 
   // Update a course

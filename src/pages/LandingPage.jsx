@@ -73,26 +73,26 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background-primary">
       {/* Navigation */}
-      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-background-secondary/90 backdrop-blur-sm border-b border-border-primary sticky top-0 z-50 shadow-elegant">
         <div className="max-w-7xl mx-auto page-container">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:scale-110 transition-transform duration-300">
+              <div className="p-2 bg-gradient-to-r from-navy-900 to-navy-800 rounded-lg hover:scale-110 transition-transform duration-300 shadow-elegant">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-extrabold text-gray-800 tracking-tight">LearnSphere</span>
+              <span className="text-xl font-bold text-text-heading tracking-tight font-serif">LearnSphere</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Link to="/login" className="text-gray-600 hover:text-gray-800 transition-colors font-medium">
+              <Link to="/login" className="text-text-secondary hover:text-secondary-600 transition-colors font-medium">
                 Login
               </Link>
               <Link to="/register">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="bg-gradient-to-r from-secondary-600 to-secondary-700 hover:from-secondary-700 hover:to-secondary-800 text-white font-semibold py-3 px-6 rounded-lg shadow-elegant hover:shadow-elegant-lg transition-all duration-300 transform hover:-translate-y-0.5"
                 >
                   Get Started
                 </motion.button>

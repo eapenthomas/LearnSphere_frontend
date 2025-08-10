@@ -153,8 +153,9 @@ const QuizSubmissions = () => {
   if (loading) {
     return (
       <TeacherDashboardLayout>
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-12 teacher-page-bg min-h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          <span className="ml-3" style={{color: '#000000'}}>Loading submissions...</span>
         </div>
       </TeacherDashboardLayout>
     );
@@ -162,17 +163,17 @@ const QuizSubmissions = () => {
 
   return (
     <TeacherDashboardLayout>
-      <div className="p-6 space-y-8">
+      <div className="p-6 space-y-8 teacher-page-bg min-h-screen">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-8"
+          className="teacher-course-card rounded-2xl shadow-lg p-8"
         >
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => navigate('/teacher/quizzes')}
-              className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors"
+              className="flex items-center space-x-2 btn-primary px-4 py-2 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Back to Quizzes</span>

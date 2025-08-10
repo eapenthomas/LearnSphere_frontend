@@ -10,11 +10,14 @@ import AuthCallback from './pages/AuthCallback.jsx';
 import StudentDashboard from './pages/student/Dashboard.jsx';
 import StudentAllCourses from './pages/student/AllCourses.jsx';
 import StudentMyCourses from './pages/student/MyCourses.jsx';
+import StudentAssignments from './pages/student/Assignments.jsx';
+import StudentCalendar from './pages/student/Calendar.jsx';
 import StudentQuizzes from './pages/student/Quizzes.jsx';
 import TakeQuiz from './pages/student/TakeQuiz.jsx';
 import QuizResult from './pages/student/QuizResult.jsx';
 import TeacherDashboard from './pages/teacher/Dashboard.jsx';
 import TeacherMyCourses from './pages/teacher/MyCourses.jsx';
+import TeacherAssignments from './pages/teacher/Assignments.jsx';
 import TeacherQuizzes from './pages/teacher/Quizzes.jsx';
 import QuizSubmissions from './pages/teacher/QuizSubmissions.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
@@ -95,6 +98,22 @@ const AppContent = () => {
                 }
             />
             <Route
+                path="/assignments"
+                element={
+                    <ProtectedRoute>
+                        <StudentAssignments />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/calendar"
+                element={
+                    <ProtectedRoute>
+                        <StudentCalendar />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path="/student/quizzes"
                 element={
                     <ProtectedRoute>
@@ -131,6 +150,14 @@ const AppContent = () => {
                 element={
                     <ProtectedRoute>
                         <TeacherMyCourses />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/teacher/assignments"
+                element={
+                    <ProtectedRoute>
+                        <TeacherAssignments />
                     </ProtectedRoute>
                 }
             />
@@ -220,8 +247,24 @@ function App() {
                     toastOptions={{
                         duration: 4000,
                         style: {
-                            background: '#363636',
-                            color: '#fff',
+                            background: '#1e2a38',
+                            color: '#ffffff',
+                            borderRadius: '8px',
+                            border: '1px solid #d4af37',
+                            fontFamily: 'Inter, sans-serif',
+                            fontWeight: '500',
+                        },
+                        success: {
+                            style: {
+                                background: '#2e7d32',
+                                color: '#ffffff',
+                            },
+                        },
+                        error: {
+                            style: {
+                                background: '#c62828',
+                                color: '#ffffff',
+                            },
                         },
                     }}
                 />

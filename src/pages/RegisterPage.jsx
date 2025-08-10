@@ -668,7 +668,7 @@ const RegisterPage = () => {
                 disabled={loading || emailChecking || Object.keys(validationErrors).some(key => validationErrors[key])}
                 whileHover={{ scale: loading || emailChecking || Object.keys(validationErrors).some(key => validationErrors[key]) ? 1 : 1.02 }}
                 whileTap={{ scale: loading || emailChecking || Object.keys(validationErrors).some(key => validationErrors[key]) ? 1 : 0.98 }}
-                className={`btn-primary w-full ${loading || emailChecking ? 'btn-loading' : ''}`}
+                className={`btn-blue w-full ${loading || emailChecking ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
                 {loading ? (
                   <div className="flex items-center justify-center space-x-2">

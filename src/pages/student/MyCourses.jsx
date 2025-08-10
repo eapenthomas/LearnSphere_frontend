@@ -221,21 +221,21 @@ const StudentMyCourses = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen student-page-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div className="mb-4 lg:mb-0">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">My Courses</h1>
-              <p className="text-gray-600">
+              <h1 className="text-heading-xl font-bold mb-2 font-serif" style={{color: '#000000'}}>My Courses</h1>
+              <p className="text-body-lg" style={{color: '#000000'}}>
                 Continue your learning journey. You're enrolled in {filteredCourses.length} course{filteredCourses.length !== 1 ? 's' : ''}.
               </p>
             </div>
-            
+
             <button
               onClick={fetchEnrolledCourses}
               disabled={loading}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center space-x-2"
+              className="btn-primary px-4 py-3 border-2 border-border-primary rounded-lg transition-all duration-300 flex items-center space-x-2 font-medium"
             >
               <Loader className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>

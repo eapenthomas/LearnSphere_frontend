@@ -151,17 +151,18 @@ const CourseFormModal = ({
           <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-140px)]">
             {/* Course Title */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold mb-2" style={{color: '#000000'}}>
                 Course Title *
               </label>
               <input
                 type="text"
                 {...register('title')}
-                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500 ${
+                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:border-transparent transition-all duration-200 ${
                   errors.title
                     ? 'border-red-300 focus:ring-red-400'
-                    : 'border-gray-200 focus:ring-indigo-400'
+                    : 'border-gray-200 focus:ring-blue-400'
                 }`}
+                style={{color: '#000000', backgroundColor: '#ffffff'}}
                 placeholder="Enter course title"
               />
               {errors.title && (

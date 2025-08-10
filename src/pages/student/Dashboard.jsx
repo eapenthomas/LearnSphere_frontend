@@ -21,98 +21,168 @@ import {
 const StudentDashboard = () => {
   const { user } = useAuth();
 
-  const stats = [
+  // Real-time state management
+  const [stats, setStats] = useState([
     {
       title: 'Enrolled Courses',
-      value: '4',
-      change: '+2',
+      value: '0',
+      change: 'Loading...',
       icon: BookOpen,
       color: 'from-blue-500 to-blue-600'
     },
     {
       title: 'Completed Assignments',
-      value: '12',
-      change: '+3',
+      value: '0',
+      change: 'Loading...',
       icon: CheckCircle,
       color: 'from-green-500 to-green-600'
     },
     {
       title: 'Quiz Average',
-      value: '87%',
-      change: '+5%',
+      value: '0%',
+      change: 'Loading...',
       icon: Target,
       color: 'from-purple-500 to-purple-600'
     }
-  ];
+  ]);
 
-  const recentCourses = [
-    {
-      id: 1,
-      title: 'React Fundamentals',
-      instructor: 'John Smith',
-      progress: 75,
-      nextLesson: 'State Management',
-      thumbnail: null
-    },
-    {
-      id: 2,
-      title: 'JavaScript Advanced',
-      instructor: 'Sarah Johnson',
-      progress: 45,
-      nextLesson: 'Async Programming',
-      thumbnail: null
-    },
-    {
-      id: 3,
-      title: 'Node.js Backend',
-      instructor: 'Mike Chen',
-      progress: 20,
-      nextLesson: 'Express Setup',
-      thumbnail: null
-    }
-  ];
+  const [loading, setLoading] = useState(true);
+  const [recentCourses, setRecentCourses] = useState([]);
+  const [upcomingAssignments, setUpcomingAssignments] = useState([]);
 
-  const upcomingDeadlines = [
-    {
-      title: 'React Assignment #3',
-      course: 'React Fundamentals',
-      dueDate: 'Tomorrow',
-      type: 'assignment'
-    },
-    {
-      title: 'JavaScript Quiz',
-      course: 'JavaScript Advanced',
-      dueDate: 'Dec 28',
-      type: 'quiz'
-    },
-    {
-      title: 'Node.js Project',
-      course: 'Node.js Backend',
-      dueDate: 'Dec 30',
-      type: 'project'
+  // Fetch real-time data
+  useEffect(() => {
+    if (user?.id) {
+      fetchDashboardData();
     }
-  ];
+  }, [user]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        fetchEnrollmentStats(),
+        fetchRecentCourses(),
+        fetchUpcomingAssignments()
+      ]);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEnrollmentStats = async () => {
+    try {
+      // Fetch enrolled courses count
+      const enrollmentsResponse = await fetch(`http://localhost:8000/api/enrollments/student/${user.id}`);
+      const enrollments = enrollmentsResponse.ok ? await enrollmentsResponse.json() : [];
+
+      // Fetch assignment submissions
+      const assignmentsResponse = await fetch(`http://localhost:8000/api/assignments/student/${user.id}`);
+      const assignments = assignmentsResponse.ok ? await assignmentsResponse.json() : [];
+
+      // Calculate stats
+      const enrolledCount = enrollments.length;
+      const completedAssignments = assignments.filter(a => a.submission_status === 'reviewed').length;
+      const totalAssignments = assignments.length;
+      const assignmentPercentage = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
+
+      // Update stats
+      setStats([
+        {
+          title: 'Enrolled Courses',
+          value: enrolledCount.toString(),
+          change: `${enrolledCount} active`,
+          icon: BookOpen,
+          color: 'from-blue-500 to-blue-600'
+        },
+        {
+          title: 'Completed Assignments',
+          value: completedAssignments.toString(),
+          change: `${totalAssignments} total`,
+          icon: CheckCircle,
+          color: 'from-green-500 to-green-600'
+        },
+        {
+          title: 'Assignment Progress',
+          value: `${assignmentPercentage}%`,
+          change: `${completedAssignments}/${totalAssignments}`,
+          icon: Target,
+          color: 'from-purple-500 to-purple-600'
+        }
+      ]);
+    } catch (error) {
+      console.error('Error fetching enrollment stats:', error);
+    }
+  };
+
+  const fetchRecentCourses = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/enrollments/student/${user.id}`);
+      if (response.ok) {
+        const enrollments = await response.json();
+        // Get the most recent 3 courses
+        const recent = enrollments.slice(0, 3).map(enrollment => ({
+          id: enrollment.course_id,
+          title: enrollment.course_title || 'Course',
+          instructor: enrollment.teacher_name || 'Unknown',
+          progress: enrollment.progress || 0,
+          nextLesson: 'Continue Learning',
+          thumbnail: null
+        }));
+        setRecentCourses(recent);
+      }
+    } catch (error) {
+      console.error('Error fetching recent courses:', error);
+    }
+  };
+
+  const fetchUpcomingAssignments = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/assignments/student/${user.id}`);
+      if (response.ok) {
+        const assignments = await response.json();
+        // Filter upcoming assignments (not submitted and not overdue)
+        const upcoming = assignments
+          .filter(a => a.submission_status === 'not_submitted' && new Date(a.due_date) > new Date())
+          .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
+          .slice(0, 5)
+          .map(assignment => ({
+            title: assignment.title,
+            course: assignment.course_title,
+            dueDate: new Date(assignment.due_date).toLocaleDateString(),
+            type: 'assignment'
+          }));
+        setUpcomingAssignments(upcoming);
+      }
+    } catch (error) {
+      console.error('Error fetching upcoming assignments:', error);
+    }
+  };
+
+  // Static data removed - now using dynamic data from state
 
   // Get username from user data
   const username = user?.fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'Student';
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 student-page-bg min-h-screen p-6">
         {/* Welcome Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white hover:shadow-xl transition-all duration-300"
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 p-6 text-white hover:shadow-xl transition-all duration-300"
         >
           <div className="absolute inset-0 bg-white/10"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl md:text-3xl font-extrabold mb-2 tracking-tight">
+                <h1 className="text-heading-lg md:text-heading-xl font-bold mb-2 tracking-tight font-serif text-white">
                   Welcome back, {username}! 🎓
                 </h1>
-                <p className="text-base text-white/90 mb-4 font-medium">
+                <p className="text-body-lg text-white/90 mb-4 font-medium">
                   Ready to continue your learning journey? You're doing great!
                 </p>
                 <div className="flex items-center space-x-4">
@@ -143,18 +213,18 @@ const StudentDashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white shadow rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300 group"
+              className="course-card rounded-xl p-6 transition-all duration-300 group"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 bg-gradient-to-br ${stat.color} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
                   <stat.icon className="w-6 h-6 text-white" />
                 </div>
-                <span className={`text-sm font-bold ${stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`text-body-sm font-bold ${stat.change.startsWith('+') ? 'text-success-600' : 'text-error-600'}`}>
                   {stat.change}
                 </span>
               </div>
-              <h3 className="text-2xl font-extrabold text-gray-800 mb-1">{stat.value}</h3>
-              <p className="text-sm text-gray-600 font-medium">{stat.title}</p>
+              <h3 className="text-heading-lg font-bold mb-1" style={{color: '#000000'}}>{stat.value}</h3>
+              <p className="text-body-md font-medium" style={{color: '#000000'}}>{stat.title}</p>
             </motion.div>
           ))}
         </div>
@@ -166,19 +236,18 @@ const StudentDashboard = () => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white shadow rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300"
+              className="course-card rounded-xl p-6 transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-heading-md font-semibold" style={{color: '#000000'}}>
                   Continue Learning
                 </h2>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={() => window.location.href = '/mycourses'}
+                  className="btn-primary px-4 py-2 text-sm rounded-lg"
                 >
                   View All
-                </Button>
+                </button>
               </div>
               <div className="space-y-4">
                 {recentCourses.map((course, index) => (
@@ -238,7 +307,18 @@ const StudentDashboard = () => {
               <Clock className="w-5 h-5 text-gray-400" />
             </div>
             <div className="space-y-4">
-              {upcomingDeadlines.map((deadline, index) => (
+              {loading ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                  <p className="text-sm" style={{color: '#000000'}}>Loading assignments...</p>
+                </div>
+              ) : upcomingAssignments.length === 0 ? (
+                <div className="text-center py-8">
+                  <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <p style={{color: '#000000'}}>No upcoming deadlines</p>
+                </div>
+              ) : (
+                upcomingAssignments.map((deadline, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: 20 }}
@@ -264,7 +344,8 @@ const StudentDashboard = () => {
                     <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-300" />
                   </div>
                 </motion.div>
-              ))}
+                ))
+              )}
             </div>
           </motion.div>
         </div>

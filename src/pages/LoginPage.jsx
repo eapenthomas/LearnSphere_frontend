@@ -227,7 +227,7 @@ const LoginPage = () => {
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`btn-primary w-full ${loading ? 'btn-loading' : ''}`}
+                className={`btn-blue w-full ${loading ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
                 {loading ? (
                   <div className="flex items-center justify-center space-x-2">

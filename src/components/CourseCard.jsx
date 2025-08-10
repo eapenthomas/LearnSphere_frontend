@@ -23,15 +23,15 @@ const CourseCard = ({ course, onEdit, onDelete, onView }) => {
   };
 
   const getStatusBadge = (status) => {
-    const baseClasses = "px-3 py-1 rounded-full text-xs font-semibold";
-    
+    const baseClasses = "px-3 py-1 rounded-full text-body-sm font-medium";
+
     switch (status) {
       case 'active':
-        return `${baseClasses} bg-blue-100 text-blue-700`;
+        return `${baseClasses} bg-success-50 text-success-600 border border-success-500`;
       case 'draft':
-        return `${baseClasses} bg-yellow-100 text-yellow-700`;
+        return `${baseClasses} bg-warning-50 text-warning-600 border border-warning-500`;
       default:
-        return `${baseClasses} bg-gray-100 text-gray-700`;
+        return `${baseClasses} bg-background-tertiary text-text-secondary border border-border-primary`;
     }
   };
 
@@ -44,11 +44,11 @@ const CourseCard = ({ course, onEdit, onDelete, onView }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -5, scale: 1.02 }}
-      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+      whileHover={{ y: -8, scale: 1.02 }}
+      className="bg-background-secondary rounded-lg shadow-elegant hover:shadow-elegant-xl transition-all duration-300 overflow-hidden group border border-border-primary"
     >
       {/* Thumbnail */}
-      <div className="relative aspect-video bg-gradient-to-br from-indigo-100 to-blue-100 overflow-hidden">
+      <div className="relative aspect-video bg-gradient-to-br from-primary-100 to-secondary-100 overflow-hidden">
         {course.thumbnail_url ? (
           <img
             src={course.thumbnail_url}
@@ -57,7 +57,7 @@ const CourseCard = ({ course, onEdit, onDelete, onView }) => {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <BookOpen className="w-12 h-12 text-indigo-400" />
+            <BookOpen className="w-12 h-12 text-primary-500" />
           </div>
         )}
         
