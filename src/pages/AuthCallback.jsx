@@ -13,6 +13,28 @@ const AuthCallback = () => {
     const handleAuthCallback = async () => {
       try {
         console.log('AuthCallback - Processing Google auth callback...');
+        console.log('AuthCallback - Current URL:', window.location.href);
+
+        // First, try to get session from URL hash
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        
+        if (accessToken) {
+          console.log('AuthCallback - Found access token in URL, setting session...');
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || accessToken
+          });
+          
+          if (error) {
+            console.error('AuthCallback - Error setting session:', error);
+            navigate('/login?error=session_set_failed');
+            return;
+          }
+          
+          console.log('AuthCallback - Session set successfully');
+        }
 
         // Get the session from Supabase
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -108,6 +130,9 @@ const AuthCallback = () => {
           isActive: profile.is_active
         }));
         localStorage.setItem('learnsphere_token', session.access_token);
+
+        // Clear the URL hash to remove sensitive tokens
+        window.history.replaceState({}, document.title, '/auth/callback');
 
         // Redirect user
         redirectUser(userObj);
