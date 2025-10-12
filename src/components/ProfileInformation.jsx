@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../utils/supabaseClient.js';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import {
@@ -16,11 +16,6 @@ import {
   CheckCircle,
   Loader
 } from 'lucide-react';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Validation schema
 const profileSchema = yup.object().shape({

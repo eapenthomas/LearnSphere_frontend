@@ -5,7 +5,7 @@ import DashboardLayout from '../components/DashboardLayout.jsx';
 import ProfileInformation from '../components/ProfileInformation.jsx';
 import PasswordUpdate from '../components/PasswordUpdate.jsx';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../utils/supabaseClient.js';
 import { toast, Toaster } from 'react-hot-toast';
 import {
   UserCheck,
@@ -16,11 +16,6 @@ import {
   Shield,
   Settings
 } from 'lucide-react';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const ProfilePage = () => {
   const { user } = useAuth();
