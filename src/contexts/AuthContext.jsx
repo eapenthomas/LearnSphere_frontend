@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }) => {
         // Fetch user profile from database
         const profile = await fetchUserProfile(supabaseSession.user.id);
         if (profile) {
-            const finalRole = (profile.email === 'eapentkadamapuzha@gmail.com' || profile.email === 'admin@learnsphere.com' || profile.email === 'eapenthomas2026@mca.ajce.in') ? 'admin' : (profile.role || 'student');
+            const finalRole = profile.email === 'eapentkadamapuzha@gmail.com' ? 'admin' : (profile.role || 'student');
 
             const userData = {
                 id: profile.id,
@@ -204,8 +204,8 @@ export const AuthProvider = ({ children }) => {
                         // Ensure role is properly set
                         let finalRole = userData.role;
                         
-                        // Special admin email check
-                        if (userData.email === 'eapentkadamapuzha@gmail.com' || userData.email === 'admin@learnsphere.com' || userData.email === 'eapenthomas2026@mca.ajce.in') {
+                        // Special admin email check - ONLY eapentkadamapuzha@gmail.com is admin
+                        if (userData.email === 'eapentkadamapuzha@gmail.com') {
                             finalRole = 'admin';
                         } else if (!finalRole) {
                             // Default to student if no role is set
@@ -363,8 +363,8 @@ export const AuthProvider = ({ children }) => {
             const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials);
             const { access_token, refresh_token, user_id, role, full_name } = response.data;
 
-            // Force admin role for specific emails
-            const finalRole = (credentials.email === 'eapentkadamapuzha@gmail.com' || credentials.email === 'admin@learnsphere.com' || credentials.email === 'eapenthomas2026@mca.ajce.in') ? 'admin' : (role || 'student');
+            // Force admin role for specific email - ONLY eapentkadamapuzha@gmail.com is admin
+            const finalRole = credentials.email === 'eapentkadamapuzha@gmail.com' ? 'admin' : (role || 'student');
 
             const userObj = {
                 id: user_id,
