@@ -56,7 +56,7 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/courses/${user.id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/quizzes/courses/${user.id}`);
       const data = await response.json();
       
       if (data.success) {
@@ -187,7 +187,7 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
     try {
       setLoading(true);
       
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/create?teacher_id=${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/quizzes/create?teacher_id=${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -27,7 +27,7 @@ const TeacherRatingModal = ({ isOpen, onClose, teacher, course }) => {
   const fetchExistingRating = async () => {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher-ratings/student/${user.id}/rating/${teacher.id}/${course.id}`
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher-ratings/student/${user.id}/rating/${teacher.id}/${course.id}`
       );
       
       if (response.ok) {
@@ -51,7 +51,7 @@ const TeacherRatingModal = ({ isOpen, onClose, teacher, course }) => {
 
     try {
       setLoading(true);
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher-ratings/', {
+      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher-ratings/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -89,7 +89,7 @@ const TeacherRatingModal = ({ isOpen, onClose, teacher, course }) => {
     try {
       setLoading(true);
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher-ratings/${existingRating.id}?student_id=${user.id}`,
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher-ratings/${existingRating.id}?student_id=${user.id}`,
         { method: 'DELETE' }
       );
 

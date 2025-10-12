@@ -37,7 +37,7 @@ const TeacherProgress = () => {
       setLoading(true);
       
       // Fetch teacher's courses
-      const coursesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/teacher/${user.id}`);
+      const coursesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/teacher/${user.id}`);
       const coursesResult = coursesResponse.ok ? await coursesResponse.json() : { success: false, data: [] };
       const coursesArray = (coursesResult.success && Array.isArray(coursesResult.data)) ? coursesResult.data : [];
       
@@ -46,14 +46,14 @@ const TeacherProgress = () => {
         coursesArray.map(async (course) => {
           try {
             // Get enrollments
-            const enrollmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/enrollments/course/${course.id}?teacher_id=${user.id}`);
+            const enrollmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/enrollments/course/${course.id}?teacher_id=${user.id}`);
             const enrollments = enrollmentsResponse.ok ? await enrollmentsResponse.json() : [];
             
             // Get progress for each student
             const studentsProgress = await Promise.all(
               enrollments.map(async (enrollment) => {
                 try {
-                  const progressResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/progress/course/${course.id}/student/${enrollment.student_id}`);
+                  const progressResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/progress/course/${course.id}/student/${enrollment.student_id}`);
                   const progress = progressResponse.ok ? await progressResponse.json() : { overall_progress_percentage: 0 };
                   return {
                     studentId: enrollment.student_id,

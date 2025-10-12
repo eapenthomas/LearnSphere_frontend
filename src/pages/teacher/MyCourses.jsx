@@ -43,7 +43,7 @@ const TeacherMyCourses = () => {
       setLoading(true);
       console.log('=== BACKEND API FETCH ===');
       console.log('User ID:', user?.id);
-      console.log('Fetching from:', `${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/teacher/${user.id}`);
+      console.log('Fetching from:', `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/teacher/${user.id}`);
 
       if (!user?.id) {
         toast.error('User not authenticated');
@@ -51,7 +51,7 @@ const TeacherMyCourses = () => {
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/teacher/${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/teacher/${user.id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -291,7 +291,7 @@ const TeacherMyCourses = () => {
       console.log('Sending course data to API with thumbnail support');
 
       // Use the payment system API for course creation
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/create-course', {
+      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/create-course', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -347,7 +347,7 @@ const TeacherMyCourses = () => {
       console.log('Sending update data to API:', updates);
 
       // Use backend API to update course
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/${selectedCourse.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/${selectedCourse.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -372,7 +372,7 @@ const TeacherMyCourses = () => {
         const thumbnailFormData = new FormData();
         thumbnailFormData.append('thumbnail', formData.thumbnailFile);
 
-        const thumbnailResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/${selectedCourse.id}/thumbnail`, {
+        const thumbnailResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/${selectedCourse.id}/thumbnail`, {
           method: 'PUT',
           body: thumbnailFormData
         });
@@ -417,7 +417,7 @@ const TeacherMyCourses = () => {
       const courseIdToDelete = selectedCourse.id;
 
       // Use backend API to delete course
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/${courseIdToDelete}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/${courseIdToDelete}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

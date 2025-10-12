@@ -41,7 +41,7 @@ const TeacherApprovals = () => {
     setupRealTimeSubscription();
 
     // Test backend connectivity
-    fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/admin/users')
+    fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/users`)
       .then(response => {
         console.log('TeacherApprovals - Backend connectivity test:', response.status);
         return response.json();

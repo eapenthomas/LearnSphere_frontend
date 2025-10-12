@@ -65,7 +65,7 @@ const TeacherCalendar = () => {
       setLoading(true);
       
       // Get teacher's courses first
-      const coursesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/teacher/${user.id}`);
+      const coursesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/teacher/${user.id}`);
       if (!coursesResponse.ok) {
         throw new Error('Failed to fetch courses');
       }
@@ -78,7 +78,7 @@ const TeacherCalendar = () => {
       const events = [];
       
       // Fetch assignments
-      const assignmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/assignments/teacher/${user.id}`);
+      const assignmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/teacher/${user.id}`);
       if (assignmentsResponse.ok) {
         const assignments = await assignmentsResponse.json();
         
@@ -100,7 +100,7 @@ const TeacherCalendar = () => {
       }
       
       // Fetch quizzes
-      const quizzesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/teacher/${user.id}`);
+      const quizzesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/quizzes/teacher/${user.id}`);
       if (quizzesResponse.ok) {
         const quizzesData = await quizzesResponse.json();
         if (quizzesData.success) {
@@ -125,7 +125,7 @@ const TeacherCalendar = () => {
       setEvents(events);
       
       // Fetch upcoming deadlines from analytics
-      const analyticsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/analytics/${user.id}`);
+      const analyticsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/analytics/${user.id}`);
       if (analyticsResponse.ok) {
         const analyticsData = await analyticsResponse.json();
         setUpcomingDeadlines(analyticsData.upcomingDeadlines || []);

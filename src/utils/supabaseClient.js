@@ -481,7 +481,7 @@ export const adminOperations = {
         const adminName = adminProfile?.full_name || 'Administrator';
 
         // Send notification via backend API
-        await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/notifications/teacher-approval', {
+        await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/teacher-approval', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -548,7 +548,7 @@ export const adminOperations = {
         const adminName = adminProfile?.full_name || 'Administrator';
 
         // Send notification via backend API
-        await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/notifications/teacher-rejection', {
+        await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/teacher-rejection', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -648,7 +648,7 @@ export const adminOperations = {
       const adminName = adminProfile?.full_name || 'Administrator';
 
       // Send notification via backend API
-      await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/notifications/user-status-change', {
+      await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/user-status-change', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

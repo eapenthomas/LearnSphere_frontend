@@ -56,7 +56,7 @@ const StudentForum = () => {
       if (filterCourse) params.append('course_id', filterCourse);
       if (filterResolved !== 'all') params.append('resolved', filterResolved === 'resolved');
       
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/forum/questions?${params}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/forum/questions?${params}`, {
         headers: {
           'Authorization': `Bearer ${user?.accessToken || ''}`
         }
@@ -77,7 +77,7 @@ const StudentForum = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/enrollments/student/${user.id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/enrollments/student/${user.id}`);
       if (response.ok) {
         const enrollments = await response.json();
         // Map enrollments to course objects with proper structure
@@ -95,7 +95,7 @@ const StudentForum = () => {
 
   const fetchQuestionDetails = async (questionId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/forum/questions/${questionId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/forum/questions/${questionId}`, {
         headers: {
           'Authorization': `Bearer ${user?.accessToken || ''}`
         }
@@ -122,7 +122,7 @@ const StudentForum = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/forum/questions?student_id=${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/forum/questions?student_id=${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ const StudentForum = () => {
 
   const handleResolveQuestion = async (questionId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/forum/questions/${questionId}/resolve?student_id=${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/forum/questions/${questionId}/resolve?student_id=${user.id}`, {
         method: 'PUT',
       });
 
@@ -170,7 +170,7 @@ const StudentForum = () => {
 
   const handleAcceptAnswer = async (answerId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/forum/answers/${answerId}/accept?student_id=${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/forum/answers/${answerId}/accept?student_id=${user.id}`, {
         method: 'PUT',
       });
 

@@ -36,7 +36,7 @@ const ProfilePictureUpload = ({ currentPictureUrl, onPictureUpdate, size = 'larg
     const fetchProfilePicture = async () => {
       if (user?.id && !localPictureUrl) {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/profile-pictures/${user.id}`);
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/profile-pictures/${user.id}`);
           if (response.ok) {
             const data = await response.json();
             if (data.profile_picture_url) {
@@ -89,7 +89,7 @@ const ProfilePictureUpload = ({ currentPictureUrl, onPictureUpdate, size = 'larg
       formData.append('file', file);
       formData.append('user_id', user.id);
 
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/profile-pictures/upload', {
+      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/profile-pictures/upload', {
         method: 'POST',
         body: formData
       });
@@ -129,7 +129,7 @@ const ProfilePictureUpload = ({ currentPictureUrl, onPictureUpdate, size = 'larg
     try {
       setDeleting(true);
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/profile-pictures/${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/profile-pictures/${user.id}`, {
         method: 'DELETE'
       });
 
