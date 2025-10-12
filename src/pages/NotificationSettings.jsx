@@ -28,7 +28,7 @@ const NotificationSettings = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/notifications/preferences', {
+      const response = await fetch('${API_BASE_URL}/api/notifications/preferences', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -59,7 +59,7 @@ const NotificationSettings = () => {
         quiet_hours_end: quietHoursEnabled ? preferences.quiet_hours_end : null
       };
       
-      const response = await fetch('http://localhost:8000/api/notifications/preferences', {
+      const response = await fetch('${API_BASE_URL}/api/notifications/preferences', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -91,7 +91,7 @@ const StudentCalendar = () => {
         params.append('category', categoryFilter);
       }
       
-      const eventsResponse = await fetch(`http://localhost:8000/api/student/deadlines?${params}`);
+      const eventsResponse = await fetch(`${API_BASE_URL}/api/student/deadlines?${params}`);
       
       if (eventsResponse.ok) {
         const eventsData = await eventsResponse.json();
@@ -101,7 +101,7 @@ const StudentCalendar = () => {
       }
       
       // Fetch upcoming deadlines
-      const upcomingResponse = await fetch(`http://localhost:8000/api/student/deadlines/upcoming?student_id=${user.id}&limit=7`);
+      const upcomingResponse = await fetch(`${API_BASE_URL}/api/student/deadlines/upcoming?student_id=${user.id}&limit=7`);
       
       if (upcomingResponse.ok) {
         const upcomingData = await upcomingResponse.json();

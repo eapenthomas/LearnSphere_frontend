@@ -50,7 +50,7 @@ const TakeQuiz = () => {
   const fetchQuiz = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/quizzes/student/${quizId}/take?student_id=${user.id}`);
+      const response = await fetch(`${API_BASE_URL}/api/quizzes/student/${quizId}/take?student_id=${user.id}`);
       const data = await response.json();
       
       if (data.success) {
@@ -114,7 +114,7 @@ const TakeQuiz = () => {
         answer: answers[question.id] || ''
       }));
 
-      const response = await fetch('http://localhost:8000/api/quizzes/submit', {
+      const response = await fetch('${API_BASE_URL}/api/quizzes/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

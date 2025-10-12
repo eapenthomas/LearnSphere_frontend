@@ -24,7 +24,7 @@ const AdminNotificationBell = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8000/api/admin/notifications/?limit=10');
+      const response = await fetch('${API_BASE_URL}/api/admin/notifications/?limit=10');
       if (response.ok) {
         const data = await response.json();
         setNotifications(data);
@@ -38,7 +38,7 @@ const AdminNotificationBell = () => {
 
   const fetchNotificationCount = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/admin/notifications/count');
+      const response = await fetch('${API_BASE_URL}/api/admin/notifications/count');
       if (response.ok) {
         const data = await response.json();
         setUnreadCount(data.total);
@@ -50,7 +50,7 @@ const AdminNotificationBell = () => {
 
   const markAsRead = async (notificationId) => {
     try {
-      await fetch(`http://localhost:8000/api/admin/notifications/mark-read/${notificationId}`, {
+      await fetch(`${API_BASE_URL}/api/admin/notifications/mark-read/${notificationId}`, {
         method: 'POST'
       });
       
@@ -66,7 +66,7 @@ const AdminNotificationBell = () => {
 
   const markAllAsRead = async () => {
     try {
-      await fetch('http://localhost:8000/api/admin/notifications/mark-all-read', {
+      await fetch('${API_BASE_URL}/api/admin/notifications/mark-all-read', {
         method: 'POST'
       });
       
@@ -81,7 +81,7 @@ const AdminNotificationBell = () => {
 
   const dismissNotification = async (notificationId) => {
     try {
-      await fetch(`http://localhost:8000/api/admin/notifications/${notificationId}`, {
+      await fetch(`${API_BASE_URL}/api/admin/notifications/${notificationId}`, {
         method: 'DELETE'
       });
       

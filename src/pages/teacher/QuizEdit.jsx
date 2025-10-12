@@ -34,7 +34,7 @@ const QuizEdit = () => {
   const fetchQuiz = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/quizzes/${quizId}`);
+      const response = await fetch(`${API_BASE_URL}/api/quizzes/${quizId}`);
       const data = await response.json();
       
       if (data.success) {
@@ -193,7 +193,7 @@ const QuizEdit = () => {
         }))
       };
 
-      const response = await fetch(`http://localhost:8000/api/quizzes/${quizId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/quizzes/${quizId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

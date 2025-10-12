@@ -43,7 +43,7 @@ const QuizSubmissions = () => {
 
   const fetchQuizDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/quizzes/${quizId}`);
+      const response = await fetch(`${API_BASE_URL}/api/quizzes/${quizId}`);
       const data = await response.json();
       
       if (data.success) {
@@ -60,7 +60,7 @@ const QuizSubmissions = () => {
   const fetchSubmissions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/quizzes/${quizId}/submissions`);
+      const response = await fetch(`${API_BASE_URL}/api/quizzes/${quizId}/submissions`);
       const data = await response.json();
       
       if (data.success) {

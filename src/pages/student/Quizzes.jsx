@@ -32,7 +32,7 @@ const StudentQuizzes = () => {
   const fetchQuizzes = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/quizzes/student/${user.id}/available`);
+      const response = await fetch(`${API_BASE_URL}/api/quizzes/student/${user.id}/available`);
       const data = await response.json();
       
       if (data.success) {

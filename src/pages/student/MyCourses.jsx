@@ -63,7 +63,7 @@ const StudentMyCourses = () => {
       console.log('Fetching enrolled courses from backend API for student:', user.id);
 
       // Fetch enrolled courses from backend API
-      const response = await fetch(`http://localhost:8000/api/courses/student/${user.id}/enrolled`);
+      const response = await fetch(`${API_BASE_URL}/api/courses/student/${user.id}/enrolled`);
       if (!response.ok) {
         throw new Error(`Failed to fetch enrolled courses: ${response.status}`);
       }
