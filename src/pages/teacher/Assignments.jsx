@@ -59,7 +59,7 @@ const TeacherAssignments = () => {
   const fetchAssignments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/assignments/teacher/${user.id}`);
+      const response = await fetch(`http://localhost:8000/api/assignments/teacher/${user.id}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -77,7 +77,7 @@ const TeacherAssignments = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/courses/teacher/${user.id}`);
+      const response = await fetch(`http://localhost:8000/api/courses/teacher/${user.id}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -95,7 +95,7 @@ const TeacherAssignments = () => {
   const fetchSubmissions = async (assignmentId) => {
     try {
       setSubmissionsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/assignments/submissions/${assignmentId}?teacher_id=${user.id}`);
+      const response = await fetch(`http://localhost:8000/api/assignments/submissions/${assignmentId}?teacher_id=${user.id}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -138,7 +138,7 @@ const TeacherAssignments = () => {
         formDataToSend.append('file', assignmentFile);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/assignments/create?teacher_id=${user.id}`, {
+      const response = await fetch(`http://localhost:8000/api/assignments/create?teacher_id=${user.id}`, {
         method: 'POST',
         body: formDataToSend
       });
@@ -162,7 +162,7 @@ const TeacherAssignments = () => {
 
   const handleGradeSubmission = async (submissionId, score, feedback = '') => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/assignments/grade/${submissionId}?teacher_id=${user.id}`, {
+      const response = await fetch(`http://localhost:8000/api/assignments/grade/${submissionId}?teacher_id=${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -187,7 +187,7 @@ const TeacherAssignments = () => {
   const handleDownloadFile = async (fileType, fileId) => {
     try {
       // Use backend download API directly
-      const response = await fetch(`${API_BASE_URL}/api/files/download/${fileType}/${fileId}`, {
+      const response = await fetch(`http://localhost:8000/api/files/download/${fileType}/${fileId}`, {
         headers: {
           'Authorization': `Bearer ${user.accessToken}`
         }

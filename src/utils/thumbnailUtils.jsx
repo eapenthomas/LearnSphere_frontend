@@ -15,7 +15,7 @@ export const getThumbnailUrl = (course) => {
   if (course.thumbnail_url) {
     // If it's a Supabase storage URL, use our backend API to serve it
     if (isSupabaseStorageUrl(course.thumbnail_url)) {
-      return `${API_BASE_URL}/api/thumbnails/course/${course.id}`;
+      return `http://localhost:8000/api/thumbnails/course/${course.id}`;
     } else {
       // For external URLs (like Unsplash), use them directly
       return course.thumbnail_url;
@@ -107,7 +107,7 @@ export const isSupabaseStorageUrl = (url) => {
  */
 export const convertToBackendUrl = (supabaseUrl, resourceId, resourceType) => {
   if (isSupabaseStorageUrl(supabaseUrl)) {
-    return `${API_BASE_URL}/api/thumbnails/${resourceType}/${resourceId}`;
+    return `http://localhost:8000/api/thumbnails/${resourceType}/${resourceId}`;
   }
   return supabaseUrl;
 };

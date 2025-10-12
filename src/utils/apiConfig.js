@@ -1,5 +1,5 @@
 // API Configuration for LearnSphere Frontend
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://learnsphere-backend-d57a.onrender.com';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 // Helper function to get full API endpoint URL
 export const getApiUrl = (endpoint) => {

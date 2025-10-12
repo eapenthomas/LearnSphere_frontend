@@ -120,12 +120,12 @@ const TeacherDashboard = () => {
   const fetchTeacherStats = async () => {
     try {
       // Fetch courses
-      const coursesResponse = await fetch(`${API_BASE_URL}/api/courses/teacher/${user.id}`);
+      const coursesResponse = await fetch(`http://localhost:8000/api/courses/teacher/${user.id}`);
       const coursesData = coursesResponse.ok ? await coursesResponse.json() : {data: []};
       const courses = coursesData.success ? coursesData.data : [];
 
       // Fetch assignments
-      const assignmentsResponse = await fetch(`${API_BASE_URL}/api/assignments/teacher/${user.id}`);
+      const assignmentsResponse = await fetch(`http://localhost:8000/api/assignments/teacher/${user.id}`);
       const assignmentsData = assignmentsResponse.ok ? await assignmentsResponse.json() : [];
       const assignments = Array.isArray(assignmentsData) ? assignmentsData : [];
 
@@ -137,7 +137,7 @@ const TeacherDashboard = () => {
       for (const course of courses) {
         try {
           // Get enrollments for this course
-          const enrollmentsResponse = await fetch(`${API_BASE_URL}/api/enrollments/course/${course.id}`);
+          const enrollmentsResponse = await fetch(`http://localhost:8000/api/enrollments/course/${course.id}`);
           if (enrollmentsResponse.ok) {
             const enrollments = await enrollmentsResponse.json();
 
@@ -149,7 +149,7 @@ const TeacherDashboard = () => {
             // Get progress for each enrolled student
             for (const enrollment of enrollments) {
               try {
-                const progressResponse = await fetch(`${API_BASE_URL}/api/progress/course/${course.id}/student/${enrollment.student_id}`);
+                const progressResponse = await fetch(`http://localhost:8000/api/progress/course/${course.id}/student/${enrollment.student_id}`);
                 if (progressResponse.ok) {
                   const progress = await progressResponse.json();
                   if (progress) {
@@ -172,7 +172,7 @@ const TeacherDashboard = () => {
       // Calculate pending submissions
       let totalPendingSubmissions = 0;
       for (const assignment of assignments) {
-        const submissionsResponse = await fetch(`${API_BASE_URL}/api/assignments/submissions/${assignment.id}?teacher_id=${user.id}`);
+        const submissionsResponse = await fetch(`http://localhost:8000/api/assignments/submissions/${assignment.id}?teacher_id=${user.id}`);
         if (submissionsResponse.ok) {
           const submissions = await submissionsResponse.json();
           totalPendingSubmissions += submissions.filter(s => s.status !== 'reviewed').length;
@@ -225,7 +225,7 @@ const TeacherDashboard = () => {
 
   const fetchRecentCourses = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/courses/teacher/${user.id}`);
+      const response = await fetch(`http://localhost:8000/api/courses/teacher/${user.id}`);
       if (response.ok) {
         const coursesData = await response.json();
         const courses = Array.isArray(coursesData) ? coursesData : [];
@@ -247,13 +247,13 @@ const TeacherDashboard = () => {
 
   const fetchPendingSubmissions = async () => {
     try {
-      const assignmentsResponse = await fetch(`${API_BASE_URL}/api/assignments/teacher/${user.id}`);
+      const assignmentsResponse = await fetch(`http://localhost:8000/api/assignments/teacher/${user.id}`);
       if (assignmentsResponse.ok) {
         const assignments = await assignmentsResponse.json();
         const pending = [];
 
         for (const assignment of assignments.slice(0, 3)) {
-          const submissionsResponse = await fetch(`${API_BASE_URL}/api/assignments/submissions/${assignment.id}?teacher_id=${user.id}`);
+          const submissionsResponse = await fetch(`http://localhost:8000/api/assignments/submissions/${assignment.id}?teacher_id=${user.id}`);
           if (submissionsResponse.ok) {
             const submissions = await submissionsResponse.json();
             const pendingCount = submissions.filter(s => s.status !== 'reviewed').length;
@@ -277,7 +277,7 @@ const TeacherDashboard = () => {
 
   const fetchAnalyticsData = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/teacher/analytics/${user.id}`);
+      const response = await fetch(`http://localhost:8000/api/teacher/analytics/${user.id}`);
       if (response.ok) {
         const data = await response.json();
         setEnrollmentTrends(data.enrollmentTrends || []);

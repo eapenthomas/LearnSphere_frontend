@@ -46,7 +46,7 @@ const TeacherDashboardLayout = ({ children }) => {
     const fetchProfilePicture = async () => {
       if (user?.id) {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/profile-picture/${user.id}`);
+          const response = await fetch(`http://localhost:8000/api/profile-picture/${user.id}`);
           if (response.ok) {
             const data = await response.json();
             setProfilePictureUrl(data.profile_picture_url);

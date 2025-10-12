@@ -58,7 +58,7 @@ const QuizGenerator = ({ courseId, teacherId, onQuizGenerated }) => {
       formData.append('course_id', courseId);
       formData.append('teacher_id', teacherId);
 
-      const response = await fetch('${API_BASE_URL}/api/quiz-generator/generate', {
+      const response = await fetch('http://localhost:8000/api/quiz-generator/generate', {
         method: 'POST',
         body: formData
       });
@@ -84,7 +84,7 @@ const QuizGenerator = ({ courseId, teacherId, onQuizGenerated }) => {
   const handleSaveQuiz = async (editedQuiz) => {
     setSaving(true);
     try {
-      const response = await fetch('${API_BASE_URL}/api/quiz-generator/save-generated-quiz', {
+      const response = await fetch('http://localhost:8000/api/quiz-generator/save-generated-quiz', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -47,8 +47,7 @@ const TeacherForum = () => {
       if (filterCourse) params.append('course_id', filterCourse);
       if (filterResolved !== 'all') params.append('resolved', filterResolved === 'resolved');
       
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://learnsphere-backend-d57a.onrender.com';
-      const response = await fetch(`${API_BASE_URL}/api/forum/questions?${params}`, {
+      const response = await fetch(`http://localhost:8000/api/forum/questions?${params}`, {
         headers: {
           'Authorization': `Bearer ${user?.accessToken || ''}`
         }
@@ -69,7 +68,7 @@ const TeacherForum = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/courses/teacher/${user.id}`);
+      const response = await fetch(`http://localhost:8000/api/courses/teacher/${user.id}`);
       if (response.ok) {
         const data = await response.json();
         const coursesArray = Array.isArray(data) ? data : [];
@@ -83,7 +82,7 @@ const TeacherForum = () => {
 
   const fetchQuestionDetails = async (questionId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/forum/questions/${questionId}`, {
+      const response = await fetch(`http://localhost:8000/api/forum/questions/${questionId}`, {
         headers: {
           'Authorization': `Bearer ${user?.accessToken || ''}`
         }
@@ -111,7 +110,7 @@ const TeacherForum = () => {
 
     try {
       setSubmittingAnswer(true);
-      const response = await fetch(`${API_BASE_URL}/api/forum/answers?teacher_id=${user.id}`, {
+      const response = await fetch(`http://localhost:8000/api/forum/answers?teacher_id=${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

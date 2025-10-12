@@ -41,8 +41,7 @@ const TeacherApprovals = () => {
     setupRealTimeSubscription();
 
     // Test backend connectivity
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://learnsphere-backend-d57a.onrender.com';
-    fetch(`${API_BASE_URL}/api/admin/users`)
+    fetch('http://localhost:8000/api/admin/users')
       .then(response => {
         console.log('TeacherApprovals - Backend connectivity test:', response.status);
         return response.json();

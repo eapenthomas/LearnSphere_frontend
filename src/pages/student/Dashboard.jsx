@@ -93,18 +93,16 @@ const StudentDashboard = () => {
   const fetchEnrollmentStats = async () => {
     try {
       // Fetch enrolled courses count
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://learnsphere-backend-d57a.onrender.com';
-      
-      const enrollmentsResponse = await fetch(`${API_BASE_URL}/api/courses/student/${user.id}/enrolled`);
+      const enrollmentsResponse = await fetch(`http://localhost:8000/api/courses/student/${user.id}/enrolled`);
       const enrollmentsResult = enrollmentsResponse.ok ? await enrollmentsResponse.json() : { data: [] };
       const enrollments = enrollmentsResult.data || [];
 
       // Fetch assignment submissions
-      const assignmentsResponse = await fetch(`${API_BASE_URL}/api/assignments/student/${user.id}`);
+      const assignmentsResponse = await fetch(`http://localhost:8000/api/assignments/student/${user.id}`);
       const assignments = assignmentsResponse.ok ? await assignmentsResponse.json() : [];
 
       // Fetch course progress data
-      const progressResponse = await fetch(`${API_BASE_URL}/api/progress/student/${user.id}/courses`);
+      const progressResponse = await fetch(`http://localhost:8000/api/progress/student/${user.id}/courses`);
       const courseProgress = progressResponse.ok ? await progressResponse.json() : [];
 
       // Calculate stats
@@ -153,7 +151,7 @@ const StudentDashboard = () => {
   const fetchRecentCourses = async () => {
     try {
       // Fetch enrolled courses from the course API (better data structure)
-      const response = await fetch(`${API_BASE_URL}/api/courses/student/${user.id}/enrolled`);
+      const response = await fetch(`http://localhost:8000/api/courses/student/${user.id}/enrolled`);
 
       if (response.ok) {
         const result = await response.json();
@@ -180,7 +178,7 @@ const StudentDashboard = () => {
       console.log('🔍 Fetching upcoming assignments for user:', user.id);
 
       // Use the new urgent deadlines API to get assignments and quizzes due within 2 days
-      const response = await fetch(`${API_BASE_URL}/api/student/deadlines/urgent?student_id=${user.id}&limit=5`);
+      const response = await fetch(`http://localhost:8000/api/student/deadlines/urgent?student_id=${user.id}&limit=5`);
       console.log('📡 Urgent deadlines API response status:', response.status);
 
       if (response.ok) {
@@ -203,7 +201,7 @@ const StudentDashboard = () => {
         console.log('⚠️ Urgent deadlines API failed, trying fallback...');
         // Fallback to old method if new API fails
         try {
-          const response = await fetch(`${API_BASE_URL}/api/assignments/student/${user.id}`);
+          const response = await fetch(`http://localhost:8000/api/assignments/student/${user.id}`);
           console.log('📡 Fallback API response status:', response.status);
 
           if (response.ok) {

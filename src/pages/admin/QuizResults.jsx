@@ -27,7 +27,7 @@ const QuizResults = () => {
   const fetchQuizResults = async () => {
     try {
       setLoading(true);
-      const response = await fetch('${API_BASE_URL}/api/admin/quiz-results');
+      const response = await fetch('http://localhost:8000/api/admin/quiz-results');
       if (response.ok) {
         const data = await response.json();
         setQuizzes(data);

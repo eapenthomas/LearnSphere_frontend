@@ -61,8 +61,7 @@ const ActivityLogs = () => {
       if (filters.end_date) params.append('end_date', filters.end_date);
       if (filters.action_type) params.append('action_type', filters.action_type);
 
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://learnsphere-backend-d57a.onrender.com';
-      const response = await fetch(`${API_BASE_URL}/api/admin/dashboard/activity-logs?${params}`);
+      const response = await fetch(`http://localhost:8000/api/admin/dashboard/activity-logs?${params}`);
       
       if (response.ok) {
         const result = await response.json();
@@ -113,7 +112,7 @@ const ActivityLogs = () => {
       if (filters.end_date) params.append('end_date', filters.end_date);
       if (filters.action_type) params.append('action_type', filters.action_type);
 
-      const response = await fetch(`${API_BASE_URL}/api/admin/dashboard/activity-logs/export?${params}`);
+      const response = await fetch(`http://localhost:8000/api/admin/dashboard/activity-logs/export?${params}`);
       
       if (response.ok) {
         const result = await response.json();

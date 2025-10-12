@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 // API base URL
-const API_BASE_URL = '${API_BASE_URL}';
+const API_BASE_URL = 'http://localhost:8000';
 
 // Validation schema
 const otpSchema = yup.object().shape({

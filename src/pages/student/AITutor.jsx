@@ -55,7 +55,7 @@ const AITutor = () => {
       formData.append('file', file);
       formData.append('user_id', user.id);
 
-      const response = await fetch('${API_BASE_URL}/api/ai-tutor/upload', {
+      const response = await fetch('http://localhost:8000/api/ai-tutor/upload', {
         method: 'POST',
         body: formData,
       });
@@ -99,7 +99,7 @@ const AITutor = () => {
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const response = await fetch('${API_BASE_URL}/api/ai-tutor/ask', {
+      const response = await fetch('http://localhost:8000/api/ai-tutor/ask', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

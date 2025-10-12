@@ -1,38 +1,26 @@
 import { createClient } from '@supabase/supabase-js';
 import { getApiUrl, API_ENDPOINTS } from './apiConfig.js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ffspaottcgyalpagbxvx.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmc3Bhb3R0Y2d5YWxwYWdieHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyMDAyNzQsImV4cCI6MjA2OTc3NjI3NH0.eFhKNCnQtQz3WX4Rtz3Z0-51HFXL50b8iDFtszitVVE';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Warn if environment variables are not set
-if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  console.warn('⚠️ Supabase environment variables not found. Using default values.');
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('⚠️ Supabase environment variables not found. Please create a .env file with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
 }
 
-// Create a singleton Supabase client to avoid multiple instances
-let supabaseInstance = null;
-
-const createSupabaseClient = () => {
-  if (!supabaseInstance) {
-    supabaseInstance = createClient(
-      supabaseUrl || 'https://placeholder.supabase.co',
-      supabaseAnonKey || 'placeholder_key',
-      {
-        auth: {
-          storageKey: 'learnsphere-auth',
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: true,
-          flowType: 'pkce'
-        }
-      }
-    );
-    console.log('✅ Supabase client created (singleton)');
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder_key',
+  {
+    auth: {
+      storageKey: 'learnsphere-auth',
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
   }
-  return supabaseInstance;
-};
-
-export const supabase = createSupabaseClient();
+);
 
 // Function to set authentication token
 export const setSupabaseAuth = (accessToken) => {
@@ -493,7 +481,7 @@ export const adminOperations = {
         const adminName = adminProfile?.full_name || 'Administrator';
 
         // Send notification via backend API
-        await fetch(getApiUrl(API_ENDPOINTS.NOTIFICATIONS.TEACHER_APPROVAL), {
+        await fetch('http://localhost:8000/api/notifications/teacher-approval', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -560,7 +548,7 @@ export const adminOperations = {
         const adminName = adminProfile?.full_name || 'Administrator';
 
         // Send notification via backend API
-        await fetch(getApiUrl(API_ENDPOINTS.NOTIFICATIONS.TEACHER_REJECTION), {
+        await fetch('http://localhost:8000/api/notifications/teacher-rejection', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -660,7 +648,7 @@ export const adminOperations = {
       const adminName = adminProfile?.full_name || 'Administrator';
 
       // Send notification via backend API
-      await fetch(getApiUrl(API_ENDPOINTS.NOTIFICATIONS.USER_STATUS_CHANGE), {
+      await fetch('http://localhost:8000/api/notifications/user-status-change', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

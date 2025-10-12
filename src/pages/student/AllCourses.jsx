@@ -43,7 +43,7 @@ const StudentAllCourses = () => {
       console.log('Fetching all courses from backend API...');
 
       // Fetch all courses from payment API
-      const response = await fetch('${API_BASE_URL}/api/student/courses', {
+      const response = await fetch('http://localhost:8000/api/student/courses', {
         headers: {
           'Authorization': `Bearer ${user.accessToken}`
         }
@@ -82,7 +82,7 @@ const StudentAllCourses = () => {
 
       if (course.is_paid && course.enrollment_status === 'not_enrolled') {
         // For paid courses, initiate payment
-        const paymentResponse = await fetch(`${API_BASE_URL}/api/student/initiate-payment/${courseId}`, {
+        const paymentResponse = await fetch(`http://localhost:8000/api/student/initiate-payment/${courseId}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${user.accessToken}`
@@ -105,7 +105,7 @@ const StudentAllCourses = () => {
           order_id: paymentData.order_id,
           handler: async function (response) {
             // Verify payment
-            const verifyResponse = await fetch('${API_BASE_URL}/api/student/verify-payment', {
+            const verifyResponse = await fetch('http://localhost:8000/api/student/verify-payment', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ const StudentAllCourses = () => {
         
       } else {
         // For free courses, direct enrollment
-        const response = await fetch('${API_BASE_URL}/api/enrollments/enroll', {
+        const response = await fetch('http://localhost:8000/api/enrollments/enroll', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ const StudentAllCourses = () => {
   const handleUnenroll = async (courseId) => {
     try {
       // Use backend API for unenrollment
-      const response = await fetch(`${API_BASE_URL}/api/enrollments/student/${user.id}/course/${courseId}`, {
+      const response = await fetch(`http://localhost:8000/api/enrollments/student/${user.id}/course/${courseId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

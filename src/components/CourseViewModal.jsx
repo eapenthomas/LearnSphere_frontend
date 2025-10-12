@@ -43,7 +43,7 @@ const CourseViewModal = ({ isOpen, onClose, course }) => {
         headers['Authorization'] = `Bearer ${user.id}`;
       }
       
-      const response = await fetch(`${API_BASE_URL}/api/course-materials/course/${course.id}`, {
+      const response = await fetch(`http://localhost:8000/api/course-materials/course/${course.id}`, {
         headers
       });
       if (response.ok) {
@@ -79,7 +79,7 @@ const CourseViewModal = ({ isOpen, onClose, course }) => {
         headers['Authorization'] = `Bearer ${user.id}`;
       }
 
-      const response = await fetch('${API_BASE_URL}/api/course-materials/upload', {
+      const response = await fetch('http://localhost:8000/api/course-materials/upload', {
         method: 'POST',
         headers,
         body: formData
@@ -109,7 +109,7 @@ const CourseViewModal = ({ isOpen, onClose, course }) => {
         headers['Authorization'] = `Bearer ${user.id}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/course-materials/${materialId}`, {
+      const response = await fetch(`http://localhost:8000/api/course-materials/${materialId}`, {
         method: 'DELETE',
         headers
       });
@@ -256,7 +256,7 @@ const CourseViewModal = ({ isOpen, onClose, course }) => {
                             onClick={async () => {
                               try {
                                 // Use backend download API
-                                const response = await fetch(`${API_BASE_URL}/api/files/download/course-material/${material.id}`, {
+                                const response = await fetch(`http://localhost:8000/api/files/download/course-material/${material.id}`, {
                                   headers: {
                                     'Authorization': `Bearer ${user.accessToken}`
                                   }

@@ -40,7 +40,7 @@ const StudentAssignments = () => {
   const fetchAssignments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/assignments/student/${user.id}`, {
+      const response = await fetch(`http://localhost:8000/api/assignments/student/${user.id}`, {
         headers: {
           'Authorization': `Bearer ${user.accessToken}`
         }
@@ -71,7 +71,7 @@ const StudentAssignments = () => {
       formData.append('student_id', user.id);
       formData.append('file', submissionFile);
 
-      const response = await fetch('${API_BASE_URL}/api/assignments/submit', {
+      const response = await fetch('http://localhost:8000/api/assignments/submit', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.accessToken}`
@@ -100,7 +100,7 @@ const StudentAssignments = () => {
   const handleDownloadAssignment = async (assignmentId) => {
     try {
       // Use backend download API directly
-      const response = await fetch(`${API_BASE_URL}/api/files/download/assignment/${assignmentId}`, {
+      const response = await fetch(`http://localhost:8000/api/files/download/assignment/${assignmentId}`, {
         headers: {
           'Authorization': `Bearer ${user.accessToken}`
         }
