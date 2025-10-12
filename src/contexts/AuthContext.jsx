@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }) => {
         // Fetch user profile from database
         const profile = await fetchUserProfile(supabaseSession.user.id);
         if (profile) {
-            const finalRole = profile.email === 'eapentkadamapuzha@gmail.com' ? 'admin' : (profile.role || 'student');
+            const finalRole = (profile.email === 'eapentkadamapuzha@gmail.com' || profile.email === 'admin@learnsphere.com' || profile.email === 'eapenthomas2026@mca.ajce.in') ? 'admin' : (profile.role || 'student');
 
             const userData = {
                 id: profile.id,
@@ -201,15 +201,34 @@ export const AuthProvider = ({ children }) => {
                     
                     // Validate and set user data
                     if (userData.id && userData.email) {
-                        const finalRole = userData.email === 'eapentkadamapuzha@gmail.com' ? 'admin' : (userData.role || 'student');
-                        const restoredUser = { ...userData, role: finalRole, accessToken: token };
+                        // Ensure role is properly set
+                        let finalRole = userData.role;
+                        
+                        // Special admin email check
+                        if (userData.email === 'eapentkadamapuzha@gmail.com' || userData.email === 'admin@learnsphere.com' || userData.email === 'eapenthomas2026@mca.ajce.in') {
+                            finalRole = 'admin';
+                        } else if (!finalRole) {
+                            // Default to student if no role is set
+                            finalRole = 'student';
+                        }
+                        
+                        const restoredUser = { 
+                            ...userData, 
+                            role: finalRole, 
+                            accessToken: token,
+                            // Ensure all required fields are present
+                            fullName: userData.fullName || userData.full_name || userData.email.split('@')[0],
+                            isActive: userData.isActive !== false, // Default to true if not set
+                            approvalStatus: userData.approvalStatus || 'approved' // Default to approved
+                        };
+                        
                         setUser(restoredUser);
                         setAuthToken(token);
                         
                         // Update localStorage with the restored user data
                         localStorage.setItem('learnsphere_user', JSON.stringify(restoredUser));
                         
-                        console.log('AuthContext - Session restored for:', userData.fullName, 'Role:', finalRole);
+                        console.log('AuthContext - Session restored for:', restoredUser.fullName, 'Role:', finalRole, 'Full user:', restoredUser);
                     }
                 } else {
                     console.log('AuthContext - No valid stored session found, user will need to login');
@@ -344,8 +363,8 @@ export const AuthProvider = ({ children }) => {
             const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials);
             const { access_token, refresh_token, user_id, role, full_name } = response.data;
 
-            // Force admin role for specific email
-            const finalRole = credentials.email === 'eapentkadamapuzha@gmail.com' ? 'admin' : role;
+            // Force admin role for specific emails
+            const finalRole = (credentials.email === 'eapentkadamapuzha@gmail.com' || credentials.email === 'admin@learnsphere.com' || credentials.email === 'eapenthomas2026@mca.ajce.in') ? 'admin' : (role || 'student');
 
             const userObj = {
                 id: user_id,
