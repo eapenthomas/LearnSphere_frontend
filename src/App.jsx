@@ -42,6 +42,7 @@ import SystemSettings from './pages/admin/SystemSettings.jsx';
 
 import ProfilePage from './pages/ProfilePage.jsx';
 import VoiceNavigationDemo from './pages/VoiceNavigationDemo.jsx';
+import TestDashboard from './components/TestDashboard.jsx';
 
 // Component to redirect users to their appropriate dashboard
 const RoleBasedRedirect = () => {
@@ -357,6 +358,12 @@ const AppContent = () => {
                     <ProtectedRoute>
                         <VoiceNavigationDemo />
                     </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/test-dashboard"
+                element={
+                    <TestDashboard />
                 }
             />
         </Routes>
