@@ -3,13 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { motion } from 'framer-motion';
 import { BookOpen, Loader } from 'lucide-react';
-import supabase from '../utils/supabaseClient.js';
+import { supabase } from '../utils/supabaseClient.js';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
   const { user, setUser, setLoading } = useAuth();
 
   useEffect(() => {
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.error('AuthCallback - Timeout reached, redirecting to login');
+      navigate('/login?error=timeout');
+    }, 30000); // 30 second timeout
+
     const handleAuthCallback = async () => {
       try {
         console.log('AuthCallback - Processing Google auth callback...');
@@ -53,6 +59,13 @@ const AuthCallback = () => {
                           session.user.email?.split('@')[0] ||
                           'User';
 
+          console.log('AuthCallback - Creating profile with data:', {
+            id: session.user.id,
+            email: session.user.email,
+            full_name: fullName,
+            role: 'student'
+          });
+
           // Create new profile with default role as student
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
@@ -70,16 +83,51 @@ const AuthCallback = () => {
 
           if (createError) {
             console.error('AuthCallback - Error creating profile:', createError);
-            navigate('/login?error=profile_creation_failed');
-            return;
+            console.error('AuthCallback - Create error details:', {
+              message: createError.message,
+              code: createError.code,
+              details: createError.details,
+              hint: createError.hint
+            });
+            
+            // If profile creation fails, still try to proceed with basic user data
+            console.log('AuthCallback - Profile creation failed, proceeding with basic user data');
+            profile = {
+              id: session.user.id,
+              email: session.user.email,
+              full_name: fullName,
+              role: 'student',
+              approval_status: 'approved',
+              is_active: true
+            };
+          } else {
+            profile = newProfile;
+            console.log('AuthCallback - New profile created:', profile);
           }
-
-          profile = newProfile;
-          console.log('AuthCallback - New profile created:', profile);
         } else if (profileError) {
           console.error('AuthCallback - Profile error:', profileError);
-          navigate('/login?error=profile_error');
-          return;
+          console.error('AuthCallback - Profile error details:', {
+            message: profileError.message,
+            code: profileError.code,
+            details: profileError.details,
+            hint: profileError.hint
+          });
+          
+          // If we can't fetch profile, create a basic one
+          console.log('AuthCallback - Profile fetch failed, creating basic profile data');
+          const fullName = session.user.user_metadata?.full_name ||
+                          session.user.user_metadata?.name ||
+                          session.user.email?.split('@')[0] ||
+                          'User';
+          
+          profile = {
+            id: session.user.id,
+            email: session.user.email,
+            full_name: fullName,
+            role: 'student',
+            approval_status: 'approved',
+            is_active: true
+          };
         }
 
         console.log('AuthCallback - Profile found:', profile);
@@ -117,6 +165,7 @@ const AuthCallback = () => {
         navigate('/login?error=unexpected_error');
       } finally {
         setLoading(false);
+        clearTimeout(timeoutId); // Clear timeout on completion
       }
     };
 
@@ -157,6 +206,11 @@ const AuthCallback = () => {
       // Otherwise, handle the auth callback
       handleAuthCallback();
     }
+
+    // Cleanup function to clear timeout
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [user, navigate, setUser, setLoading]);
 
   return (
