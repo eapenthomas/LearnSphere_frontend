@@ -51,7 +51,7 @@ const RegisterPage = () => {
   const [emailCheckTimeout, setEmailCheckTimeout] = useState(null);
 
   // API base URL
-  const API_BASE_URL = 'http://localhost:8000';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://learnsphere-backend-d57a.onrender.com';
 
   // Email availability check function
   const checkEmailAvailability = useCallback(async (email) => {

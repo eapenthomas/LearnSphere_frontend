@@ -9,19 +9,30 @@ if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KE
   console.warn('⚠️ Supabase environment variables not found. Using default values.');
 }
 
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder_key',
-  {
-    auth: {
-      storageKey: 'learnsphere-auth',
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true,
-      flowType: 'pkce'
-    }
+// Create a singleton Supabase client to avoid multiple instances
+let supabaseInstance = null;
+
+const createSupabaseClient = () => {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      supabaseUrl || 'https://placeholder.supabase.co',
+      supabaseAnonKey || 'placeholder_key',
+      {
+        auth: {
+          storageKey: 'learnsphere-auth',
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true,
+          flowType: 'pkce'
+        }
+      }
+    );
+    console.log('✅ Supabase client created (singleton)');
   }
-);
+  return supabaseInstance;
+};
+
+export const supabase = createSupabaseClient();
 
 // Function to set authentication token
 export const setSupabaseAuth = (accessToken) => {
@@ -482,7 +493,7 @@ export const adminOperations = {
         const adminName = adminProfile?.full_name || 'Administrator';
 
         // Send notification via backend API
-        await fetch('http://localhost:8000/api/notifications/teacher-approval', {
+        await fetch(getApiUrl(API_ENDPOINTS.NOTIFICATIONS.TEACHER_APPROVAL), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -549,7 +560,7 @@ export const adminOperations = {
         const adminName = adminProfile?.full_name || 'Administrator';
 
         // Send notification via backend API
-        await fetch('http://localhost:8000/api/notifications/teacher-rejection', {
+        await fetch(getApiUrl(API_ENDPOINTS.NOTIFICATIONS.TEACHER_REJECTION), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -649,7 +660,7 @@ export const adminOperations = {
       const adminName = adminProfile?.full_name || 'Administrator';
 
       // Send notification via backend API
-      await fetch('http://localhost:8000/api/notifications/user-status-change', {
+      await fetch(getApiUrl(API_ENDPOINTS.NOTIFICATIONS.USER_STATUS_CHANGE), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
