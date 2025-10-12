@@ -34,7 +34,7 @@ const QuizEdit = () => {
   const fetchQuiz = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/quizzes/${quizId}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/${quizId}`);
       const data = await response.json();
       
       if (data.success) {
@@ -193,7 +193,7 @@ const QuizEdit = () => {
         }))
       };
 
-      const response = await fetch(`http://localhost:8000/api/quizzes/${quizId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/${quizId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

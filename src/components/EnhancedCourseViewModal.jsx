@@ -56,7 +56,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
     try {
       console.log('Fetching enrollment count for course:', course.id);
       
-      const response = await fetch('http://localhost:8000/api/courses/all');
+      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/all');
       if (response.ok) {
         const result = await response.json();
         const allCourses = result.data || [];
@@ -89,7 +89,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
         headers['Authorization'] = `Bearer ${user.id}`;
       }
       
-      const response = await fetch(`http://localhost:8000/api/course-materials/course/${course.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/course-materials/course/${course.id}`, {
         headers
       });
       if (response.ok) {
@@ -109,7 +109,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
 
   const fetchCourseProgress = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/progress/course/${course.id}/student/${user.id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/progress/course/${course.id}/student/${user.id}`);
       if (response.ok) {
         const progress = await response.json();
         setCourseProgress(progress);
@@ -124,7 +124,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
 
     try {
       // Mark material as completed when viewed
-      await fetch(`http://localhost:8000/api/progress/material/track?student_id=${user.id}&course_id=${course.id}`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/progress/material/track?student_id=${user.id}&course_id=${course.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
 
     try {
       // Mark material as completed when downloaded
-      await fetch(`http://localhost:8000/api/progress/material/track?student_id=${user.id}&course_id=${course.id}`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/progress/material/track?student_id=${user.id}&course_id=${course.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +183,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
       });
 
       // Also track the download specifically
-      await fetch(`http://localhost:8000/api/progress/material/download?student_id=${user.id}&course_id=${course.id}`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/progress/material/download?student_id=${user.id}&course_id=${course.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -224,7 +224,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
     if (!isStudent) return;
     
     try {
-      await fetch(`http://localhost:8000/api/progress/material/track?student_id=${user.id}&course_id=${course.id}`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/progress/material/track?student_id=${user.id}&course_id=${course.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -268,7 +268,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
         headers['Authorization'] = `Bearer ${user.id}`;
       }
 
-      const response = await fetch('http://localhost:8000/api/course-materials/upload', {
+      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/course-materials/upload', {
         method: 'POST',
         headers,
         body: formData
@@ -299,7 +299,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
         headers['Authorization'] = `Bearer ${user.id}`;
       }
 
-      const response = await fetch(`http://localhost:8000/api/course-materials/${materialId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/course-materials/${materialId}`, {
         method: 'DELETE',
         headers
       });
@@ -529,7 +529,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
                             onClick={() => {
                               trackMaterialView(material);
                               // Open in new tab using backend view API for inline viewing
-                              window.open(`http://localhost:8000/api/files/view/material/${material.id}`, '_blank');
+                              window.open(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/files/view/material/${material.id}`, '_blank');
                             }}
                             className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                             title="View"
@@ -541,7 +541,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
                               trackMaterialDownload(material);
                               try {
                                 // Use backend download API
-                                const response = await fetch(`http://localhost:8000/api/files/download/course-material/${material.id}`, {
+                                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/files/download/course-material/${material.id}`, {
                                   headers: {
                                     'Authorization': `Bearer ${user.accessToken}`
                                   }

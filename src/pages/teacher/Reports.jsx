@@ -43,7 +43,7 @@ const TeacherReports = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/courses/teacher/${user.id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/teacher/${user.id}`);
       if (response.ok) {
         const data = await response.json();
         setCourses(data.courses || []);
@@ -59,7 +59,7 @@ const TeacherReports = () => {
       
       // Fetch overview statistics
       const overviewResponse = await fetch(
-        `http://localhost:8000/api/teacher/reports/overview?teacher_id=${user.id}&timeframe=${selectedTimeframe}&course_id=${selectedCourse}`
+        `${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/reports/overview?teacher_id=${user.id}&timeframe=${selectedTimeframe}&course_id=${selectedCourse}`
       );
       
       if (overviewResponse.ok) {
@@ -67,14 +67,14 @@ const TeacherReports = () => {
         
         // Fetch detailed course statistics
         const courseStatsResponse = await fetch(
-          `http://localhost:8000/api/teacher/reports/course-stats?teacher_id=${user.id}&timeframe=${selectedTimeframe}`
+          `${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/reports/course-stats?teacher_id=${user.id}&timeframe=${selectedTimeframe}`
         );
         
         const courseStats = courseStatsResponse.ok ? await courseStatsResponse.json() : [];
         
         // Fetch student performance data
         const studentPerformanceResponse = await fetch(
-          `http://localhost:8000/api/teacher/reports/student-performance?teacher_id=${user.id}&course_id=${selectedCourse}`
+          `${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/reports/student-performance?teacher_id=${user.id}&course_id=${selectedCourse}`
         );
         
         const studentPerformance = studentPerformanceResponse.ok ? await studentPerformanceResponse.json() : [];
@@ -137,7 +137,7 @@ const TeacherReports = () => {
   const exportReport = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/api/teacher/reports/export?teacher_id=${user.id}&timeframe=${selectedTimeframe}&course_id=${selectedCourse}`,
+        `${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/reports/export?teacher_id=${user.id}&timeframe=${selectedTimeframe}&course_id=${selectedCourse}`,
         { method: 'POST' }
       );
       

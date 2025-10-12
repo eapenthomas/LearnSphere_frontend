@@ -40,7 +40,7 @@ const NotesSummarizer = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const resp = await fetch('http://localhost:8000/api/notes/summarize', {
+      const resp = await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/notes/summarize', {
         method: 'POST',
         headers: {
           // Backend expects Authorization: Bearer <accessToken>

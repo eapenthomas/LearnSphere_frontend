@@ -49,7 +49,7 @@ const Quizzes = () => {
   const fetchQuizzes = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/quizzes/teacher/${user.id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/teacher/${user.id}`);
       const data = await response.json();
 
       if (data.success) {
@@ -67,7 +67,7 @@ const Quizzes = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/courses/teacher/${user.id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/courses/teacher/${user.id}`);
       const result = await response.json();
 
       if (response.ok && result.success && Array.isArray(result.data)) {
@@ -87,7 +87,7 @@ const Quizzes = () => {
 
   const handleDeleteQuiz = async (quizId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/quizzes/${quizId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/${quizId}`, {
         method: 'DELETE'
       });
       
@@ -109,7 +109,7 @@ const Quizzes = () => {
 
   const handleStatusChange = async (quizId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/quizzes/${quizId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/${quizId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

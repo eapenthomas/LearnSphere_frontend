@@ -1,11 +1,17 @@
 // API Configuration for LearnSphere Frontend
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}';
 
 // Helper function to get full API endpoint URL
 export const getApiUrl = (endpoint) => {
   // Remove leading slash if present to avoid double slashes
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
   return `${API_BASE_URL}/${cleanEndpoint}`;
+};
+
+// Helper function for fetch requests with proper API base URL
+export const apiFetch = async (endpoint, options = {}) => {
+  const url = getApiUrl(endpoint);
+  return fetch(url, options);
 };
 
 // Common API endpoints

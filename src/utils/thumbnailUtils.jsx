@@ -15,7 +15,7 @@ export const getThumbnailUrl = (course) => {
   if (course.thumbnail_url) {
     // If it's a Supabase storage URL, use our backend API to serve it
     if (isSupabaseStorageUrl(course.thumbnail_url)) {
-      return `http://localhost:8000/api/thumbnails/course/${course.id}`;
+      return `${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/thumbnails/course/${course.id}`;
     } else {
       // For external URLs (like Unsplash), use them directly
       return course.thumbnail_url;
@@ -107,7 +107,7 @@ export const isSupabaseStorageUrl = (url) => {
  */
 export const convertToBackendUrl = (supabaseUrl, resourceId, resourceType) => {
   if (isSupabaseStorageUrl(supabaseUrl)) {
-    return `http://localhost:8000/api/thumbnails/${resourceType}/${resourceId}`;
+    return `${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/thumbnails/${resourceType}/${resourceId}`;
   }
   return supabaseUrl;
 };

@@ -124,7 +124,7 @@ const TeacherProfile = () => {
 
   const fetchProfileData = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/teacher/reports/profile/${user.id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/reports/profile/${user.id}`);
       if (response.ok) {
         const data = await response.json();
         setProfileData({
@@ -162,7 +162,7 @@ const TeacherProfile = () => {
 
   const fetchTeacherStats = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/api/teacher/reports/stats/${user.id}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/reports/stats/${user.id}`);
       if (response.ok) {
         const data = await response.json();
         setStats({
@@ -203,7 +203,7 @@ const TeacherProfile = () => {
   const handleSaveProfile = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/teacher/reports/profile/${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/reports/profile/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -232,14 +232,14 @@ const TeacherProfile = () => {
   const fetchTeacherRatings = async () => {
     try {
       // Fetch rating summary
-      const summaryResponse = await fetch(`http://localhost:8000/api/teacher-ratings/teacher/${user.id}/summary`);
+      const summaryResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher-ratings/teacher/${user.id}/summary`);
       if (summaryResponse.ok) {
         const summary = await summaryResponse.json();
         setRatingSummary(summary);
       }
 
       // Fetch recent ratings
-      const ratingsResponse = await fetch(`http://localhost:8000/api/teacher-ratings/teacher/${user.id}?limit=5`);
+      const ratingsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher-ratings/teacher/${user.id}?limit=5`);
       if (ratingsResponse.ok) {
         const ratingsData = await ratingsResponse.json();
         setRatings(ratingsData);
@@ -262,7 +262,7 @@ const TeacherProfile = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/auth/change-password`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/auth/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -293,7 +293,7 @@ const TeacherProfile = () => {
   const handleSaveSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/teacher/settings/${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/teacher/settings/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

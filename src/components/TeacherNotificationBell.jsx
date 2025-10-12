@@ -26,7 +26,7 @@ const TeacherNotificationBell = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
-      const response = await fetch('http://localhost:8000/api/notifications/?limit=15', {
+      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/notifications/?limit=15', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -47,7 +47,7 @@ const TeacherNotificationBell = () => {
   const fetchNotificationCount = async () => {
     try {
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
-      const response = await fetch('http://localhost:8000/api/notifications/count', {
+      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/notifications/count', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -67,7 +67,7 @@ const TeacherNotificationBell = () => {
     try {
       setMarkingRead(true);
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
-      const response = await fetch(`http://localhost:8000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -97,7 +97,7 @@ const TeacherNotificationBell = () => {
     try {
       setMarkingRead(true);
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
-      const response = await fetch('http://localhost:8000/api/notifications/mark-all-read', {
+      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/notifications/mark-all-read', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -121,7 +121,7 @@ const TeacherNotificationBell = () => {
   const deleteNotification = async (notificationId) => {
     try {
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
-      const response = await fetch(`http://localhost:8000/api/notifications/${notificationId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

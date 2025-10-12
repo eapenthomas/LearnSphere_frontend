@@ -39,7 +39,7 @@ const QuizResult = () => {
       setLoading(true);
       
       // Fetch quiz details
-      const quizResponse = await fetch(`http://localhost:8000/api/quizzes/${quizId}`);
+      const quizResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/${quizId}`);
       const quizData = await quizResponse.json();
       
       if (quizData.success) {
@@ -47,7 +47,7 @@ const QuizResult = () => {
       }
 
       // Fetch submission details
-      const submissionResponse = await fetch(`http://localhost:8000/api/quizzes/${quizId}/submissions`);
+      const submissionResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || '${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}'}/api/quizzes/${quizId}/submissions`);
       const submissionData = await submissionResponse.json();
       
       if (submissionData.success) {
