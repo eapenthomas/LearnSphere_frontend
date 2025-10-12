@@ -41,7 +41,8 @@ const TeacherVerificationAdmin = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:8000/api/teacher-verification/admin/pending-requests', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://learnsphere-backend-d57a.onrender.com';
+      const response = await fetch(`${API_BASE_URL}/api/teacher-verification/admin/pending-requests`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -70,7 +71,7 @@ const TeacherVerificationAdmin = () => {
       setProcessing(userId);
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
       
-      const response = await fetch('http://localhost:8000/api/teacher-verification/approve-reject', {
+      const response = await fetch(`${API_BASE_URL}/api/teacher-verification/approve-reject`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

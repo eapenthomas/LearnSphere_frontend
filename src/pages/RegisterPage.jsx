@@ -301,7 +301,8 @@ const RegisterPage = () => {
       throw new Error('Verification document is required for manual approval');
     }
 
-    const response = await fetch('http://localhost:8000/api/teacher-verification/register-manual', {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://learnsphere-backend-d57a.onrender.com';
+    const response = await fetch(`${API_BASE_URL}/api/teacher-verification/register-manual`, {
       method: 'POST',
       body: formDataToSend,
     });

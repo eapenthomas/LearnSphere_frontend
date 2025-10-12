@@ -66,7 +66,8 @@ const TeacherVerificationForm = ({ onSuccess, formData, onClose }) => {
       formDataToSend.append('password', formData.password);
       formDataToSend.append('id_card', idCard);
 
-      const response = await fetch('http://localhost:8000/api/teacher-verification/register', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://learnsphere-backend-d57a.onrender.com';
+      const response = await fetch(`${API_BASE_URL}/api/teacher-verification/register`, {
         method: 'POST',
         body: formDataToSend,
       });
