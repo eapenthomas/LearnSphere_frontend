@@ -85,8 +85,8 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
       console.log('Fetching materials for course:', course.id);
       
       const headers = {};
-      if (user?.id) {
-        headers['Authorization'] = `Bearer ${user.id}`;
+      if (user?.accessToken) {
+        headers['Authorization'] = `Bearer ${user.accessToken}`;
       }
       
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/course/${course.id}`, {
@@ -264,8 +264,8 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
       formData.append('description', `Course material: ${file.name}`);
 
       const headers = {};
-      if (user?.id) {
-        headers['Authorization'] = `Bearer ${user.id}`;
+      if (user?.accessToken) {
+        headers['Authorization'] = `Bearer ${user.accessToken}`;
       }
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/upload`, {
@@ -295,8 +295,8 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
 
     try {
       const headers = {};
-      if (user?.id) {
-        headers['Authorization'] = `Bearer ${user.id}`;
+      if (user?.accessToken) {
+        headers['Authorization'] = `Bearer ${user.accessToken}`;
       }
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/${materialId}`, {
