@@ -24,7 +24,15 @@ const AdminNotificationBell = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/notifications/?limit=10');
+      const token = localStorage.getItem('learnsphere_token');
+      if (!token) return;
+      
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/notifications/?limit=10`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setNotifications(data);
@@ -38,7 +46,15 @@ const AdminNotificationBell = () => {
 
   const fetchNotificationCount = async () => {
     try {
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/notifications/count');
+      const token = localStorage.getItem('learnsphere_token');
+      if (!token) return;
+      
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/notifications/count`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setUnreadCount(data.total);
@@ -50,8 +66,15 @@ const AdminNotificationBell = () => {
 
   const markAsRead = async (notificationId) => {
     try {
+      const token = localStorage.getItem('learnsphere_token');
+      if (!token) return;
+      
       await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/notifications/mark-read/${notificationId}`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       
       // Update local state
@@ -66,8 +89,15 @@ const AdminNotificationBell = () => {
 
   const markAllAsRead = async () => {
     try {
-      await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/notifications/mark-all-read', {
-        method: 'POST'
+      const token = localStorage.getItem('learnsphere_token');
+      if (!token) return;
+      
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/notifications/mark-all-read`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
       
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
