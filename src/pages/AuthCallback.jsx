@@ -42,12 +42,19 @@ const AuthCallback = () => {
 
         console.log('AuthCallback - Session found:', session.user.email);
 
-        // Get user profile from database
-        let { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+        let profile = null;
+        
+        try {
+          // Get user profile from database
+          console.log('AuthCallback - Fetching profile for user ID:', session.user.id);
+          let { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          console.log('AuthCallback - Profile fetch result:', { profile: profileData, profileError });
+          profile = profileData;
 
         // If profile doesn't exist, create one for new Google users
         if (profileError && profileError.code === 'PGRST116') {
@@ -102,7 +109,7 @@ const AuthCallback = () => {
             };
           } else {
             profile = newProfile;
-            console.log('AuthCallback - New profile created:', profile);
+            console.log('AuthCallback - New profile created successfully:', profile);
           }
         } else if (profileError) {
           console.error('AuthCallback - Profile error:', profileError);
@@ -130,18 +137,40 @@ const AuthCallback = () => {
           };
         }
 
-        console.log('AuthCallback - Profile found:', profile);
+        console.log('AuthCallback - Final profile data:', profile);
 
-        // Create user object
+        } catch (profileError) {
+          console.error('AuthCallback - Profile operation failed completely:', profileError);
+          console.log('AuthCallback - Using fallback profile data');
+          
+          // Create a basic profile from session data
+          const fullName = session.user.user_metadata?.full_name ||
+                          session.user.user_metadata?.name ||
+                          session.user.email?.split('@')[0] ||
+                          'User';
+          
+          profile = {
+            id: session.user.id,
+            email: session.user.email,
+            full_name: fullName,
+            role: 'student',
+            approval_status: 'approved',
+            is_active: true
+          };
+        }
+
+        // Create user object with fallback values
         const userObj = {
           id: session.user.id,
           email: session.user.email,
           accessToken: session.access_token,
-          role: profile.role,
-          fullName: profile.full_name,
-          approvalStatus: profile.approval_status,
-          isActive: profile.is_active
+          role: profile?.role || 'student',
+          fullName: profile?.full_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+          approvalStatus: profile?.approval_status || 'approved',
+          isActive: profile?.is_active !== false // Default to true if not specified
         };
+
+        console.log('AuthCallback - Created user object:', userObj);
 
         // Set user in context
         setUser(userObj);
