@@ -78,7 +78,7 @@ const TeacherVerificationForm = ({ onSuccess, formData, onClose }) => {
         if (result.ocr_status === 'passed') {
           toast.success('Registration successful! Your ID card has been verified and your account is now active.');
         } else {
-          toast.error('Registration completed. Your ID verification requires manual review. You will receive an email once reviewed.');
+          toast.success('Registration completed. Your ID verification requires manual review. You will receive an email once reviewed.');
         }
         
         if (onSuccess) {

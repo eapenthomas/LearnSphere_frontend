@@ -1115,7 +1115,6 @@ const RegisterPage = () => {
                 onClose={() => setShowEnhancedVerification(false)}
                 onSuccess={(result) => {
                   setShowEnhancedVerification(false);
-                  toast.success('Registration successful! Your ID is being verified.');
                   navigate('/login?message=registration_successful');
                 }}
               />
