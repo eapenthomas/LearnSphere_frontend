@@ -70,7 +70,7 @@ const CourseViewModal = ({ isOpen, onClose, course }) => {
       console.log('Uploading file:', file.name);
 
       const formData = new FormData();
-      formData.append('files', file); // Changed from 'file' to 'files'
+      formData.append('file', file); // Fixed to match backend expectation
       formData.append('course_id', course.id);
       formData.append('description', `Uploaded file: ${file.name}`); // Removed 'title'
 

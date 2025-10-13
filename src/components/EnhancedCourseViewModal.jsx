@@ -259,7 +259,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
     try {
       setUploadingFile(true);
       const formData = new FormData();
-      formData.append('files', file);
+      formData.append('file', file);
       formData.append('course_id', course.id);
       formData.append('description', `Course material: ${file.name}`);
 
