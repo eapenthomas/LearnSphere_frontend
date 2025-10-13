@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
   
   // Admin endpoints
   ADMIN: {
+    USERS: 'api/admin/users',
     APPROVE_TEACHER: 'api/admin/approve-teacher',
     REJECT_TEACHER: 'api/admin/reject-teacher',
     TOGGLE_USER_STATUS: 'api/admin/toggle-user-status',
@@ -52,6 +53,7 @@ export const API_ENDPOINTS = {
   
   // Notifications
   NOTIFICATIONS: {
+    COUNT: 'api/notifications/count',
     TEACHER_APPROVAL: 'api/notifications/teacher-approval',
     TEACHER_REJECTION: 'api/notifications/teacher-rejection',
     USER_STATUS_CHANGE: 'api/notifications/user-status-change',
