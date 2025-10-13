@@ -9,27 +9,28 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('⚠️ Supabase environment variables not found. Please create a .env file with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
 }
 
-// Singleton pattern to ensure only one Supabase client instance
-let supabaseInstance = null;
-
-export const supabase = (() => {
-  if (!supabaseInstance) {
-    console.log('Supabase client created (singleton)');
-    supabaseInstance = createClient(
-      supabaseUrl || 'https://placeholder.supabase.co',
-      supabaseAnonKey || 'placeholder_key',
-      {
-        auth: {
-          storageKey: 'learnsphere-auth',
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: true
-        }
+// Global singleton pattern - ensure only one instance exists across the entire app
+if (!window.__learnsphereSupabaseClient) {
+  console.log('🔧 Creating global Supabase client (singleton)');
+  window.__learnsphereSupabaseClient = createClient(
+    supabaseUrl || 'https://placeholder.supabase.co',
+    supabaseAnonKey || 'placeholder_key',
+    {
+      auth: {
+        storageKey: 'learnsphere-auth',
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
       }
-    );
-  }
-  return supabaseInstance;
-})();
+    }
+  );
+  console.log('✅ Global Supabase client created successfully');
+} else {
+  console.log('♻️ Using existing global Supabase client instance');
+}
+
+// Export the global instance
+export const supabase = window.__learnsphereSupabaseClient;
 
 // Function to set authentication token
 export const setSupabaseAuth = (accessToken) => {
