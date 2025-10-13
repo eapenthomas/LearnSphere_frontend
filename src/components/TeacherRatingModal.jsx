@@ -51,7 +51,7 @@ const TeacherRatingModal = ({ isOpen, onClose, teacher, course }) => {
 
     try {
       setLoading(true);
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher-ratings/', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher-ratings/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

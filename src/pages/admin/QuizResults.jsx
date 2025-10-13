@@ -27,7 +27,7 @@ const QuizResults = () => {
   const fetchQuizResults = async () => {
     try {
       setLoading(true);
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/quiz-results');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/quiz-results`);
       if (response.ok) {
         const data = await response.json();
         setQuizzes(data);

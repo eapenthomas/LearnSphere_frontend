@@ -40,21 +40,21 @@ const AIUsage = () => {
       setLoading(true);
       
       // Fetch AI usage stats
-      const statsResponse = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/ai-usage/stats');
+      const statsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/ai-usage/stats`);
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setStats(statsData);
       }
 
       // Fetch recent usage
-      const recentResponse = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/ai-usage/recent?limit=10');
+      const recentResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/ai-usage/recent?limit=10`);
       if (recentResponse.ok) {
         const recentData = await recentResponse.json();
         setRecentUsage(recentData);
       }
 
       // Fetch provider breakdown
-      const providerResponse = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/ai-usage/providers');
+      const providerResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/ai-usage/providers`);
       if (providerResponse.ok) {
         const providerData = await providerResponse.json();
         setProviderBreakdown(providerData);

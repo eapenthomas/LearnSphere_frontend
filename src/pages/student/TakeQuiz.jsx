@@ -114,7 +114,7 @@ const TakeQuiz = () => {
         answer: answers[question.id] || ''
       }));
 
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/quizzes/submit', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/quizzes/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

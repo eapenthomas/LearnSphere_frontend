@@ -79,7 +79,7 @@ const CourseViewModal = ({ isOpen, onClose, course }) => {
         headers['Authorization'] = `Bearer ${user.id}`;
       }
 
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/upload', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/upload`, {
         method: 'POST',
         headers,
         body: formData

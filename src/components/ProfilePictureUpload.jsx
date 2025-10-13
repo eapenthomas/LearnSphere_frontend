@@ -89,7 +89,7 @@ const ProfilePictureUpload = ({ currentPictureUrl, onPictureUpdate, size = 'larg
       formData.append('file', file);
       formData.append('user_id', user.id);
 
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/profile-pictures/upload', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/profile-pictures/upload`, {
         method: 'POST',
         body: formData
       });

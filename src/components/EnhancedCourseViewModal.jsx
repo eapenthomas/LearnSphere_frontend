@@ -56,7 +56,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
     try {
       console.log('Fetching enrollment count for course:', course.id);
       
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/all');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/all`);
       if (response.ok) {
         const result = await response.json();
         const allCourses = result.data || [];
@@ -268,7 +268,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
         headers['Authorization'] = `Bearer ${user.id}`;
       }
 
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/upload', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/upload`, {
         method: 'POST',
         headers,
         body: formData

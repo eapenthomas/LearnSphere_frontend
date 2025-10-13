@@ -291,7 +291,7 @@ const TeacherMyCourses = () => {
       console.log('Sending course data to API with thumbnail support');
 
       // Use the payment system API for course creation
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/create-course', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/create-course`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -79,21 +79,21 @@ const AdminDashboard = () => {
       setLoading(true);
 
       // Fetch real-time dashboard statistics
-      const statsResponse = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/stats');
+      const statsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/stats`);
       if (statsResponse.ok) {
         const dashboardStats = await statsResponse.json();
         setStats(dashboardStats);
       }
 
       // Fetch recent activity from new API
-      const activityResponse = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/activity?limit=10');
+      const activityResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/activity?limit=10`);
       if (activityResponse.ok) {
         const activity = await activityResponse.json();
         setRecentActivity(activity);
       }
 
       // Fetch user growth data
-      const growthResponse = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/user-growth');
+      const growthResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/user-growth`);
       if (growthResponse.ok) {
         const growthData = await growthResponse.json();
         setUserGrowthData(growthData.data || []);

@@ -66,7 +66,7 @@ const TeacherVerificationForm = ({ onSuccess, formData, onClose }) => {
       formDataToSend.append('password', formData.password);
       formDataToSend.append('id_card', idCard);
 
-      const response = await fetch('${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher-verification/register', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher-verification/register`, {
         method: 'POST',
         body: formDataToSend,
       });
