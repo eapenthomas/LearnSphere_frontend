@@ -583,19 +583,41 @@ export const adminOperations = {
 
   // Get all users for management
   async getAllUsers(role = null) {
-    let query = supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
+    console.log('AdminOperations: Fetching all users...');
+    
+    try {
+      // Use backend admin API instead of direct Supabase
+      const response = await fetch(getApiUrl(API_ENDPOINTS.ADMIN.USERS), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (role) {
-      query = query.eq('role', role);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Backend API response:', result);
+
+      if (!result.success) {
+        throw new Error(result.detail || 'Failed to fetch users');
+      }
+
+      let users = result.data || [];
+      
+      // Filter by role if specified
+      if (role && role !== 'all') {
+        users = users.filter(user => user.role === role);
+      }
+
+      console.log('Successfully fetched users:', users.length);
+      return users;
+    } catch (error) {
+      console.error('Error fetching users from backend API:', error);
+      throw error;
     }
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-    return data;
   },
 
   // Toggle user active status
