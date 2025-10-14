@@ -349,31 +349,37 @@ const QuizSubmissionDetails = () => {
                     
                     {answer.question_type === 'mcq' && answer.options && (
                       <div className="space-y-2 mb-4">
-                        {answer.options.map((option, optionIndex) => (
-                          <div
-                            key={optionIndex}
-                            className={`p-3 rounded-lg border ${
-                              answer.student_answer === option
-                                ? answer.is_correct
+                        {answer.options.map((option, optionIndex) => {
+                          const optionText = typeof option === 'string' ? option : option.text || option;
+                          const isCorrectOption = typeof option === 'object' ? option.is_correct : false;
+                          const isStudentAnswer = answer.student_answer === optionText;
+                          
+                          return (
+                            <div
+                              key={optionIndex}
+                              className={`p-3 rounded-lg border ${
+                                isStudentAnswer
+                                  ? answer.is_correct
+                                    ? 'bg-green-50 border-green-200 text-green-800'
+                                    : 'bg-red-50 border-red-200 text-red-800'
+                                  : isCorrectOption
                                   ? 'bg-green-50 border-green-200 text-green-800'
-                                  : 'bg-red-50 border-red-200 text-red-800'
-                                : answer.correct_answer === option
-                                ? 'bg-green-50 border-green-200 text-green-800'
-                                : 'bg-gray-50 border-gray-200 text-gray-700'
-                            }`}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <span className="font-medium">{String.fromCharCode(65 + optionIndex)}.</span>
-                              <span>{option}</span>
-                              {answer.correct_answer === option && (
-                                <CheckCircle className="w-4 h-4 text-green-600 ml-auto" />
-                              )}
-                              {answer.student_answer === option && answer.student_answer !== answer.correct_answer && (
-                                <XCircle className="w-4 h-4 text-red-600 ml-auto" />
-                              )}
+                                  : 'bg-gray-50 border-gray-200 text-gray-700'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium">{String.fromCharCode(65 + optionIndex)}.</span>
+                                <span>{optionText}</span>
+                                {isCorrectOption && (
+                                  <CheckCircle className="w-4 h-4 text-green-600 ml-auto" />
+                                )}
+                                {isStudentAnswer && !answer.is_correct && (
+                                  <XCircle className="w-4 h-4 text-red-600 ml-auto" />
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                     
