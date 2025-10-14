@@ -79,10 +79,10 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
     }
   };
 
-  const fetchCourseMaterials = async () => {
+  const fetchCourseMaterials = async (forceRefresh = false) => {
     try {
       setLoading(true);
-      console.log('Fetching materials for course:', course.id);
+      console.log('Fetching materials for course:', course.id, forceRefresh ? '(FORCE REFRESH)' : '');
       console.log('User access token:', user?.accessToken ? 'Present' : 'Missing');
       
       const headers = {};
@@ -111,6 +111,12 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
         // Handle both array and object with materials key
         const materialsData = result.materials || [];
         console.log('Setting materials:', materialsData);
+        console.log('Material details:', materialsData.map(m => ({
+          name: m.file_name,
+          views: m.view_count,
+          downloads: m.download_count,
+          completed: (m.view_count > 0 || m.download_count > 0)
+        })));
         setMaterials(materialsData);
         
         // Show progress information if available
@@ -511,6 +517,17 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
                     </div>
                   </div>
                 )}
+
+                {/* Refresh Button */}
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => fetchCourseMaterials(true)}
+                    disabled={loading}
+                    className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? 'Refreshing...' : '🔄 Refresh Materials'}
+                  </button>
+                </div>
 
                 {/* Materials List */}
                 {loading ? (
