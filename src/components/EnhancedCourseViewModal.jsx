@@ -153,44 +153,40 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
     if (!isStudent) return;
 
     try {
-      // Mark material as completed when viewed
-      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/progress/material/track?student_id=${user.id}&course_id=${course.id}`, {
+      // Track material view using the new API
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/track-view/${material.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          material_id: material.id,
-          status: 'completed', // Auto-complete on view
-          progress_percentage: 100,
-          time_spent: 60 // 1 minute for viewing
-        })
+          'Authorization': `Bearer ${user.accessToken}`
+        }
       });
 
-      // Update local progress state
-      setMaterialProgress(prev => ({
-        ...prev,
-        [material.id]: {
-          ...prev[material.id],
-          status: 'completed',
-          progress_percentage: 100,
-          view_count: (prev[material.id]?.view_count || 0) + 1
-        }
-      }));
+      if (response.ok) {
+        console.log('✅ Material view tracked successfully');
+        
+        // Update the material in the local state
+        setMaterials(prevMaterials => 
+          prevMaterials.map(m => 
+            m.id === material.id 
+              ? { ...m, view_count: (m.view_count || 0) + 1 }
+              : m
+          )
+        );
 
-      // Show success message
-      toast.success(`"${material.title}" marked as completed!`);
+        // Refresh the materials list to get updated counts
+        setTimeout(() => {
+          fetchCourseMaterials(true);
+        }, 500);
 
-      // Refresh course progress
-      fetchCourseProgress();
-
-      // Trigger dashboard refresh by dispatching custom event
-      window.dispatchEvent(new CustomEvent('progressUpdated', {
-        detail: { courseId: course.id, studentId: user.id }
-      }));
+        toast.success(`"${material.file_name}" viewed successfully!`);
+      } else {
+        console.error('Failed to track material view:', response.status);
+        toast.error('Failed to track view');
+      }
     } catch (error) {
       console.error('Error tracking material view:', error);
-      toast.error('Failed to track progress');
+      toast.error('Failed to track view');
     }
   };
 
@@ -198,55 +194,40 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
     if (!isStudent) return;
 
     try {
-      // Mark material as completed when downloaded
-      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/progress/material/track?student_id=${user.id}&course_id=${course.id}`, {
+      // Track material download using the new API
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/track-download/${material.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          material_id: material.id,
-          status: 'completed', // Auto-complete on download
-          progress_percentage: 100,
-          time_spent: 30 // 30 seconds for download
-        })
-      });
-
-      // Also track the download specifically
-      await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/progress/material/download?student_id=${user.id}&course_id=${course.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          material_id: material.id
-        })
-      });
-
-      // Update local progress state
-      setMaterialProgress(prev => ({
-        ...prev,
-        [material.id]: {
-          ...prev[material.id],
-          status: 'completed',
-          progress_percentage: 100,
-          download_count: (prev[material.id]?.download_count || 0) + 1
+          'Authorization': `Bearer ${user.accessToken}`
         }
-      }));
+      });
 
-      // Show success message
-      toast.success(`"${material.title}" downloaded and marked as completed!`);
+      if (response.ok) {
+        console.log('✅ Material download tracked successfully');
+        
+        // Update the material in the local state
+        setMaterials(prevMaterials => 
+          prevMaterials.map(m => 
+            m.id === material.id 
+              ? { ...m, download_count: (m.download_count || 0) + 1 }
+              : m
+          )
+        );
 
-      // Refresh course progress
-      fetchCourseProgress();
+        // Refresh the materials list to get updated counts
+        setTimeout(() => {
+          fetchCourseMaterials(true);
+        }, 500);
 
-      // Trigger dashboard refresh by dispatching custom event
-      window.dispatchEvent(new CustomEvent('progressUpdated', {
-        detail: { courseId: course.id, studentId: user.id }
-      }));
+        toast.success(`"${material.file_name}" downloaded successfully!`);
+      } else {
+        console.error('Failed to track material download:', response.status);
+        toast.error('Failed to track download');
+      }
     } catch (error) {
       console.error('Error tracking material download:', error);
-      toast.error('Failed to track download progress');
+      toast.error('Failed to track download');
     }
   };
 
@@ -574,10 +555,20 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => {
-                              trackMaterialView(material);
-                              // Open in new tab using backend view API for inline viewing
-                              window.open(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/files/view/material/${material.id}`, '_blank');
+                            onClick={async () => {
+                              try {
+                                // Track the view first
+                                await trackMaterialView(material);
+                                
+                                // Open the file URL in a new tab
+                                window.open(material.file_url, '_blank');
+                                
+                                toast.success('Opening file for viewing...');
+                              } catch (error) {
+                                console.error('Error opening material for view:', error);
+                                // Still open the file even if tracking fails
+                                window.open(material.file_url, '_blank');
+                              }
                             }}
                             className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                             title="View"
@@ -586,10 +577,9 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
                           </button>
                           <button
                             onClick={async () => {
-                              trackMaterialDownload(material);
                               try {
-                                // Use backend download API
-                                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/files/download/course-material/${material.id}`, {
+                                // Use the new course materials download API
+                                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/download/${material.id}`, {
                                   headers: {
                                     'Authorization': `Bearer ${user.accessToken}`
                                   }
@@ -617,7 +607,10 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
                                   document.body.removeChild(link);
                                   window.URL.revokeObjectURL(url);
                                   
-                                  toast.success('Download started!');
+                                  // Track the download after successful download
+                                  await trackMaterialDownload(material);
+                                  
+                                  toast.success('Download completed!');
                                 } else {
                                   throw new Error('Failed to download file');
                                 }
