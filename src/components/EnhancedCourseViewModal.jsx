@@ -93,7 +93,10 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
       const apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/course/${course.id}`;
       console.log('Fetching from URL:', apiUrl);
       
-      const response = await fetch(apiUrl, { headers });
+      const response = await fetch(apiUrl, { 
+        headers,
+        credentials: 'include'
+      });
       
       console.log('Response status:', response.status);
       console.log('Response ok:', response.ok);
@@ -106,7 +109,7 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
         console.log('Has materials key:', 'materials' in result);
         
         // Handle both array and object with materials key
-        const materialsData = Array.isArray(result) ? result : (result.materials || []);
+        const materialsData = result.materials || [];
         console.log('Setting materials:', materialsData);
         setMaterials(materialsData);
       } else {

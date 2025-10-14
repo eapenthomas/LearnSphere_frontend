@@ -60,7 +60,7 @@ const CourseViewModal = ({ isOpen, onClose, course }) => {
         console.log('Has materials key:', 'materials' in result);
         
         // Handle both array and object with materials key
-        const materialsData = Array.isArray(result) ? result : (result.materials || []);
+        const materialsData = result.materials || [];
         console.log('Setting materials:', materialsData);
         setMaterials(materialsData);
       } else {
