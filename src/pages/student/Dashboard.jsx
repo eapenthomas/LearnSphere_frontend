@@ -52,6 +52,8 @@ const StudentDashboard = () => {
   const [recentCourses, setRecentCourses] = useState([]);
   const [upcomingAssignments, setUpcomingAssignments] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [cachedData, setCachedData] = useState({});
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Fetch real-time data
   useEffect(() => {
@@ -107,35 +109,66 @@ const StudentDashboard = () => {
     }
   }, [user]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (forceRefresh = false) => {
     try {
-      setLoading(true);
-      await Promise.all([
-        fetchEnrollmentStats(),
+      // Skip loading state for background refreshes unless it's initial load
+      if (isInitialLoad || forceRefresh) {
+        setLoading(true);
+      }
+
+      // Check cache validity (5 minutes for non-critical data)
+      const cacheKey = `student_dashboard_${user.id}`;
+      const cacheTime = 5 * 60 * 1000; // 5 minutes
+      const now = Date.now();
+      
+      if (!forceRefresh && cachedData[cacheKey] && (now - cachedData[cacheKey].timestamp) < cacheTime) {
+        console.log('📦 Using cached dashboard data');
+        setStats(cachedData[cacheKey].stats);
+        setRecentCourses(cachedData[cacheKey].recentCourses);
+        setUpcomingAssignments(cachedData[cacheKey].upcomingAssignments);
+        setLoading(false);
+        setIsInitialLoad(false);
+        return;
+      }
+
+      // Fetch all data in parallel with optimized endpoints
+      const [statsData, coursesData, assignmentsData] = await Promise.allSettled([
+        fetchOptimizedStats(),
         fetchRecentCourses(),
         fetchUpcomingAssignments()
       ]);
+
+      // Update cache
+      const newCacheData = {
+        timestamp: now,
+        stats: statsData.status === 'fulfilled' ? statsData.value.stats : stats,
+        recentCourses: coursesData.status === 'fulfilled' ? coursesData.value : recentCourses,
+        upcomingAssignments: assignmentsData.status === 'fulfilled' ? assignmentsData.value : upcomingAssignments
+      };
+      
+      setCachedData(prev => ({ ...prev, [cacheKey]: newCacheData }));
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
       setLastUpdated(new Date().toLocaleTimeString());
+      setIsInitialLoad(false);
     }
   };
 
-  const fetchEnrollmentStats = async () => {
+  const fetchOptimizedStats = async () => {
     try {
-      // Fetch enrolled courses count
-      const enrollmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/student/${user.id}/enrolled`);
+      // Fetch all data in parallel for better performance
+      const [enrollmentsResponse, assignmentsResponse, progressResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/student/${user.id}/enrolled`),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/student/${user.id}`),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/progress/student/${user.id}/courses`)
+      ]);
+
       const enrollmentsResult = enrollmentsResponse.ok ? await enrollmentsResponse.json() : { data: [] };
       const enrollments = enrollmentsResult.data || [];
-
-      // Fetch assignment submissions
-      const assignmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/student/${user.id}`);
       const assignments = assignmentsResponse.ok ? await assignmentsResponse.json() : [];
-
-      // Fetch course progress data
-      const progressResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/progress/student/${user.id}/courses`);
       const courseProgress = progressResponse.ok ? await progressResponse.json() : [];
 
       // Calculate stats

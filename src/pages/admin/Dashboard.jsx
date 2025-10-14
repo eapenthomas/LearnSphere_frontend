@@ -41,6 +41,8 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [recentActivity, setRecentActivity] = useState([]);
   const [userGrowthData, setUserGrowthData] = useState([]);
+  const [cachedData, setCachedData] = useState({});
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
@@ -101,36 +103,67 @@ const AdminDashboard = () => {
     return num.toLocaleString();
   };
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (forceRefresh = false) => {
     try {
-      setLoading(true);
+      // Skip loading state for background refreshes unless it's initial load
+      if (isInitialLoad || forceRefresh) {
+        setLoading(true);
+      }
 
-      // Fetch real-time dashboard statistics
-      const statsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/stats`);
-      if (statsResponse.ok) {
-        const dashboardStats = await statsResponse.json();
+      // Check cache validity (2 minutes for admin data)
+      const cacheKey = 'admin_dashboard';
+      const cacheTime = 2 * 60 * 1000; // 2 minutes
+      const now = Date.now();
+      
+      if (!forceRefresh && cachedData[cacheKey] && (now - cachedData[cacheKey].timestamp) < cacheTime) {
+        console.log('📦 Using cached admin dashboard data');
+        setStats(cachedData[cacheKey].stats);
+        setRecentActivity(cachedData[cacheKey].recentActivity);
+        setUserGrowthData(cachedData[cacheKey].userGrowthData);
+        setLoading(false);
+        setIsInitialLoad(false);
+        return;
+      }
+
+      // Fetch all data in parallel for better performance
+      const [statsResult, activityResult, growthResult] = await Promise.allSettled([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/stats`),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/activity?limit=10`),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/user-growth`)
+      ]);
+
+      // Process results
+      if (statsResult.status === 'fulfilled' && statsResult.value.ok) {
+        const dashboardStats = await statsResult.value.json();
         setStats(dashboardStats);
       }
 
-      // Fetch recent activity from new API
-      const activityResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/activity?limit=10`);
-      if (activityResponse.ok) {
-        const activity = await activityResponse.json();
+      if (activityResult.status === 'fulfilled' && activityResult.value.ok) {
+        const activity = await activityResult.value.json();
         setRecentActivity(activity);
       }
 
-      // Fetch user growth data
-      const growthResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/dashboard/user-growth`);
-      if (growthResponse.ok) {
-        const growthData = await growthResponse.json();
+      if (growthResult.status === 'fulfilled' && growthResult.value.ok) {
+        const growthData = await growthResult.value.json();
         setUserGrowthData(growthData.data || []);
       }
+
+      // Update cache
+      const newCacheData = {
+        timestamp: now,
+        stats: stats,
+        recentActivity: recentActivity,
+        userGrowthData: userGrowthData
+      };
+      
+      setCachedData(prev => ({ ...prev, [cacheKey]: newCacheData }));
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
   };
 

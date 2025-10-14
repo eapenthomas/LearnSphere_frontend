@@ -81,6 +81,8 @@ const TeacherDashboard = () => {
     totalAssignments: 0,
     averageGrade: 0.0
   });
+  const [cachedData, setCachedData] = useState({});
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Fetch real-time data
   useEffect(() => {
@@ -136,20 +138,53 @@ const TeacherDashboard = () => {
     }
   }, [user]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (forceRefresh = false) => {
     try {
-      setLoading(true);
-      // First fetch analytics data, then use it in teacher stats
-      await fetchAnalyticsData();
-      await Promise.all([
-        fetchTeacherStats(),
+      // Skip loading state for background refreshes unless it's initial load
+      if (isInitialLoad || forceRefresh) {
+        setLoading(true);
+      }
+
+      // Check cache validity (3 minutes for teacher data)
+      const cacheKey = `teacher_dashboard_${user.id}`;
+      const cacheTime = 3 * 60 * 1000; // 3 minutes
+      const now = Date.now();
+      
+      if (!forceRefresh && cachedData[cacheKey] && (now - cachedData[cacheKey].timestamp) < cacheTime) {
+        console.log('📦 Using cached teacher dashboard data');
+        setStats(cachedData[cacheKey].stats);
+        setRecentCourses(cachedData[cacheKey].recentCourses);
+        setPendingSubmissions(cachedData[cacheKey].pendingSubmissions);
+        setAnalyticsData(cachedData[cacheKey].analyticsData);
+        setLoading(false);
+        setIsInitialLoad(false);
+        return;
+      }
+
+      // Fetch all data in parallel - optimized approach
+      const [analyticsResult, statsResult, coursesResult, submissionsResult] = await Promise.allSettled([
+        fetchOptimizedAnalytics(),
+        fetchOptimizedTeacherStats(),
         fetchRecentCourses(),
         fetchPendingSubmissions()
       ]);
+
+      // Update cache
+      const newCacheData = {
+        timestamp: now,
+        stats: statsResult.status === 'fulfilled' ? statsResult.value.stats : stats,
+        recentCourses: coursesResult.status === 'fulfilled' ? coursesResult.value : recentCourses,
+        pendingSubmissions: submissionsResult.status === 'fulfilled' ? submissionsResult.value : pendingSubmissions,
+        analyticsData: analyticsResult.status === 'fulfilled' ? analyticsResult.value : analyticsData
+      };
+      
+      setCachedData(prev => ({ ...prev, [cacheKey]: newCacheData }));
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
   };
 
@@ -309,6 +344,71 @@ const TeacherDashboard = () => {
     } catch (error) {
       console.error('Error fetching pending submissions:', error);
     }
+  };
+
+  // Optimized fetch functions for better performance
+  const fetchOptimizedTeacherStats = async () => {
+    try {
+      // Fetch basic stats in parallel
+      const [coursesResponse, assignmentsResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/teacher/${user.id}`),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/teacher/${user.id}`)
+      ]);
+
+      const coursesData = coursesResponse.ok ? await coursesResponse.json() : {data: []};
+      const courses = coursesData.success ? coursesData.data : [];
+      const assignmentsData = assignmentsResponse.ok ? await assignmentsResponse.json() : [];
+      const assignments = Array.isArray(assignmentsData) ? assignmentsData : [];
+
+      // Simplified stats calculation - avoid nested API calls for better performance
+      const pendingAssignments = assignments.filter(a => a.status === 'pending' || a.status === 'submitted').length;
+
+      // Update stats with optimized data
+      const newStats = [
+        {
+          title: 'Total Courses Created',
+          value: courses.length.toString(),
+          change: `${courses.filter(c => new Date(c.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length} this month`,
+          icon: BookOpen,
+          color: 'from-blue-500 to-blue-600'
+        },
+        {
+          title: 'Assignments to Grade',
+          value: pendingAssignments.toString(),
+          change: pendingAssignments > 0 ? `${pendingAssignments} pending` : 'All caught up!',
+          icon: ClipboardList,
+          color: 'from-orange-500 to-orange-600'
+        },
+        {
+          title: 'Total Students',
+          value: analyticsData.totalStudents.toString(),
+          change: `${analyticsData.activeCourses} active courses`,
+          icon: Users,
+          color: 'from-green-500 to-green-600'
+        }
+      ];
+
+      setStats(newStats);
+      return { stats: newStats };
+    } catch (error) {
+      console.error('Error fetching optimized teacher stats:', error);
+      return { stats: stats };
+    }
+  };
+
+  const fetchOptimizedAnalytics = async () => {
+    try {
+      // Use cached analytics data if available, otherwise fetch minimal data
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/analytics/${user.id}`);
+      if (response.ok) {
+        const analytics = await response.json();
+        setAnalyticsData(analytics);
+        return analytics;
+      }
+    } catch (error) {
+      console.error('Error fetching optimized analytics:', error);
+    }
+    return analyticsData;
   };
 
   const fetchAnalyticsData = async () => {
