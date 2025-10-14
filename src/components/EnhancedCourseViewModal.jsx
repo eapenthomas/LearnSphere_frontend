@@ -83,19 +83,35 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
     try {
       setLoading(true);
       console.log('Fetching materials for course:', course.id);
+      console.log('User access token:', user?.accessToken ? 'Present' : 'Missing');
       
       const headers = {};
       if (user?.accessToken) {
         headers['Authorization'] = `Bearer ${user.accessToken}`;
       }
       
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/course/${course.id}`, {
-        headers
-      });
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/course-materials/course/${course.id}`;
+      console.log('Fetching from URL:', apiUrl);
+      
+      const response = await fetch(apiUrl, { headers });
+      
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
       if (response.ok) {
         const result = await response.json();
-        setMaterials(result.materials || []);
+        console.log('API Response:', result);
+        console.log('Response type:', typeof result);
+        console.log('Is array:', Array.isArray(result));
+        console.log('Has materials key:', 'materials' in result);
+        
+        // Handle both array and object with materials key
+        const materialsData = Array.isArray(result) ? result : (result.materials || []);
+        console.log('Setting materials:', materialsData);
+        setMaterials(materialsData);
       } else {
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
         console.log('No materials found or error fetching materials');
         setMaterials([]);
       }
