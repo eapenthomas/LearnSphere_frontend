@@ -532,17 +532,24 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
                             <p className="text-sm text-gray-600">
                               {formatFileSize(material.file_size)} • {formatDate(material.uploaded_at)}
                             </p>
-                            {isStudent && materialProgress[material.id] && (
+                            {isStudent && (
                               <div className="flex items-center gap-2 mt-1">
-                                {materialProgress[material.id].status === 'completed' && (
+                                {/* Check if material is completed based on view/download count */}
+                                {(material.view_count > 0 || material.download_count > 0) && (
                                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
                                     <CheckCircle className="w-3 h-3 mr-1" />
                                     Completed
                                   </span>
                                 )}
+                                {!(material.view_count > 0 || material.download_count > 0) && (
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    Not Started
+                                  </span>
+                                )}
                                 <span className="text-xs text-gray-500">
-                                  Views: {materialProgress[material.id].view_count || 0} • 
-                                  Downloads: {materialProgress[material.id].download_count || 0}
+                                  Views: {material.view_count || 0} • 
+                                  Downloads: {material.download_count || 0}
                                 </span>
                               </div>
                             )}
@@ -610,8 +617,12 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
                           {isStudent && (
                             <button
                               onClick={() => markMaterialComplete(material)}
-                              className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors"
-                              title="Mark as Complete"
+                              className={`p-2 rounded-lg transition-colors ${
+                                (material.view_count > 0 || material.download_count > 0) 
+                                  ? 'text-green-600 hover:bg-green-100' 
+                                  : 'text-purple-600 hover:bg-purple-100'
+                              }`}
+                              title={(material.view_count > 0 || material.download_count > 0) ? "Already Completed" : "Mark as Complete"}
                             >
                               <CheckCircle className="w-4 h-4" />
                             </button>

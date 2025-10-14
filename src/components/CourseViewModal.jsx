@@ -12,7 +12,8 @@ import {
   Plus,
   Eye,
   Clock,
-  Tag
+  Tag,
+  CheckCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -260,11 +261,32 @@ const CourseViewModal = ({ isOpen, onClose, course }) => {
                       >
                         <div className="flex items-center space-x-3">
                           <FileText className="w-5 h-5 text-blue-600" />
-                          <div>
+                          <div className="flex-1">
                             <h4 className="font-medium text-gray-800">{material.file_name}</h4>
                             <p className="text-sm text-gray-600">
                               {formatFileSize(material.file_size)} • {formatDate(material.uploaded_at)}
                             </p>
+                            {user?.role === 'student' && (
+                              <div className="flex items-center gap-2 mt-1">
+                                {/* Check if material is completed based on view/download count */}
+                                {(material.view_count > 0 || material.download_count > 0) && (
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Completed
+                                  </span>
+                                )}
+                                {!(material.view_count > 0 || material.download_count > 0) && (
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    Not Started
+                                  </span>
+                                )}
+                                <span className="text-xs text-gray-500">
+                                  Views: {material.view_count || 0} • 
+                                  Downloads: {material.download_count || 0}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
