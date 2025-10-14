@@ -51,6 +51,7 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [recentCourses, setRecentCourses] = useState([]);
   const [upcomingAssignments, setUpcomingAssignments] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   // Fetch real-time data
   useEffect(() => {
@@ -59,20 +60,51 @@ const StudentDashboard = () => {
     }
   }, [user]);
 
-  // Listen for progress updates
+  // Listen for real-time updates
   useEffect(() => {
     const handleProgressUpdate = () => {
-      console.log('Progress updated, refreshing dashboard...');
+      console.log('🔄 Progress updated, refreshing dashboard...');
       if (user?.id) {
         fetchDashboardData();
       }
     };
 
+    const handleMaterialCompleted = () => {
+      console.log('📚 Material completed, updating dashboard...');
+      if (user?.id) {
+        fetchDashboardData();
+      }
+    };
+
+    const handleAssignmentSubmitted = () => {
+      console.log('📝 Assignment submitted, updating dashboard...');
+      if (user?.id) {
+        fetchDashboardData();
+      }
+    };
+
+    // Listen for multiple event types
     window.addEventListener('progressUpdated', handleProgressUpdate);
+    window.addEventListener('materialCompleted', handleMaterialCompleted);
+    window.addEventListener('assignmentSubmitted', handleAssignmentSubmitted);
 
     return () => {
       window.removeEventListener('progressUpdated', handleProgressUpdate);
+      window.removeEventListener('materialCompleted', handleMaterialCompleted);
+      window.removeEventListener('assignmentSubmitted', handleAssignmentSubmitted);
     };
+  }, [user]);
+
+  // Auto-refresh every 15 seconds for real-time updates
+  useEffect(() => {
+    if (user?.id) {
+      const interval = setInterval(() => {
+        console.log('🔄 Auto-refreshing student dashboard...');
+        fetchDashboardData();
+      }, 15000); // Update every 15 seconds
+
+      return () => clearInterval(interval);
+    }
   }, [user]);
 
   const fetchDashboardData = async () => {
@@ -87,6 +119,7 @@ const StudentDashboard = () => {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
+      setLastUpdated(new Date().toLocaleTimeString());
     }
   };
 
@@ -291,6 +324,12 @@ const StudentDashboard = () => {
                 <p className="text-body-lg text-white/90 mb-4 font-medium">
                   Ready to continue your learning journey? You're doing great!
                 </p>
+                {lastUpdated && (
+                  <p className="text-xs text-white/70 mb-2 flex items-center">
+                    <Zap className="w-3 h-3 mr-1 text-yellow-300" />
+                    Last updated: {lastUpdated} (Real-time)
+                  </p>
+                )}
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <BookOpen className="w-5 h-5" />

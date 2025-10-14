@@ -89,12 +89,48 @@ const TeacherDashboard = () => {
     }
   }, [user]);
 
-  // Set up real-time updates every 30 seconds
+  // Listen for real-time updates
+  useEffect(() => {
+    const handleStudentActivity = () => {
+      console.log('👥 Student activity detected, updating teacher dashboard...');
+      if (user?.id) {
+        fetchDashboardData();
+      }
+    };
+
+    const handleNewSubmission = () => {
+      console.log('📝 New submission received, updating teacher dashboard...');
+      if (user?.id) {
+        fetchDashboardData();
+      }
+    };
+
+    const handleCourseUpdate = () => {
+      console.log('📚 Course updated, refreshing teacher dashboard...');
+      if (user?.id) {
+        fetchDashboardData();
+      }
+    };
+
+    // Listen for multiple event types
+    window.addEventListener('studentActivity', handleStudentActivity);
+    window.addEventListener('newSubmission', handleNewSubmission);
+    window.addEventListener('courseUpdated', handleCourseUpdate);
+
+    return () => {
+      window.removeEventListener('studentActivity', handleStudentActivity);
+      window.removeEventListener('newSubmission', handleNewSubmission);
+      window.removeEventListener('courseUpdated', handleCourseUpdate);
+    };
+  }, [user]);
+
+  // Set up real-time updates every 15 seconds
   useEffect(() => {
     if (user?.id) {
       const interval = setInterval(() => {
+        console.log('🔄 Auto-refreshing teacher dashboard...');
         fetchDashboardData();
-      }, 30000); // Update every 30 seconds
+      }, 15000); // Update every 15 seconds
 
       return () => clearInterval(interval);
     }

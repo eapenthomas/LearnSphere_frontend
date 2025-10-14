@@ -45,12 +45,39 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchDashboardData();
 
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(() => {
+    // Listen for real-time updates
+    const handleUserActivity = () => {
+      console.log('👤 User activity detected, updating admin dashboard...');
       fetchDashboardData();
-    }, 30000);
+    };
 
-    return () => clearInterval(interval);
+    const handleSystemUpdate = () => {
+      console.log('⚙️ System update detected, refreshing admin dashboard...');
+      fetchDashboardData();
+    };
+
+    const handleNewRegistration = () => {
+      console.log('📝 New user registration, updating admin dashboard...');
+      fetchDashboardData();
+    };
+
+    // Listen for multiple event types
+    window.addEventListener('userActivity', handleUserActivity);
+    window.addEventListener('systemUpdate', handleSystemUpdate);
+    window.addEventListener('newRegistration', handleNewRegistration);
+
+    // Set up auto-refresh every 15 seconds for real-time updates
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing admin dashboard...');
+      fetchDashboardData();
+    }, 15000);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('userActivity', handleUserActivity);
+      window.removeEventListener('systemUpdate', handleSystemUpdate);
+      window.removeEventListener('newRegistration', handleNewRegistration);
+    };
   }, []);
 
   // Handle card navigation

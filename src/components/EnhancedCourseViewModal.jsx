@@ -180,6 +180,14 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
         }, 500);
 
         toast.success(`"${material.file_name}" viewed successfully!`);
+        
+        // Dispatch real-time update events
+        window.dispatchEvent(new CustomEvent('materialCompleted', {
+          detail: { materialId: material.id, courseId: course.id, action: 'view' }
+        }));
+        window.dispatchEvent(new CustomEvent('progressUpdated', {
+          detail: { courseId: course.id, studentId: user.id }
+        }));
       } else {
         console.error('Failed to track material view:', response.status);
         toast.error('Failed to track view');
@@ -221,6 +229,14 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
         }, 500);
 
         toast.success(`"${material.file_name}" downloaded successfully!`);
+        
+        // Dispatch real-time update events
+        window.dispatchEvent(new CustomEvent('materialCompleted', {
+          detail: { materialId: material.id, courseId: course.id, action: 'download' }
+        }));
+        window.dispatchEvent(new CustomEvent('progressUpdated', {
+          detail: { courseId: course.id, studentId: user.id }
+        }));
       } else {
         console.error('Failed to track material download:', response.status);
         toast.error('Failed to track download');
