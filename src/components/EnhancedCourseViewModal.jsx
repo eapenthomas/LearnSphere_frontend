@@ -112,6 +112,11 @@ const EnhancedCourseViewModal = ({ isOpen, onClose, course }) => {
         const materialsData = result.materials || [];
         console.log('Setting materials:', materialsData);
         setMaterials(materialsData);
+        
+        // Show progress information if available
+        if (result.progress && user?.role === 'student') {
+          console.log('Course progress:', result.progress);
+        }
       } else {
         const errorText = await response.text();
         console.log('Error response:', errorText);

@@ -7,6 +7,28 @@ const AuthContext = createContext();
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}`;
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
+// Helper function to sync course progress
+const syncCourseProgress = async (accessToken) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/course-materials/sync-all-course-progress`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Course progress synced:', result);
+        }
+    } catch (error) {
+        console.error('Error syncing course progress:', error);
+        throw error;
+    }
+};
+
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -359,6 +381,15 @@ export const AuthProvider = ({ children }) => {
 
             setUser(userObj);
             setAuthToken(access_token);
+
+            // Sync course progress for students after login
+            if (finalRole === 'student') {
+                try {
+                    await syncCourseProgress(access_token);
+                } catch (error) {
+                    console.warn('Failed to sync course progress on login:', error);
+                }
+            }
 
             // Store session in localStorage for persistence
             localStorage.setItem('learnsphere_user', JSON.stringify({
