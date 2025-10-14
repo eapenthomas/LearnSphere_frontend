@@ -425,25 +425,63 @@ export const AuthProvider = ({ children }) => {
 
     const loginWithGoogle = async () => {
         try {
+            console.log('🔵 Starting Google login process...');
+            
             // Check if Supabase is properly configured
             if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') {
+                console.error('❌ Supabase not configured');
                 return {
                     success: false,
-                    error: 'Supabase not configured. Please set up your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the .env file.'
+                    error: 'Supabase not configured. Please set up your environment variables.'
                 };
             }
 
-            const { data: { url } } = await supabase.auth.signInWithOAuth({
+            console.log('📡 Initiating Google OAuth with Supabase...');
+            console.log('🔗 Redirect URL:', `${window.location.origin}/auth/callback`);
+
+            // Use Supabase client to initiate OAuth flow
+            const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback`
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    },
                 }
             });
 
-            window.location.href = url;
+            if (error) {
+                console.error('❌ Google OAuth initiation error:', error);
+                return {
+                    success: false,
+                    error: `Google login failed: ${error.message}`
+                };
+            }
+
+            if (!data || !data.url) {
+                console.error('❌ No OAuth URL received from Supabase');
+                return {
+                    success: false,
+                    error: 'Failed to generate Google login URL'
+                };
+            }
+
+            console.log('✅ OAuth URL generated successfully');
+            console.log('🔄 Redirecting to Google...');
+
+            // Redirect to Google OAuth page
+            window.location.href = data.url;
+            
+            // Return success (though redirect will happen)
+            return { success: true };
+
         } catch (error) {
-            console.error('Google login error:', error);
-            return { success: false, error: 'Google login failed' };
+            console.error('❌ Unexpected Google login error:', error);
+            return {
+                success: false,
+                error: error.message || 'An unexpected error occurred during Google login'
+            };
         }
     };
 

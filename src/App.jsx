@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import AuthCallback from './pages/AuthCallback.jsx';
+import AuthCallbackV2 from './pages/AuthCallbackV2.jsx';
 import StudentDashboard from './pages/student/Dashboard.jsx';
 import StudentAllCourses from './pages/student/AllCourses.jsx';
 import StudentMyCourses from './pages/student/MyCourses.jsx';
@@ -88,7 +89,8 @@ const AppContent = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/callback" element={<AuthCallbackV2 />} />
+            <Route path="/auth/callback-old" element={<AuthCallback />} />
             <Route
                 path="/dashboard"
                 element={
