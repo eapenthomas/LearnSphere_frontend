@@ -196,6 +196,10 @@ const AppContent = () => {
                 }
             />
             <Route
+                path="/teacher/courses/create"
+                element={<Navigate to="/teacher/courses" replace />}
+            />
+            <Route
                 path="/teacher/assignments"
                 element={
                     <ProtectedRoute>
