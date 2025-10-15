@@ -53,8 +53,24 @@ const UserManagement = () => {
   useEffect(() => {
     // Read URL parameters and set initial filter
     const filterParam = searchParams.get('filter');
-    if (filterParam && ['students', 'teachers', 'admins'].includes(filterParam)) {
-      setRoleFilter(filterParam);
+    if (filterParam) {
+      // Handle both singular and plural forms
+      const roleMap = {
+        'student': 'student',
+        'students': 'student',
+        'teacher': 'teacher',
+        'teachers': 'teacher',
+        'admin': 'admin',
+        'admins': 'admin'
+      };
+      
+      const mappedRole = roleMap[filterParam.toLowerCase()];
+      if (mappedRole) {
+        setRoleFilter(mappedRole);
+        // Remove the filter param from URL after setting it
+        searchParams.delete('filter');
+        setSearchParams(searchParams, { replace: true });
+      }
     }
 
     fetchUsers();

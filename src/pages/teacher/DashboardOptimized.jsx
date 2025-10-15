@@ -21,7 +21,7 @@ import {
   Activity
 } from 'lucide-react';
 
-const Dashboard = () => {
+const DashboardOptimized = () => {
   const { user } = useAuth();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -300,4 +300,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default DashboardOptimized;

@@ -176,7 +176,7 @@ const AdminDashboard = () => {
       bgColor: 'bg-blue-50',
       textColor: 'text-blue-700',
       route: '/admin/users',
-      filter: 'students',
+      filter: 'student',
       description: 'Currently enrolled students'
     },
     {
@@ -187,7 +187,7 @@ const AdminDashboard = () => {
       bgColor: 'bg-green-50',
       textColor: 'text-green-700',
       route: '/admin/users',
-      filter: 'teachers',
+      filter: 'teacher',
       description: 'Verified & active teachers'
     },
     {

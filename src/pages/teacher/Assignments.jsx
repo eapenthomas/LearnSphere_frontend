@@ -117,6 +117,14 @@ const TeacherAssignments = () => {
       return;
     }
 
+    // Validate due date is in the future
+    const dueDate = new Date(formData.due_date);
+    const now = new Date();
+    if (dueDate <= now) {
+      toast.error('Due date must be in the future');
+      return;
+    }
+
     try {
       setCreating(true);
       
@@ -125,7 +133,7 @@ const TeacherAssignments = () => {
       // Add assignment data
       const assignmentData = {
         ...formData,
-        due_date: new Date(formData.due_date).toISOString()
+        due_date: dueDate.toISOString()
       };
       
       // Append assignment data as JSON
@@ -541,6 +549,7 @@ const TeacherAssignments = () => {
                     style={{color: '#000000', backgroundColor: '#ffffff'}}
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">Please select a future date and time</p>
                 </div>
 
                 {/* Max Score */}

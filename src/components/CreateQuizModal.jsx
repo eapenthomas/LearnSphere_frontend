@@ -184,6 +184,16 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
   const handleSubmit = async () => {
     if (!validateQuiz()) return;
 
+    // Validate end time is in the future
+    if (quizData.end_time) {
+      const endTime = new Date(quizData.end_time);
+      const now = new Date();
+      if (endTime <= now) {
+        toast.error('End time must be in the future');
+        return;
+      }
+    }
+
     try {
       setLoading(true);
       
@@ -374,19 +384,6 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
-                    Start Time (Optional)
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={quizData.start_time}
-                    onChange={(e) => handleQuizDataChange('start_time', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-black bg-white"
-                    style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
                     End Time (Optional)
                   </label>
                   <input
@@ -396,6 +393,7 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-black bg-white"
                     style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                   />
+                  <p className="text-xs text-gray-500 mt-1">Please select a future date and time</p>
                 </div>
               </div>
             </div>
