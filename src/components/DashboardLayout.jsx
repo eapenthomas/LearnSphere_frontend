@@ -246,13 +246,9 @@ const DashboardLayout = ({ children }) => {
             </div>
 
             <div className="flex items-center space-x-2">
-              {/* Welcome Message */}
+              {/* Page Title will be set by individual pages */}
               <div className="hidden md:block">
-                <p className="text-body-md text-text-secondary">
-                  Welcome back, <span className="font-semibold text-text-heading">
-                    {user?.fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'Student'}
-                  </span>!
-                </p>
+                {/* Page title content will be provided by each page */}
               </div>
 
 

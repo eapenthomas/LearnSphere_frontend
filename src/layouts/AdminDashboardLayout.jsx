@@ -215,14 +215,9 @@ const AdminDashboardLayout = ({ children }) => {
             </div>
 
             <div className="flex items-center space-x-2">
-              {/* Welcome Message */}
+              {/* Page Title will be set by individual pages */}
               <div className="hidden md:block text-right">
-                <p className="text-sm font-bold text-gray-800">
-                  Welcome back, {user?.fullName?.split(' ')[0] || 'Admin'}!
-                </p>
-                <p className="text-xs text-gray-600 font-medium">
-                  System Administrator
-                </p>
+                {/* Page title content will be provided by each page */}
               </div>
 
               {/* Search Bar */}

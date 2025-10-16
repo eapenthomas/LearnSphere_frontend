@@ -178,14 +178,9 @@ const TeacherDashboardLayout = ({ children }) => {
                 <Menu className="w-5 h-5 text-text-secondary" />
               </button>
 
-              {/* Welcome Message */}
+              {/* Page Title will be set by individual pages */}
               <div className="hidden md:block">
-                <h1 className="text-heading-md font-semibold text-text-heading font-serif">
-                  Welcome back, {user?.fullName?.split(' ')[0] || 'Teacher'}!
-                </h1>
-                <p className="text-body-md text-text-secondary">
-                  Ready to inspire and educate your students today?
-                </p>
+                {/* Page title content will be provided by each page */}
               </div>
             </div>
 
