@@ -143,7 +143,7 @@ const DashboardLayout = ({ children }) => {
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-navy-900 border-r border-navy-800 lg:static lg:z-auto shadow-elegant ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}>
-        <div className="flex items-center justify-between h-14 px-4 border-b border-navy-800">
+        <div className="flex items-center justify-between h-12 px-3 border-b border-navy-800">
           <LearnSphereLogo size="md" showText={true} className="text-white" />
           <button
             onClick={() => setSidebarOpen(false)}
@@ -153,7 +153,7 @@ const DashboardLayout = ({ children }) => {
           </button>
         </div>
 
-        <nav className="mt-6 px-4 flex-1">
+        <nav className="mt-4 px-3 flex-1">
           <div className="space-y-2">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
@@ -183,7 +183,7 @@ const DashboardLayout = ({ children }) => {
         </nav>
 
         {/* User Profile Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-200">
           <div className="relative">
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -232,8 +232,8 @@ const DashboardLayout = ({ children }) => {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation */}
         <header className="bg-background-secondary border-b border-border-primary sticky top-0 z-30 shadow-elegant">
-          <div className="flex items-center justify-between h-14 px-3 sm:px-4 lg:px-6">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between h-12 px-2 sm:px-3 lg:px-4">
+            <div className="flex items-center space-x-2">
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden p-2 rounded-lg hover:bg-background-tertiary transition-colors"
@@ -245,7 +245,7 @@ const DashboardLayout = ({ children }) => {
               </h1>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               {/* Welcome Message */}
               <div className="hidden md:block">
                 <p className="text-body-md text-text-secondary">

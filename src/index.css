@@ -171,7 +171,7 @@
 
   /* Professional Navigation Styles */
   .sidebar-item {
-    @apply flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-all duration-300 hover:bg-background-tertiary cursor-pointer text-text-primary relative font-medium;
+    @apply flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 hover:bg-background-tertiary cursor-pointer text-text-primary relative font-medium;
   }
 
   .sidebar-item.active {
@@ -243,7 +243,7 @@
 
   /* Dashboard Layout Optimizations */
   .dashboard-container {
-    @apply max-w-7xl mx-auto px-3 sm:px-4 lg:px-6;
+    @apply max-w-7xl mx-auto px-2 sm:px-3 lg:px-4;
   }
 
   /* Mobile Optimizations */
@@ -264,7 +264,7 @@
 
     /* Ensure proper spacing on mobile */
     .page-container {
-      @apply px-3 py-4;
+      @apply px-2 py-3;
     }
 
     /* Mobile-specific layout adjustments */
@@ -274,14 +274,14 @@
 
     /* Reduce padding on mobile for better space utilization */
     .mobile-padding {
-      @apply p-3;
+      @apply p-2;
     }
   }
 
   /* Tablet Optimizations */
   @media (min-width: 769px) and (max-width: 1023px) {
     .page-container {
-      @apply px-4 py-5;
+      @apply px-3 py-4;
     }
   }
 

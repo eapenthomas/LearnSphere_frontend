@@ -94,7 +94,7 @@ const AdminDashboardLayout = ({ children }) => {
       <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 lg:static lg:z-auto ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
+        <div className="flex items-center justify-between h-12 px-3 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg">
               <Shield className="w-6 h-6 text-white" />
@@ -109,7 +109,7 @@ const AdminDashboardLayout = ({ children }) => {
           </button>
         </div>
 
-        <nav className="mt-6 px-4 flex-1">
+        <nav className="mt-4 px-3 flex-1">
           <div className="space-y-3">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
@@ -137,7 +137,7 @@ const AdminDashboardLayout = ({ children }) => {
         </nav>
 
         {/* User Profile Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-200">
           <div className="relative">
             <button
               onClick={(e) => {
@@ -199,9 +199,9 @@ const AdminDashboardLayout = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Navigation */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3">
+        <header className="bg-white border-b border-gray-200 px-3 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -214,7 +214,7 @@ const AdminDashboardLayout = ({ children }) => {
               </h1>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               {/* Welcome Message */}
               <div className="hidden md:block text-right">
                 <p className="text-sm font-bold text-gray-800">

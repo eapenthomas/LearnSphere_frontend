@@ -208,9 +208,9 @@ const TeacherAllCourses = () => {
   if (loading) {
     return (
       <TeacherDashboardLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-[300px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mx-auto mb-3"></div>
             <p className="text-gray-600">Loading all courses...</p>
           </div>
         </div>
@@ -220,21 +220,21 @@ const TeacherAllCourses = () => {
 
   return (
     <TeacherDashboardLayout>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-          <div className="mb-4 lg:mb-0">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">All Courses</h1>
-            <p className="text-gray-600">
+          <div className="mb-3 lg:mb-0">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">All Courses</h1>
+            <p className="text-gray-600 text-sm">
               Explore courses from all teachers across the platform
             </p>
           </div>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             <button
               onClick={fetchAllCourses}
               disabled={loading}
-              className="btn-primary px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2 font-medium"
+              className="btn-primary px-3 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2 font-medium text-sm"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
@@ -243,18 +243,18 @@ const TeacherAllCourses = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-3 text-white"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-100 text-sm font-medium">Total Courses</p>
-                <p className="text-2xl font-bold">{courses.length}</p>
+                <p className="text-blue-100 text-xs font-medium">Total Courses</p>
+                <p className="text-xl font-bold">{courses.length}</p>
               </div>
-              <BookOpen className="w-8 h-8 text-blue-200" />
+              <BookOpen className="w-6 h-6 text-blue-200" />
             </div>
           </motion.div>
 
@@ -262,16 +262,16 @@ const TeacherAllCourses = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white"
+            className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-3 text-white"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-100 text-sm font-medium">Total Students</p>
-                <p className="text-2xl font-bold">
+                <p className="text-green-100 text-xs font-medium">Total Students</p>
+                <p className="text-xl font-bold">
                   {courses.reduce((sum, course) => sum + course.students_enrolled, 0)}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-green-200" />
+              <Users className="w-6 h-6 text-green-200" />
             </div>
           </motion.div>
 
@@ -279,16 +279,16 @@ const TeacherAllCourses = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white"
+            className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-3 text-white"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-100 text-sm font-medium">Avg Rating</p>
-                <p className="text-2xl font-bold">
+                <p className="text-purple-100 text-xs font-medium">Avg Rating</p>
+                <p className="text-xl font-bold">
                   {(courses.reduce((sum, course) => sum + course.rating, 0) / courses.length).toFixed(1)}
                 </p>
               </div>
-              <Star className="w-8 h-8 text-purple-200" />
+              <Star className="w-6 h-6 text-purple-200" />
             </div>
           </motion.div>
 
@@ -296,43 +296,43 @@ const TeacherAllCourses = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-4 text-white"
+            className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-3 text-white"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-100 text-sm font-medium">Categories</p>
-                <p className="text-2xl font-bold">{categories.length - 1}</p>
+                <p className="text-orange-100 text-xs font-medium">Categories</p>
+                <p className="text-xl font-bold">{categories.length - 1}</p>
               </div>
-              <GraduationCap className="w-8 h-8 text-orange-200" />
+              <GraduationCap className="w-6 h-6 text-orange-200" />
             </div>
           </motion.div>
         </div>
 
         {/* Search and Filter */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 lg:space-x-4">
+        <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0 lg:space-x-3">
             {/* Search */}
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search courses, instructors, or topics..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 />
               </div>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <div className="flex items-center space-x-2">
                 <Filter className="w-4 h-4 text-gray-500" />
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   {categories.map(category => (
                     <option key={category} value={category}>
@@ -345,7 +345,7 @@ const TeacherAllCourses = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
               >
                 <option value="recent">Most Recent</option>
                 <option value="popular">Most Popular</option>
@@ -358,24 +358,24 @@ const TeacherAllCourses = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-3">
-            <AlertCircle className="w-5 h-5 text-red-500" />
-            <p className="text-red-700">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 text-red-500" />
+            <p className="text-red-700 text-sm">{error}</p>
           </div>
         )}
 
         {/* Courses Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredCourses.map((course, index) => (
             <motion.div
               key={course.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
+              transition={{ delay: index * 0.05 }}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 overflow-hidden"
             >
               {/* Course Thumbnail */}
-              <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="h-36 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                 {course.thumbnail ? (
                   <img
                     src={course.thumbnail}
@@ -384,16 +384,16 @@ const TeacherAllCourses = () => {
                   />
                 ) : (
                   <div className="text-center text-white">
-                    <div className="text-4xl mb-2">{getCategoryIcon(course.category)}</div>
-                    <p className="text-sm font-medium">{course.category}</p>
+                    <div className="text-3xl mb-1">{getCategoryIcon(course.category)}</div>
+                    <p className="text-xs font-medium">{course.category}</p>
                   </div>
                 )}
               </div>
 
               {/* Course Content */}
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+              <div className="p-3">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-base font-semibold text-gray-900 line-clamp-2">
                     {course.title}
                   </h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(course.level)}`}>
@@ -401,49 +401,49 @@ const TeacherAllCourses = () => {
                   </span>
                 </div>
 
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                <p className="text-gray-600 text-xs mb-3 line-clamp-2">
                   {course.description}
                 </p>
 
                 {/* Instructor */}
-                <div className="flex items-center space-x-2 mb-3">
-                  <User className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm text-gray-700 font-medium">
+                <div className="flex items-center space-x-2 mb-2">
+                  <User className="w-3 h-3 text-gray-500" />
+                  <span className="text-xs text-gray-700 font-medium">
                     {course.instructor}
                   </span>
                 </div>
 
                 {/* Course Stats */}
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                <div className="flex items-center justify-between text-xs text-gray-600 mb-3">
                   <div className="flex items-center space-x-1">
-                    <Users className="w-4 h-4" />
+                    <Users className="w-3 h-3" />
                     <span>{course.students_enrolled} students</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Clock className="w-4 h-4" />
+                    <Clock className="w-3 h-3" />
                     <span>{course.duration}</span>
                   </div>
                 </div>
 
                 {/* Rating */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    <span className="text-sm font-medium text-gray-900">
+                    <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                    <span className="text-xs font-medium text-gray-900">
                       {course.rating}
                     </span>
-                    <span className="text-sm text-gray-500">
-                      ({course.total_ratings} reviews)
+                    <span className="text-xs text-gray-500">
+                      ({course.total_ratings})
                     </span>
                   </div>
                   <div className="text-xs text-gray-500">
-                    Created {new Date(course.created_at).toLocaleDateString()}
+                    {new Date(course.created_at).toLocaleDateString()}
                   </div>
                 </div>
 
                 {/* Action Button */}
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
-                  <Eye className="w-4 h-4" />
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1 text-sm">
+                  <Eye className="w-3 h-3" />
                   <span>View Details</span>
                 </button>
               </div>
@@ -453,10 +453,10 @@ const TeacherAllCourses = () => {
 
         {/* No Results */}
         {filteredCourses.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No courses found</h3>
-            <p className="text-gray-600">
+          <div className="text-center py-8">
+            <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <h3 className="text-base font-medium text-gray-900 mb-1">No courses found</h3>
+            <p className="text-gray-600 text-sm">
               Try adjusting your search terms or filters to find more courses.
             </p>
           </div>
