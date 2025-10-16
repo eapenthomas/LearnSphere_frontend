@@ -176,35 +176,74 @@ const StudentDashboard = () => {
 
       if (!supabaseUrl || !supabaseKey) throw new Error('Supabase env not configured');
 
-      // Batch 3 lightweight queries in parallel
-      const [enrollmentsRes, progressRes, submissionsRes] = await Promise.all([
-        fetch(`${supabaseUrl}/rest/v1/enrollments?select=course_id&student_id=eq.${user.id}`, {
+      // First, get enrolled courses to determine course IDs
+      const enrollmentsRes = await fetch(`${supabaseUrl}/rest/v1/enrollments?select=course_id,progress,materials_completed,total_materials&student_id=eq.${user.id}&status=eq.active`, {
+        headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
+      });
+      
+      const enrollments = enrollmentsRes.ok ? await enrollmentsRes.json() : [];
+      const courseIds = enrollments.map(e => e.course_id).join(',');
+
+      // Now fetch other data in parallel
+      const [courseProgressRes, assignmentsRes, submissionsRes] = await Promise.all([
+        // Get course progress data
+        fetch(`${supabaseUrl}/rest/v1/course_progress?select=course_id,progress,materials_completed,total_materials&student_id=eq.${user.id}`, {
           headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
         }),
-        fetch(`${supabaseUrl}/rest/v1/course_progress?select=progress&student_id=eq.${user.id}`, {
+        // Get all assignments for enrolled courses
+        fetch(courseIds ? `${supabaseUrl}/rest/v1/assignments?select=id&course_id=in.(${courseIds})` : `${supabaseUrl}/rest/v1/assignments?select=id&course_id=eq.null`, {
           headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
         }),
-        fetch(`${supabaseUrl}/rest/v1/assignment_submissions?select=status,assignment_id&student_id=eq.${user.id}`, {
+        // Get assignment submissions
+        fetch(`${supabaseUrl}/rest/v1/assignment_submissions?select=assignment_id,status&student_id=eq.${user.id}`, {
           headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
         })
       ]);
 
-      const enrollments = enrollmentsRes.ok ? await enrollmentsRes.json() : [];
-      const progresses = progressRes.ok ? await progressRes.json() : [];
+      const courseProgress = courseProgressRes.ok ? await courseProgressRes.json() : [];
+      const assignments = assignmentsRes.ok ? await assignmentsRes.json() : [];
       const submissions = submissionsRes.ok ? await submissionsRes.json() : [];
 
+      // Calculate enrolled courses count
       const enrolledCount = enrollments.length;
 
-      const averageProgress = progresses.length
-        ? Math.round(progresses.reduce((s, p) => s + (Number(p.progress) || 0), 0) / progresses.length)
-        : 0;
+      // Calculate course progress and materials
+      let totalMaterialsCompleted = 0;
+      let totalMaterials = 0;
+      let totalProgress = 0;
 
-      const totalAssignments = submissions.length || 0;
-      const completedAssignments = submissions.filter(s => (s.status || '').toLowerCase() === 'submitted' || (s.status || '').toLowerCase() === 'graded').length;
-      const assignmentPercentage = totalAssignments ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
+      // Use enrollment data first, then fallback to course_progress table
+      if (enrollments.length > 0) {
+        enrollments.forEach(enrollment => {
+          const materialsCompleted = enrollment.materials_completed || 0;
+          const totalCourseMaterials = enrollment.total_materials || 0;
+          const progress = enrollment.progress || 0;
+          
+          totalMaterialsCompleted += materialsCompleted;
+          totalMaterials += totalCourseMaterials;
+          totalProgress += progress;
+        });
+      } else if (courseProgress.length > 0) {
+        courseProgress.forEach(progress => {
+          const materialsCompleted = progress.materials_completed || 0;
+          const totalCourseMaterials = progress.total_materials || 0;
+          const progressValue = progress.progress || 0;
+          
+          totalMaterialsCompleted += materialsCompleted;
+          totalMaterials += totalCourseMaterials;
+          totalProgress += progressValue;
+        });
+      }
 
-      const completedMaterials = Math.round((averageProgress / 100) * (progresses.length || 0));
-      const totalMaterials = progresses.length || 0;
+      const averageProgress = enrolledCount > 0 ? Math.round(totalProgress / enrolledCount) : 0;
+
+      // Calculate assignment progress
+      const totalAssignments = assignments.length;
+      const completedAssignments = submissions.filter(s => {
+        const status = (s.status || '').toLowerCase();
+        return status === 'submitted' || status === 'graded' || status === 'reviewed';
+      }).length;
+      const assignmentPercentage = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
 
       const nextStats = [
         {
@@ -217,7 +256,7 @@ const StudentDashboard = () => {
         {
           title: 'Course Progress',
           value: `${averageProgress}%`,
-          change: `${completedMaterials}/${totalMaterials} materials`,
+          change: `${totalMaterialsCompleted}/${totalMaterials} materials`,
           icon: TrendingUp,
           color: 'from-green-500 to-green-600'
         },
