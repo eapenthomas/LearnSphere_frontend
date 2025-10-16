@@ -22,6 +22,7 @@ import TakeQuiz from './pages/student/TakeQuiz.jsx';
 import QuizResult from './pages/student/QuizResult.jsx';
 import TeacherDashboard from './pages/teacher/Dashboard.jsx';
 import TeacherMyCourses from './pages/teacher/MyCourses.jsx';
+import TeacherAllCourses from './pages/teacher/AllCourses.jsx';
 import TeacherAssignments from './pages/teacher/Assignments.jsx';
 import TeacherQuizzes from './pages/teacher/Quizzes.jsx';
 import TeacherCalendar from './pages/teacher/Calendar.jsx';
@@ -192,6 +193,14 @@ const AppContent = () => {
                 element={
                     <ProtectedRoute>
                         <TeacherMyCourses />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/teacher/all-courses"
+                element={
+                    <ProtectedRoute>
+                        <TeacherAllCourses />
                     </ProtectedRoute>
                 }
             />

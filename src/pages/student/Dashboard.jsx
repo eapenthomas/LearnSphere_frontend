@@ -340,12 +340,12 @@ const StudentDashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 student-page-bg min-h-screen p-6">
+      <div className="space-y-4 student-page-bg min-h-screen p-4">
         {/* Welcome Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 p-6 text-white hover:shadow-xl transition-all duration-300"
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white hover:shadow-xl transition-all duration-300"
         >
           <div className="absolute inset-0 bg-white/10"></div>
           <div className="relative z-10">
@@ -384,7 +384,7 @@ const StudentDashboard = () => {
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.title}

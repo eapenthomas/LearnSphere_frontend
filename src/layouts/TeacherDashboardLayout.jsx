@@ -63,6 +63,7 @@ const TeacherDashboardLayout = ({ children }) => {
   const navigation = [
     { name: 'Dashboard', href: '/teacher/dashboard', icon: Home },
     { name: 'My Courses', href: '/teacher/courses', icon: BookOpen },
+    { name: 'All Courses', href: '/teacher/all-courses', icon: GraduationCap },
     { name: 'Quizzes', href: '/teacher/quizzes', icon: FileText },
     { name: 'Assignments', href: '/teacher/assignments', icon: ClipboardList },
     { name: 'Student Progress', href: '/teacher/progress', icon: Users },
@@ -109,7 +110,7 @@ const TeacherDashboardLayout = ({ children }) => {
       <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-background-secondary border-r border-border-primary lg:static lg:z-auto shadow-elegant ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-border-primary">
+        <div className="flex items-center justify-between h-14 px-4 border-b border-border-primary">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-gradient-to-r from-navy-900 to-navy-800 rounded-lg shadow-elegant">
               <BookOpen className="w-6 h-6 text-white" />
@@ -124,7 +125,7 @@ const TeacherDashboardLayout = ({ children }) => {
           </button>
         </div>
 
-        <nav className="mt-8 px-6 flex-1">
+        <nav className="mt-6 px-4 flex-1">
           <div className="space-y-2">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
@@ -152,7 +153,7 @@ const TeacherDashboardLayout = ({ children }) => {
         </nav>
 
         {/* Logout Button */}
-        <div className="p-6 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200">
           <button
             onClick={handleLogout}
             className="sidebar-item group text-red-600 hover:text-red-700 hover:bg-red-50 w-full"
@@ -166,9 +167,9 @@ const TeacherDashboardLayout = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Navigation */}
-        <header className="bg-background-secondary border-b border-border-primary px-6 py-4 shadow-elegant">
+        <header className="bg-background-secondary border-b border-border-primary px-4 py-3 shadow-elegant">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -188,7 +189,7 @@ const TeacherDashboardLayout = ({ children }) => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
 
               {/* Notifications */}
               <TeacherNotificationBell />
