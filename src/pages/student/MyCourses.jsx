@@ -235,29 +235,29 @@ const StudentMyCourses = () => {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-3">
           {/* Title */}
-          <h3 className="text-lg font-semibold text-indigo-700 mb-2 line-clamp-2 group-hover:text-indigo-800 transition-colors">
+          <h3 className="text-base font-semibold text-indigo-700 mb-1 line-clamp-2 group-hover:text-indigo-800 transition-colors">
             {course?.title}
           </h3>
 
           {/* Teacher */}
-          <div className="flex items-center space-x-2 mb-3">
-            <User className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600 font-medium">
+          <div className="flex items-center space-x-2 mb-2">
+            <User className="w-3 h-3 text-gray-500" />
+            <span className="text-xs text-gray-600 font-medium">
               {course?.profiles?.full_name || 'Unknown Teacher'}
             </span>
           </div>
 
           {/* Progress Bar */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Progress</span>
-              <span className="text-sm text-gray-500">{enrollment.progress}%</span>
+          <div className="mb-2">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-700">Progress</span>
+              <span className="text-xs text-gray-500">{enrollment.progress}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
               <div
-                className={`h-3 rounded-full transition-all duration-500 bg-gradient-to-r ${cardColors.accent} shadow-sm`}
+                className={`h-2 rounded-full transition-all duration-500 bg-gradient-to-r ${cardColors.accent} shadow-sm`}
                 style={{ width: `${enrollment.progress}%` }}
               ></div>
             </div>
@@ -270,12 +270,12 @@ const StudentMyCourses = () => {
           </div>
 
           {/* Description */}
-          <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">
             {course?.description || 'No description available'}
           </p>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
             <div className="flex items-center space-x-4 text-xs text-gray-500">
               <div className="flex items-center space-x-1">
                 <Calendar className="w-3 h-3" />
@@ -328,12 +328,12 @@ const StudentMyCourses = () => {
   return (
     <DashboardLayout>
       <div className="min-h-screen student-page-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-3">
           {/* Header */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-            <div className="mb-4 lg:mb-0">
-              <h1 className="text-heading-xl font-bold mb-2 font-serif" style={{color: '#000000'}}>My Courses</h1>
-              <p className="text-body-lg" style={{color: '#000000'}}>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-3">
+            <div className="mb-2 lg:mb-0">
+              <h1 className="text-lg font-bold mb-1 font-serif" style={{color: '#000000'}}>My Courses</h1>
+              <p className="text-sm" style={{color: '#000000'}}>
                 Continue your learning journey. You're enrolled in {filteredCourses.length} course{filteredCourses.length !== 1 ? 's' : ''}.
               </p>
             </div>
@@ -349,11 +349,11 @@ const StudentMyCourses = () => {
           </div>
 
           {/* Course Tabs */}
-          <div className="mb-8">
+          <div className="mb-3">
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
               <button
                 onClick={() => setActiveTab('in-progress')}
-                className={`px-6 py-3 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 ${
+                className={`px-3 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 ${
                   activeTab === 'in-progress'
                     ? 'bg-blue-500 text-white shadow-md'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
@@ -364,7 +364,7 @@ const StudentMyCourses = () => {
               </button>
               <button
                 onClick={() => setActiveTab('completed')}
-                className={`px-6 py-3 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 ${
+                className={`px-3 py-2 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 ${
                   activeTab === 'completed'
                     ? 'bg-green-500 text-white shadow-md'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
@@ -382,7 +382,7 @@ const StudentMyCourses = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-lg p-6"
+                className="bg-white rounded-2xl shadow-lg p-3"
               >
                 <div className="flex items-center space-x-3">
                   <div className="p-3 bg-blue-100 rounded-xl">
@@ -399,7 +399,7 @@ const StudentMyCourses = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white rounded-2xl shadow-lg p-6"
+                className="bg-white rounded-2xl shadow-lg p-3"
               >
                 <div className="flex items-center space-x-3">
                   <div className="p-3 bg-green-100 rounded-xl">
@@ -418,7 +418,7 @@ const StudentMyCourses = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white rounded-2xl shadow-lg p-6"
+                className="bg-white rounded-2xl shadow-lg p-3"
               >
                 <div className="flex items-center space-x-3">
                   <div className="p-3 bg-yellow-100 rounded-xl">
@@ -436,7 +436,7 @@ const StudentMyCourses = () => {
           )}
 
           {/* Search and Filters */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-3 mb-3">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
               {/* Search */}
               <div className="relative flex-1 lg:max-w-md">
@@ -446,7 +446,7 @@ const StudentMyCourses = () => {
                   placeholder="Search your courses..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-500"
                 />
               </div>
 
@@ -508,7 +508,7 @@ const StudentMyCourses = () => {
               )}
             </motion.div>
           ) : (
-            <div className={`grid gap-6 ${
+            <div className={`grid gap-3 ${
               viewMode === 'grid' 
                 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
                 : 'grid-cols-1'

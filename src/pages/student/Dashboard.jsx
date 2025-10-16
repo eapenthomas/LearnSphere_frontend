@@ -138,12 +138,24 @@ const StudentDashboard = () => {
         fetchUpcomingAssignments()
       ]);
 
-      // Update cache
+      // Safely resolve results and update cache
+      const resolvedStats = (statsData.status === 'fulfilled' && Array.isArray(statsData.value?.stats))
+        ? statsData.value.stats
+        : stats;
+
+      const resolvedRecentCourses = (coursesData.status === 'fulfilled' && Array.isArray(coursesData.value))
+        ? coursesData.value
+        : recentCourses;
+
+      const resolvedUpcomingAssignments = (assignmentsData.status === 'fulfilled' && Array.isArray(assignmentsData.value))
+        ? assignmentsData.value
+        : upcomingAssignments;
+
       const newCacheData = {
         timestamp: now,
-        stats: statsData.status === 'fulfilled' ? statsData.value.stats : stats,
-        recentCourses: coursesData.status === 'fulfilled' ? coursesData.value : recentCourses,
-        upcomingAssignments: assignmentsData.status === 'fulfilled' ? assignmentsData.value : upcomingAssignments
+        stats: resolvedStats,
+        recentCourses: resolvedRecentCourses,
+        upcomingAssignments: resolvedUpcomingAssignments
       };
       
       setCachedData(prev => ({ ...prev, [cacheKey]: newCacheData }));
@@ -159,17 +171,42 @@ const StudentDashboard = () => {
 
   const fetchOptimizedStats = async () => {
     try {
-      // Use fallback data to ensure dashboard loads properly
-      const fallbackEnrollments = 3;
-      const fallbackCompletedAssignments = 8;
-      const fallbackTotalAssignments = 12;
-      const fallbackAssignmentPercentage = Math.round((fallbackCompletedAssignments / fallbackTotalAssignments) * 100);
-      const fallbackAverageProgress = 75;
-      const fallbackCompletedMaterials = 15;
-      const fallbackTotalMaterials = 20;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-      // Update stats
-      setStats([
+      if (!supabaseUrl || !supabaseKey) throw new Error('Supabase env not configured');
+
+      // Batch 3 lightweight queries in parallel
+      const [enrollmentsRes, progressRes, submissionsRes] = await Promise.all([
+        fetch(`${supabaseUrl}/rest/v1/enrollments?select=course_id&student_id=eq.${user.id}`, {
+          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
+        }),
+        fetch(`${supabaseUrl}/rest/v1/course_progress?select=progress&student_id=eq.${user.id}`, {
+          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
+        }),
+        fetch(`${supabaseUrl}/rest/v1/assignment_submissions?select=status,assignment_id&student_id=eq.${user.id}`, {
+          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
+        })
+      ]);
+
+      const enrollments = enrollmentsRes.ok ? await enrollmentsRes.json() : [];
+      const progresses = progressRes.ok ? await progressRes.json() : [];
+      const submissions = submissionsRes.ok ? await submissionsRes.json() : [];
+
+      const enrolledCount = enrollments.length;
+
+      const averageProgress = progresses.length
+        ? Math.round(progresses.reduce((s, p) => s + (Number(p.progress) || 0), 0) / progresses.length)
+        : 0;
+
+      const totalAssignments = submissions.length || 0;
+      const completedAssignments = submissions.filter(s => (s.status || '').toLowerCase() === 'submitted' || (s.status || '').toLowerCase() === 'graded').length;
+      const assignmentPercentage = totalAssignments ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
+
+      const completedMaterials = Math.round((averageProgress / 100) * (progresses.length || 0));
+      const totalMaterials = progresses.length || 0;
+
+      const nextStats = [
         {
           title: 'Enrolled Courses',
           value: enrolledCount.toString(),
@@ -191,128 +228,69 @@ const StudentDashboard = () => {
           icon: Target,
           color: 'from-purple-500 to-purple-600'
         }
-      ]);
+      ];
+
+      setStats(nextStats);
+
+      return { stats: nextStats };
     } catch (error) {
       console.error('Error fetching enrollment stats:', error);
+      return { stats };
     }
   };
 
   const fetchRecentCourses = async () => {
     try {
-      // Fetch enrolled courses from the course API (better data structure)
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/student/${user.id}/enrolled`);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (!supabaseUrl || !supabaseKey) throw new Error('Supabase env not configured');
 
-      if (response.ok) {
-        const result = await response.json();
-        const enrollments = result.data || [];
+      // Join enrollments -> courses -> profiles using PostgREST embedded selects
+      const url = `${supabaseUrl}/rest/v1/enrollments?select=course_id,progress,updated_at,courses(id,title,teacher_id,thumbnail_url,profiles!courses_teacher_id_fkey(full_name))&student_id=eq.${user.id}&order=updated_at.desc&limit=3`;
+      const response = await fetch(url, { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } });
 
-        // Get the most recent 3 courses with progress
-        const recent = enrollments.slice(0, 3).map(enrollment => ({
-          id: enrollment.course_id,
-          title: enrollment.course?.title || 'Unknown Course',
-          instructor: enrollment.course?.teacher_name || 'Unknown Teacher',
-          progress: enrollment.progress || 0,
-          nextLesson: 'Continue Learning',
-          thumbnail: null
-        }));
-        setRecentCourses(recent);
-      }
+      const rows = response.ok ? await response.json() : [];
+      const recent = rows.map(row => ({
+        id: row.course_id,
+        title: row.courses?.title || 'Unknown Course',
+        instructor: row.courses?.profiles?.full_name || 'Unknown Teacher',
+        progress: row.progress || 0,
+        nextLesson: 'Continue Learning',
+        thumbnail: row.courses?.thumbnail_url || null
+      }));
+
+      setRecentCourses(recent);
+      return recent;
     } catch (error) {
       console.error('Error fetching recent courses:', error);
+      return recentCourses;
     }
   };
 
   const fetchUpcomingAssignments = async () => {
     try {
-      console.log('🔍 Fetching upcoming assignments for user:', user.id);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      if (!supabaseUrl || !supabaseKey) throw new Error('Supabase env not configured');
 
-      // Use the new urgent deadlines API to get assignments and quizzes due within 2 days
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/student/deadlines/urgent?student_id=${user.id}&limit=5`);
-      console.log('📡 Urgent deadlines API response status:', response.status);
+      // Get next 5 upcoming assignments for student's enrolled courses
+      const url = `${supabaseUrl}/rest/v1/assignments?select=id,title,due_date,course_id,courses(title)&order=due_date.asc&due_date=gt.${new Date().toISOString()}`;
+      const response = await fetch(url, { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } });
+      const rows = response.ok ? await response.json() : [];
 
-      if (response.ok) {
-        const urgentDeadlines = await response.json();
-        console.log('📋 Urgent deadlines data:', urgentDeadlines);
+      const upcoming = rows.slice(0, 5).map(a => ({
+        title: a.title,
+        course: a.courses?.title || 'Unknown Course',
+        dueDate: new Date(a.due_date).toLocaleDateString(),
+        type: 'assignment',
+        daysUntil: Math.ceil((new Date(a.due_date) - new Date()) / (1000 * 60 * 60 * 24))
+      }));
 
-        // Transform the data for the dashboard
-        const upcoming = urgentDeadlines.map(deadline => ({
-          title: deadline.title,
-          course: deadline.course_name,
-          dueDate: new Date(deadline.due_date).toLocaleDateString(),
-          type: deadline.category,
-          priority: deadline.priority,
-          daysUntil: Math.ceil((new Date(deadline.due_date) - new Date()) / (1000 * 60 * 60 * 24))
-        }));
-
-        console.log('✅ Processed upcoming assignments:', upcoming);
-        setUpcomingAssignments(upcoming);
-      } else {
-        console.log('⚠️ Urgent deadlines API failed, trying fallback...');
-        // Fallback to old method if new API fails
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/student/${user.id}`);
-          console.log('📡 Fallback API response status:', response.status);
-
-          if (response.ok) {
-            const assignments = await response.json();
-            console.log('📋 Fallback assignments data:', assignments);
-
-            const upcoming = assignments
-              .filter(a => a.submission_status === 'not_submitted' && new Date(a.due_date) > new Date())
-              .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
-              .slice(0, 5)
-              .map(assignment => ({
-                title: assignment.title,
-                course: assignment.course_title,
-                dueDate: new Date(assignment.due_date).toLocaleDateString(),
-                type: 'assignment',
-                daysUntil: Math.ceil((new Date(assignment.due_date) - new Date()) / (1000 * 60 * 60 * 24))
-              }));
-
-            console.log('✅ Processed fallback assignments:', upcoming);
-            setUpcomingAssignments(upcoming);
-          }
-        } catch (fallbackError) {
-          console.error('❌ Error with fallback method:', fallbackError);
-
-          // Add sample data for testing when no real data is available
-          const sampleDeadlines = [
-            {
-              title: 'JavaScript Fundamentals Quiz',
-              course: 'Web Development',
-              dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString(),
-              type: 'quiz',
-              daysUntil: 1
-            },
-            {
-              title: 'React Project Assignment',
-              course: 'Frontend Development',
-              dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-              type: 'assignment',
-              daysUntil: 2
-            }
-          ];
-
-          console.log('🧪 Using sample deadlines for testing:', sampleDeadlines);
-          setUpcomingAssignments(sampleDeadlines);
-        }
-      }
+      setUpcomingAssignments(upcoming);
+      return upcoming;
     } catch (error) {
-      console.error('❌ Error fetching urgent deadlines:', error);
-
-      // Add sample data for testing when API completely fails
-      const sampleDeadlines = [
-        {
-          title: 'Sample Quiz - Due Tomorrow',
-          course: 'Sample Course',
-          dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString(),
-          type: 'quiz',
-          daysUntil: 1
-        }
-      ];
-
-      console.log('🧪 Using sample deadlines due to error:', sampleDeadlines);
-      setUpcomingAssignments(sampleDeadlines);
+      console.error('❌ Error fetching upcoming assignments (Supabase):', error);
+      return upcomingAssignments;
     }
   };
 
@@ -380,8 +358,8 @@ const StudentDashboard = () => {
                 <div className={`p-2 bg-gradient-to-br ${stat.color} rounded-xl group-hover:scale-110 transition-transform duration-300`}>
                   <stat.icon className="w-5 h-5 text-white" />
                 </div>
-                <span className={`text-body-sm font-bold ${stat.change.startsWith('+') ? 'text-success-600' : 'text-error-600'}`}>
-                  {stat.change}
+                <span className={`text-body-sm font-bold ${(typeof stat.change === 'string' && stat.change.startsWith('+')) ? 'text-success-600' : 'text-error-600'}`}>
+                  {typeof stat.change === 'string' ? stat.change : ''}
                 </span>
               </div>
               <h3 className="text-heading-lg font-bold mb-1" style={{color: '#000000'}}>{stat.value}</h3>

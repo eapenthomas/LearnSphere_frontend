@@ -197,14 +197,14 @@ const StudentAssignments = () => {
   return (
     <DashboardLayout>
       <div className="min-h-screen student-page-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-3">
           {/* Header */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-            <div className="mb-4 lg:mb-0">
-              <h1 className="text-heading-xl font-bold mb-2 font-serif" style={{color: '#000000'}}>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-3">
+            <div className="mb-2 lg:mb-0">
+              <h1 className="text-lg font-bold mb-1 font-serif" style={{color: '#000000'}}>
                 My Assignments
               </h1>
-              <p className="text-body-lg" style={{color: '#000000'}}>
+              <p className="text-sm" style={{color: '#000000'}}>
                 View and submit assignments for your enrolled courses. {filteredAssignments.length} assignment{filteredAssignments.length !== 1 ? 's' : ''} found.
               </p>
             </div>
@@ -220,7 +220,7 @@ const StudentAssignments = () => {
           </div>
 
           {/* Search and Filters */}
-          <div className="student-card-bg rounded-lg shadow-elegant p-6 mb-8 border border-border-primary">
+          <div className="student-card-bg rounded-lg shadow-elegant p-3 mb-3 border border-border-primary">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
               {/* Search */}
               <div className="relative flex-1 lg:max-w-md">
@@ -230,7 +230,7 @@ const StudentAssignments = () => {
                   placeholder="Search assignments..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                   style={{color: '#000000', backgroundColor: '#ffffff'}}
                 />
               </div>
@@ -278,14 +278,14 @@ const StudentAssignments = () => {
               </p>
             </motion.div>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-3">
               {filteredAssignments.map((assignment, index) => (
                 <motion.div
                   key={assignment.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="course-card rounded-xl p-6 transition-all duration-300"
+                  className="course-card rounded-xl p-3 transition-all duration-300"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex-1 mb-4 lg:mb-0">
