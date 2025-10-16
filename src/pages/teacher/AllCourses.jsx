@@ -29,7 +29,6 @@ const TeacherAllCourses = () => {
   const [sortBy, setSortBy] = useState('recent');
   const [error, setError] = useState(null);
 
-  // Fetch all courses from all teachers
   const fetchAllCourses = async () => {
     try {
       setLoading(true);
@@ -47,13 +46,12 @@ const TeacherAllCourses = () => {
       }
 
       const data = await response.json();
-      console.log('📚 All courses data:', data);
+      console.log('All courses data:', data);
       setCourses(data.courses || []);
     } catch (error) {
-      console.error('❌ Error fetching all courses:', error);
+      console.error('Error fetching all courses:', error);
       setError('Failed to load courses. Please try again.');
       
-      // Fallback sample data for testing
       const sampleCourses = [
         {
           id: 1,
@@ -147,7 +145,6 @@ const TeacherAllCourses = () => {
     fetchAllCourses();
   }, []);
 
-  // Filter and sort courses
   const filteredCourses = courses
     .filter(course => {
       const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -221,7 +218,6 @@ const TeacherAllCourses = () => {
   return (
     <TeacherDashboardLayout>
       <div className="space-y-3">
-        {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
           <div className="mb-3 lg:mb-0">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">All Courses</h1>
@@ -242,7 +238,6 @@ const TeacherAllCourses = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -308,10 +303,8 @@ const TeacherAllCourses = () => {
           </motion.div>
         </div>
 
-        {/* Search and Filter */}
         <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0 lg:space-x-3">
-            {/* Search */}
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -325,7 +318,6 @@ const TeacherAllCourses = () => {
               </div>
             </div>
 
-            {/* Filters */}
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <div className="flex items-center space-x-2">
                 <Filter className="w-4 h-4 text-gray-500" />
@@ -356,7 +348,6 @@ const TeacherAllCourses = () => {
           </div>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 text-red-500" />
@@ -364,7 +355,6 @@ const TeacherAllCourses = () => {
           </div>
         )}
 
-        {/* Courses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredCourses.map((course, index) => (
             <motion.div
@@ -374,7 +364,6 @@ const TeacherAllCourses = () => {
               transition={{ delay: index * 0.05 }}
               className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 overflow-hidden"
             >
-              {/* Course Thumbnail */}
               <div className="h-36 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                 {course.thumbnail ? (
                   <img
@@ -390,7 +379,6 @@ const TeacherAllCourses = () => {
                 )}
               </div>
 
-              {/* Course Content */}
               <div className="p-3">
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="text-base font-semibold text-gray-900 line-clamp-2">
@@ -405,7 +393,6 @@ const TeacherAllCourses = () => {
                   {course.description}
                 </p>
 
-                {/* Instructor */}
                 <div className="flex items-center space-x-2 mb-2">
                   <User className="w-3 h-3 text-gray-500" />
                   <span className="text-xs text-gray-700 font-medium">
@@ -413,7 +400,6 @@ const TeacherAllCourses = () => {
                   </span>
                 </div>
 
-                {/* Course Stats */}
                 <div className="flex items-center justify-between text-xs text-gray-600 mb-3">
                   <div className="flex items-center space-x-1">
                     <Users className="w-3 h-3" />
@@ -425,7 +411,6 @@ const TeacherAllCourses = () => {
                   </div>
                 </div>
 
-                {/* Rating */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-1">
                     <Star className="w-3 h-3 text-yellow-500 fill-current" />
@@ -441,7 +426,6 @@ const TeacherAllCourses = () => {
                   </div>
                 </div>
 
-                {/* Action Button */}
                 <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-1 text-sm">
                   <Eye className="w-3 h-3" />
                   <span>View Details</span>
@@ -451,7 +435,6 @@ const TeacherAllCourses = () => {
           ))}
         </div>
 
-        {/* No Results */}
         {filteredCourses.length === 0 && !loading && (
           <div className="text-center py-8">
             <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
