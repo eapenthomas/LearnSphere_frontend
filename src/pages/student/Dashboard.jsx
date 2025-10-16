@@ -159,21 +159,42 @@ const StudentDashboard = () => {
 
   const fetchOptimizedStats = async () => {
     try {
+      // Fetch data directly from Supabase
+      const supabaseUrl = 'https://ffspaottcgyalpagbxvx.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmc3Bhb3R0Y2d5YWxwYWdieHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyMDAyNzQsImV4cCI6MjA2OTc3NjI3NH0.eFhKNCnQtQz3WX4Rtz3Z0-51HFXL50b8iDFtszitVVE';
+      
       // Fetch all data in parallel for better performance
       const [enrollmentsResponse, assignmentsResponse, progressResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/student/${user.id}/enrolled`),
-        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/student/${user.id}`),
-        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/progress/student/${user.id}/courses`)
+        fetch(`${supabaseUrl}/rest/v1/enrollments?student_id=eq.${user.id}&select=*`, {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+        fetch(`${supabaseUrl}/rest/v1/assignment_submissions?student_id=eq.${user.id}&select=*`, {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+        fetch(`${supabaseUrl}/rest/v1/course_progress?student_id=eq.${user.id}&select=*`, {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+        })
       ]);
 
-      const enrollmentsResult = enrollmentsResponse.ok ? await enrollmentsResponse.json() : { data: [] };
-      const enrollments = enrollmentsResult.data || [];
+      const enrollments = enrollmentsResponse.ok ? await enrollmentsResponse.json() : [];
       const assignments = assignmentsResponse.ok ? await assignmentsResponse.json() : [];
       const courseProgress = progressResponse.ok ? await progressResponse.json() : [];
 
       // Calculate stats
       const enrolledCount = enrollments.length;
-      const completedAssignments = assignments.filter(a => a.submission_status === 'reviewed').length;
+      const completedAssignments = assignments.filter(a => a.status === 'reviewed').length;
       const totalAssignments = assignments.length;
       const assignmentPercentage = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
 

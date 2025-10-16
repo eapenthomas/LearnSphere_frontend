@@ -47,19 +47,80 @@ const Dashboard = () => {
       console.log('Fetching dashboard data...');
       const startTime = Date.now();
       
-      // Single API call to get all dashboard data
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard-optimized`, {
+      // Fetch data directly from Supabase
+      const supabaseUrl = 'https://ffspaottcgyalpagbxvx.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZmc3Bhb3R0Y2d5YWxwYWdieHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyMDAyNzQsImV4cCI6MjA2OTc3NjI3NH0.eFhKNCnQtQz3WX4Rtz3Z0-51HFXL50b8iDFtszitVVE';
+      
+      // Fetch courses for this teacher
+      const coursesResponse = await fetch(`${supabaseUrl}/rest/v1/courses?teacher_id=eq.${user.id}&select=*`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
           'Content-Type': 'application/json',
         },
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch dashboard data');
-      }
-
-      const data = await response.json();
+      
+      const courses = await coursesResponse.json();
+      
+      // Fetch enrollments for teacher's courses
+      const courseIds = courses.map(course => course.id);
+      const enrollmentsResponse = await fetch(`${supabaseUrl}/rest/v1/enrollments?course_id=in.(${courseIds.join(',')})&select=*`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const enrollments = await enrollmentsResponse.json();
+      
+      // Fetch assignments
+      const assignmentsResponse = await fetch(`${supabaseUrl}/rest/v1/assignments?teacher_id=eq.${user.id}&select=*`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const assignments = await assignmentsResponse.json();
+      
+      // Fetch quizzes
+      const quizzesResponse = await fetch(`${supabaseUrl}/rest/v1/quizzes?teacher_id=eq.${user.id}&select=*`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const quizzes = await quizzesResponse.json();
+      
+      // Calculate stats
+      const totalStudents = enrollments.length;
+      const activeAssignments = assignments.filter(a => a.status === 'active').length;
+      const pendingQuizzes = quizzes.filter(q => q.status === 'draft').length;
+      
+      const data = {
+        stats: {
+          total_courses: courses.length,
+          total_students: totalStudents,
+          active_assignments: activeAssignments,
+          pending_quizzes: pendingQuizzes,
+        },
+        courses: courses.slice(0, 6),
+        recent_activity: [
+          {
+            message: `Created ${courses.length} courses`,
+            time: 'Recently'
+          },
+          {
+            message: `${totalStudents} students enrolled`,
+            time: 'Recently'
+          }
+        ]
+      };
+      
       console.log('Dashboard data received:', data);
       
       setDashboardData(data);
