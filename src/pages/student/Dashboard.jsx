@@ -171,76 +171,56 @@ const StudentDashboard = () => {
 
   const fetchOptimizedStats = async () => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      if (!supabaseUrl || !supabaseKey) throw new Error('Supabase env not configured');
-
-      // First, get enrolled courses to determine course IDs
-      const enrollmentsRes = await fetch(`${supabaseUrl}/rest/v1/enrollments?select=course_id,progress,materials_completed,total_materials&student_id=eq.${user.id}&status=eq.active`, {
-        headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
-      });
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       
-      const enrollments = enrollmentsRes.ok ? await enrollmentsRes.json() : [];
-      const courseIds = enrollments.map(e => e.course_id).join(',');
-
-      // Now fetch other data in parallel
-      const [courseProgressRes, assignmentsRes, submissionsRes] = await Promise.all([
-        // Get course progress data
-        fetch(`${supabaseUrl}/rest/v1/course_progress?select=course_id,progress,materials_completed,total_materials&student_id=eq.${user.id}`, {
-          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
+      // Fetch data from backend APIs that provide accurate stats
+      const [enrolledCoursesRes, assignmentsRes] = await Promise.all([
+        // Get enrolled courses with progress data
+        fetch(`${apiBaseUrl}/api/courses/student/${user.id}/enrolled`, {
+          headers: { 'Authorization': `Bearer ${user.accessToken}` }
         }),
-        // Get all assignments for enrolled courses
-        fetch(courseIds ? `${supabaseUrl}/rest/v1/assignments?select=id&course_id=in.(${courseIds})` : `${supabaseUrl}/rest/v1/assignments?select=id&course_id=eq.null`, {
-          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
-        }),
-        // Get assignment submissions
-        fetch(`${supabaseUrl}/rest/v1/assignment_submissions?select=assignment_id,status&student_id=eq.${user.id}`, {
-          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
+        // Get assignments for student
+        fetch(`${apiBaseUrl}/api/assignments/student/${user.id}`, {
+          headers: { 'Authorization': `Bearer ${user.accessToken}` }
         })
       ]);
 
-      const courseProgress = courseProgressRes.ok ? await courseProgressRes.json() : [];
-      const assignments = assignmentsRes.ok ? await assignmentsRes.json() : [];
-      const submissions = submissionsRes.ok ? await submissionsRes.json() : [];
+      let enrolledCourses = [];
+      let assignments = [];
+
+      if (enrolledCoursesRes.ok) {
+        const enrolledData = await enrolledCoursesRes.json();
+        enrolledCourses = enrolledData.data || [];
+      }
+
+      if (assignmentsRes.ok) {
+        assignments = await assignmentsRes.json();
+      }
 
       // Calculate enrolled courses count
-      const enrolledCount = enrollments.length;
+      const enrolledCount = enrolledCourses.length;
 
-      // Calculate course progress and materials
+      // Calculate course progress and materials from backend data
       let totalMaterialsCompleted = 0;
       let totalMaterials = 0;
       let totalProgress = 0;
 
-      // Use enrollment data first, then fallback to course_progress table
-      if (enrollments.length > 0) {
-        enrollments.forEach(enrollment => {
-          const materialsCompleted = enrollment.materials_completed || 0;
-          const totalCourseMaterials = enrollment.total_materials || 0;
-          const progress = enrollment.progress || 0;
-          
-          totalMaterialsCompleted += materialsCompleted;
-          totalMaterials += totalCourseMaterials;
-          totalProgress += progress;
-        });
-      } else if (courseProgress.length > 0) {
-        courseProgress.forEach(progress => {
-          const materialsCompleted = progress.materials_completed || 0;
-          const totalCourseMaterials = progress.total_materials || 0;
-          const progressValue = progress.progress || 0;
-          
-          totalMaterialsCompleted += materialsCompleted;
-          totalMaterials += totalCourseMaterials;
-          totalProgress += progressValue;
-        });
-      }
+      enrolledCourses.forEach(course => {
+        const materialsCompleted = course.materials_completed || 0;
+        const totalCourseMaterials = course.total_materials || 0;
+        const progress = course.progress || 0;
+        
+        totalMaterialsCompleted += materialsCompleted;
+        totalMaterials += totalCourseMaterials;
+        totalProgress += progress;
+      });
 
       const averageProgress = enrolledCount > 0 ? Math.round(totalProgress / enrolledCount) : 0;
 
-      // Calculate assignment progress
+      // Calculate assignment progress from backend data
       const totalAssignments = assignments.length;
-      const completedAssignments = submissions.filter(s => {
-        const status = (s.status || '').toLowerCase();
+      const completedAssignments = assignments.filter(assignment => {
+        const status = (assignment.submission_status || '').toLowerCase();
         return status === 'submitted' || status === 'graded' || status === 'reviewed';
       }).length;
       const assignmentPercentage = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
