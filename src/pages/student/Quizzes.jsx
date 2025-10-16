@@ -206,12 +206,12 @@ const StudentQuizzes = () => {
   return (
     <DashboardLayout>
       <div className="min-h-screen student-page-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-3 space-y-4">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-8 border-2 border-indigo-100"
+          className="bg-white rounded-2xl shadow-lg p-4 border-2 border-indigo-100"
         >
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -254,7 +254,7 @@ const StudentQuizzes = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-2xl shadow-lg p-6 border border-indigo-100"
+          className="bg-white rounded-2xl shadow-lg p-3 border border-indigo-100"
         >
           <div className="flex items-center space-x-4">
             <button
@@ -280,14 +280,14 @@ const StudentQuizzes = () => {
 
         {/* Quiz Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
           </div>
         ) : filteredQuizzes.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12 bg-white rounded-2xl shadow-lg"
+            className="text-center py-8 bg-white rounded-2xl shadow-lg"
           >
             <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
@@ -301,7 +301,7 @@ const StudentQuizzes = () => {
             </p>
           </motion.div>
         ) : (
-          <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             {filteredQuizzes.map((quiz, index) => (
               <motion.div
                 key={quiz.id}

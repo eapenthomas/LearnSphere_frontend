@@ -197,7 +197,7 @@ const StudentAssignments = () => {
   return (
     <DashboardLayout>
       <div className="min-h-screen student-page-bg">
-        <div className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-3">
+        <div className="max-w-7xl mx-auto px-1 sm:px-2 lg:px-3 py-2">
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-3">
             <div className="mb-2 lg:mb-0">
@@ -220,7 +220,7 @@ const StudentAssignments = () => {
           </div>
 
           {/* Search and Filters */}
-          <div className="student-card-bg rounded-lg shadow-elegant p-3 mb-3 border border-border-primary">
+          <div className="student-card-bg rounded-lg shadow-elegant p-2 mb-2 border border-border-primary">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
               {/* Search */}
               <div className="relative flex-1 lg:max-w-md">
