@@ -273,12 +273,27 @@ const StudentDashboard = () => {
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       if (!supabaseUrl || !supabaseKey) throw new Error('Supabase env not configured');
 
-      // Get next 5 upcoming assignments for student's enrolled courses
-      const url = `${supabaseUrl}/rest/v1/assignments?select=id,title,due_date,course_id,courses(title)&order=due_date.asc&due_date=gt.${new Date().toISOString()}`;
-      const response = await fetch(url, { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } });
+      // Get next upcoming assignments for student's enrolled courses
+      const assignmentsUrl = `${supabaseUrl}/rest/v1/assignments?select=id,title,due_date,course_id,courses(title)&order=due_date.asc&due_date=gt.${new Date().toISOString()}`;
+      const response = await fetch(assignmentsUrl, { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } });
       const rows = response.ok ? await response.json() : [];
 
-      const upcoming = rows.slice(0, 5).map(a => ({
+      // Fetch student's submitted/graded assignment submissions to exclude from deadlines
+      const submissionsUrl = `${supabaseUrl}/rest/v1/assignment_submissions?select=assignment_id,status&student_id=eq.${user.id}`;
+      const submissionsRes = await fetch(submissionsUrl, { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } });
+      const submissionsRows = submissionsRes.ok ? await submissionsRes.json() : [];
+      const submittedAssignmentIds = new Set(
+        submissionsRows
+          .filter(s => {
+            const status = (s.status || '').toLowerCase();
+            return status === 'submitted' || status === 'graded';
+          })
+          .map(s => s.assignment_id)
+      );
+
+      const filtered = rows.filter(a => !submittedAssignmentIds.has(a.id));
+
+      const upcoming = filtered.slice(0, 5).map(a => ({
         title: a.title,
         course: a.courses?.title || 'Unknown Course',
         dueDate: new Date(a.due_date).toLocaleDateString(),
@@ -463,7 +478,8 @@ const StudentDashboard = () => {
                   initial={{ opacity: 1, x: 0 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="p-2 bg-white dark:bg-gray-800 rounded-lg border-l-4 border-red-500 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="p-2 bg-white dark:bg-gray-800 rounded-lg border-l-4 border-red-500 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+                  onClick={() => navigate(deadline.type === 'quiz' ? '/student/quizzes' : '/assignments')}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
