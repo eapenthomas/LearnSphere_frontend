@@ -463,7 +463,7 @@ const AdvancedTeacherAnalytics = () => {
             className="p-4 bg-green-50 rounded-lg border border-green-200"
           >
             <div className="flex items-center space-x-2 mb-2">
-              <Activity className="w-5 h-5 text-green-600" />
+              <TrendingUp className="w-5 h-5 text-green-600" />
               <h4 className="font-medium text-green-900">Engagement</h4>
             </div>
             <p className="text-sm text-green-700">
