@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import TeacherDashboardLayout from '../../layouts/TeacherDashboardLayout.jsx';
+import TeacherAnalyticsGraph from '../../components/TeacherAnalyticsGraph.jsx';
 import { toast } from 'react-hot-toast';
 import {
   BookOpen,
@@ -210,6 +211,98 @@ const Dashboard = () => {
               <FileText className="w-8 h-8 text-orange-200" />
             </div>
           </motion.div>
+        </div>
+
+        {/* Interactive Analytics Graph */}
+        <TeacherAnalyticsGraph />
+
+        {/* Quick Actions */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -2 }}
+              className="group"
+            >
+              <Link
+                to="/teacher/courses/create"
+                className="block p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <div className="flex items-center space-x-3">
+                  <BookOpen className="w-6 h-6" />
+                  <div>
+                    <h3 className="font-semibold">Create Course</h3>
+                    <p className="text-blue-100 text-sm">Add new course</p>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              whileHover={{ y: -2 }}
+              className="group"
+            >
+              <Link
+                to="/teacher/assignments"
+                className="block p-4 bg-gradient-to-r from-green-500 to-green-600 rounded-lg text-white hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <div className="flex items-center space-x-3">
+                  <ClipboardList className="w-6 h-6" />
+                  <div>
+                    <h3 className="font-semibold">Create Assignment</h3>
+                    <p className="text-green-100 text-sm">Add new assignment</p>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ y: -2 }}
+              className="group"
+            >
+              <Link
+                to="/teacher/quizzes"
+                className="block p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <div className="flex items-center space-x-3">
+                  <FileText className="w-6 h-6" />
+                  <div>
+                    <h3 className="font-semibold">Create Quiz</h3>
+                    <p className="text-purple-100 text-sm">Add new quiz</p>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ y: -2 }}
+              className="group"
+            >
+              <Link
+                to="/teacher/reports"
+                className="block p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg text-white hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <div className="flex items-center space-x-3">
+                  <BarChart3 className="w-6 h-6" />
+                  <div>
+                    <h3 className="font-semibold">View Reports</h3>
+                    <p className="text-orange-100 text-sm">Analytics & insights</p>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          </div>
         </div>
 
         {/* Recent Courses */}
