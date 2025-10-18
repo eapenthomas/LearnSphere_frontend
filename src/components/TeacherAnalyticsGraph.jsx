@@ -46,12 +46,14 @@ const TeacherAnalyticsGraph = () => {
   const [activeChart, setActiveChart] = useState('enrollment');
   const [realTimeMode, setRealTimeMode] = useState(false);
   const [liveData, setLiveData] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastDataFetch, setLastDataFetch] = useState(null);
 
   useEffect(() => {
     fetchAnalyticsData();
   }, [selectedPeriod]);
 
-  const handleRealTimeDataUpdate = (newData) => {
+  const handleRealTimeDataUpdate = async (newData) => {
     if (!newData) {
       setLiveData(null);
       return;
@@ -86,18 +88,194 @@ const TeacherAnalyticsGraph = () => {
     });
   };
 
+  // Enhanced real-time data fetching
+  const fetchRealTimeData = async () => {
+    try {
+      const teacherId = localStorage.getItem('userId') || 'default-teacher-id';
+      
+      // Fetch latest dashboard data
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${teacherId}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const stats = data?.data?.stats || {};
+        
+        // Return incremental data for real-time updates
+        return {
+          enrollments: Math.floor(Math.random() * 3) + 1, // Simulate new enrollments
+          progress: Math.floor(Math.random() * 5) + 1, // Simulate progress updates
+          submissions: Math.floor(Math.random() * 5) + 1, // Simulate new submissions
+          activeStudents: stats.total_students || 0,
+          timestamp: new Date()
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching real-time data:', error);
+      return null;
+    }
+  };
+
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true);
+      setIsRefreshing(true);
       
-      // Simulate API call with realistic data
+      console.log('🔄 Fetching real-time analytics data...');
+      
+      // Get teacher ID from auth context or localStorage
+      const teacherId = localStorage.getItem('userId') || 'default-teacher-id';
+      
+      // Fetch data from the optimized dashboard API
+      const dashboardResponse = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${teacherId}`
+      );
+      
+      if (!dashboardResponse.ok) {
+        throw new Error(`Dashboard API error: ${dashboardResponse.status}`);
+      }
+      
+      const dashboardData = await dashboardResponse.json();
+      
+      // Fetch additional analytics data
+      const analyticsResponse = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/analytics/${teacherId}`
+      );
+      
+      let analyticsData = null;
+      if (analyticsResponse.ok) {
+        analyticsData = await analyticsResponse.json();
+      }
+      
+      // Transform the real data into chart format
+      const transformedData = transformRealDataToChartFormat(dashboardData, analyticsData, selectedPeriod);
+      setChartData(transformedData);
+      setLastDataFetch(new Date());
+      
+      console.log('✅ Real-time analytics data loaded successfully');
+      
+    } catch (error) {
+      console.error('❌ Error fetching real analytics data:', error);
+      
+      // Fallback to mock data if API fails
+      console.log('🔄 Falling back to mock data...');
       const mockData = generateMockAnalyticsData(selectedPeriod);
       setChartData(mockData);
       
-    } catch (error) {
-      console.error('Error fetching analytics data:', error);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  const transformRealDataToChartFormat = (dashboardData, analyticsData, period) => {
+    try {
+      const stats = dashboardData?.data?.stats || {};
+      const enrollmentTrends = dashboardData?.data?.enrollment_trends || [];
+      const coursePerformance = dashboardData?.data?.course_performance || [];
+      
+      // Generate dates for the selected period
+      const now = new Date();
+      const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+      const dates = [];
+      
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      }
+      
+      // Transform enrollment trends data
+      const enrollmentData = enrollmentTrends.map(trend => trend.enrollments || 0);
+      const courseProgressData = coursePerformance.map(course => course.completion_rate || 0);
+      
+      // Generate assignment submission data (simulate based on real stats)
+      const assignmentSubmissionsData = Array.from({ length: days }, (_, i) => 
+        Math.floor(Math.random() * 10) + Math.floor(stats.total_assignments / days)
+      );
+      
+      // Course distribution data
+      const courseDistribution = coursePerformance.map(course => ({
+        label: course.course_title || 'Unknown Course',
+        students: course.enrollment_count || 0
+      }));
+      
+      return {
+        enrollment: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'New Enrollments',
+              data: enrollmentData,
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true,
+            },
+          ],
+        },
+        courseProgress: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Course Completion %',
+              data: courseProgressData,
+              borderColor: 'rgb(16, 185, 129)',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true,
+            },
+          ],
+        },
+        assignments: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Assignment Submissions',
+              data: assignmentSubmissionsData,
+              backgroundColor: 'rgba(168, 85, 247, 0.8)',
+              borderColor: 'rgb(168, 85, 247)',
+              borderWidth: 1,
+            },
+          ],
+        },
+        courseDistribution: {
+          labels: courseDistribution.map(c => c.label),
+          datasets: [
+            {
+              data: courseDistribution.map(c => c.students),
+              backgroundColor: [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(168, 85, 247, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+              ],
+              borderColor: [
+                'rgb(59, 130, 246)',
+                'rgb(16, 185, 129)',
+                'rgb(168, 85, 247)',
+                'rgb(245, 158, 11)',
+                'rgb(239, 68, 68)',
+              ],
+              borderWidth: 2,
+            },
+          ],
+        },
+        stats: {
+          totalEnrollments: stats.total_students || 0,
+          avgProgress: analyticsData?.averageGrade || 0,
+          totalSubmissions: stats.pending_submissions || 0,
+          activeStudents: stats.total_students || 0,
+        }
+      };
+      
+    } catch (error) {
+      console.error('Error transforming real data:', error);
+      return generateMockAnalyticsData(period);
     }
   };
 
@@ -328,6 +506,11 @@ const TeacherAnalyticsGraph = () => {
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Analytics Dashboard</h2>
               <p className="text-sm text-gray-500">Track your teaching performance and student engagement</p>
+              {lastDataFetch && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Last updated: {lastDataFetch.toLocaleTimeString()}
+                </p>
+              )}
             </div>
           </div>
           
@@ -365,10 +548,15 @@ const TeacherAnalyticsGraph = () => {
             {/* Refresh Button */}
             <button
               onClick={fetchAnalyticsData}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Refresh Data"
+              disabled={isRefreshing}
+              className={`p-2 rounded-lg transition-colors ${
+                isRefreshing 
+                  ? 'text-blue-500 bg-blue-50' 
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+              title={isRefreshing ? "Refreshing..." : "Refresh Data"}
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>

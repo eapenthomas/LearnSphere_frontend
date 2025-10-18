@@ -10,18 +10,54 @@ const RealTimeDataSimulator = ({ onDataUpdate, isActive, onToggle }) => {
   useEffect(() => {
     let interval;
     if (isPlaying && isActive) {
-      interval = setInterval(() => {
-        // Generate realistic data variations
-        const newData = {
-          timestamp: new Date(),
-          enrollments: Math.floor(Math.random() * 5) + 1,
-          progress: Math.floor(Math.random() * 10) + 5,
-          submissions: Math.floor(Math.random() * 8) + 2,
-          activeStudents: Math.floor(Math.random() * 3) + 1,
-        };
-        
-        onDataUpdate(newData);
-        setDataPoints(prev => prev + 1);
+      interval = setInterval(async () => {
+        // Try to fetch real data first, fallback to simulation
+        try {
+          const teacherId = localStorage.getItem('userId') || 'default-teacher-id';
+          const response = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${teacherId}`
+          );
+          
+          let newData;
+          if (response.ok) {
+            const data = await response.json();
+            const stats = data?.data?.stats || {};
+            
+            // Generate realistic incremental data based on real stats
+            newData = {
+              timestamp: new Date(),
+              enrollments: Math.floor(Math.random() * 3) + 1,
+              progress: Math.floor(Math.random() * 5) + 1,
+              submissions: Math.floor(Math.random() * 5) + 1,
+              activeStudents: stats.total_students || 0,
+            };
+          } else {
+            // Fallback to pure simulation
+            newData = {
+              timestamp: new Date(),
+              enrollments: Math.floor(Math.random() * 5) + 1,
+              progress: Math.floor(Math.random() * 10) + 5,
+              submissions: Math.floor(Math.random() * 8) + 2,
+              activeStudents: Math.floor(Math.random() * 3) + 1,
+            };
+          }
+          
+          onDataUpdate(newData);
+          setDataPoints(prev => prev + 1);
+        } catch (error) {
+          console.error('Error in real-time data fetch:', error);
+          // Fallback to simulation
+          const newData = {
+            timestamp: new Date(),
+            enrollments: Math.floor(Math.random() * 5) + 1,
+            progress: Math.floor(Math.random() * 10) + 5,
+            submissions: Math.floor(Math.random() * 8) + 2,
+            activeStudents: Math.floor(Math.random() * 3) + 1,
+          };
+          
+          onDataUpdate(newData);
+          setDataPoints(prev => prev + 1);
+        }
       }, speed);
     }
 

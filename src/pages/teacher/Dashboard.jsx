@@ -45,64 +45,49 @@ const Dashboard = () => {
     try {
       if (!silent) setLoading(true);
       
-      console.log('Fetching dashboard data...');
+      console.log('🔄 Fetching real teacher dashboard data...');
       
-      // Use fallback data for now to ensure dashboard loads
-      const fallbackData = {
-        stats: {
-          total_courses: 5,
-          total_students: 12,
-          active_assignments: 3,
-          pending_quizzes: 2,
-        },
-        courses: [
-          {
-            id: '1',
-            title: 'Introduction to Web Development',
-            description: 'Learn the fundamentals of HTML, CSS, and JavaScript.',
-            thumbnail_url: null,
-            status: 'active',
-            created_at: '2024-01-15T10:00:00Z',
-          },
-          {
-            id: '2',
-            title: 'Advanced React Development',
-            description: 'Master React hooks, state management, and advanced patterns.',
-            thumbnail_url: null,
-            status: 'active',
-            created_at: '2024-01-10T14:30:00Z',
-          },
-          {
-            id: '3',
-            title: 'Data Science Fundamentals',
-            description: 'Introduction to data analysis, statistics, and machine learning.',
-            thumbnail_url: null,
-            status: 'active',
-            created_at: '2024-01-05T09:15:00Z',
-          }
-        ],
-        recent_activity: [
-          {
-            message: 'Created Introduction to Web Development course',
-            time: '2 hours ago'
-          },
-          {
-            message: '12 students enrolled in your courses',
-            time: '1 day ago'
-          },
-          {
-            message: 'Graded 5 assignments',
-            time: '2 days ago'
-          }
-        ]
-      };
+      // Get teacher ID from auth context or localStorage
+      const teacherId = user?.id || localStorage.getItem('userId') || 'default-teacher-id';
       
-      console.log('Using fallback dashboard data');
-      setDashboardData(fallbackData);
-      setLastUpdated(new Date());
+      // Fetch data from the optimized dashboard API
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${teacherId}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Real dashboard data loaded:', data);
+        
+        // Transform the API response to match expected format
+        const transformedData = {
+          stats: data.data?.stats || {
+            total_courses: 0,
+            total_students: 0,
+            active_assignments: 0,
+            pending_quizzes: 0,
+          },
+          courses: data.data?.courses || [],
+          recent_activity: data.data?.recent_activity || []
+        };
+        
+        setDashboardData(transformedData);
+        setLastUpdated(new Date());
+        
+        if (!silent) {
+          toast.success('Dashboard data updated successfully');
+        }
+      } else {
+        throw new Error(`API error: ${response.status}`);
+      }
       
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('❌ Error fetching real dashboard data:', error);
+      
+      if (!silent) {
+        toast.error('Failed to load dashboard data');
+      }
+      
       // Set minimal fallback data even on error
       setDashboardData({
         stats: {
