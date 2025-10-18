@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, RotateCcw, Zap } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const RealTimeDataSimulator = ({ onDataUpdate, isActive, onToggle }) => {
+  const { user } = useAuth();
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1000); // milliseconds between updates
   const [dataPoints, setDataPoints] = useState(0);
@@ -13,7 +15,7 @@ const RealTimeDataSimulator = ({ onDataUpdate, isActive, onToggle }) => {
       interval = setInterval(async () => {
         // Try to fetch real data first, fallback to simulation
         try {
-          const teacherId = localStorage.getItem('userId') || 'default-teacher-id';
+          const teacherId = user?.id || localStorage.getItem('userId') || 'default-teacher-id';
           const response = await fetch(
             `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${teacherId}`
           );

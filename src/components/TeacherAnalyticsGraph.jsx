@@ -14,6 +14,7 @@ import {
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import RealTimeDataSimulator from './RealTimeDataSimulator.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import {
   TrendingUp,
   Users,
@@ -40,6 +41,7 @@ ChartJS.register(
 );
 
 const TeacherAnalyticsGraph = () => {
+  const { user } = useAuth();
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
@@ -50,8 +52,10 @@ const TeacherAnalyticsGraph = () => {
   const [lastDataFetch, setLastDataFetch] = useState(null);
 
   useEffect(() => {
-    fetchAnalyticsData();
-  }, [selectedPeriod]);
+    if (user?.id) {
+      fetchAnalyticsData();
+    }
+  }, [selectedPeriod, user]);
 
   const handleRealTimeDataUpdate = async (newData) => {
     if (!newData) {
@@ -126,28 +130,45 @@ const TeacherAnalyticsGraph = () => {
       
       console.log('🔄 Fetching real-time analytics data...');
       
-      // Get teacher ID from auth context or localStorage
-      const teacherId = localStorage.getItem('userId') || 'default-teacher-id';
+      // Get teacher ID from auth context
+      const teacherId = user?.id || localStorage.getItem('userId') || 'default-teacher-id';
+      console.log('👤 Using teacher ID:', teacherId);
+      
+      // Debug: Check if we have a valid teacher ID
+      if (!teacherId || teacherId === 'default-teacher-id') {
+        console.warn('⚠️ No valid teacher ID found, using fallback data');
+        const mockData = generateMockAnalyticsData(selectedPeriod);
+        setChartData(mockData);
+        return;
+      }
       
       // Fetch data from the optimized dashboard API
       const dashboardResponse = await fetch(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${teacherId}`
       );
       
+      console.log('📡 Dashboard API response status:', dashboardResponse.status);
+      
       if (!dashboardResponse.ok) {
         throw new Error(`Dashboard API error: ${dashboardResponse.status}`);
       }
       
       const dashboardData = await dashboardResponse.json();
+      console.log('📊 Dashboard data received:', dashboardData);
       
       // Fetch additional analytics data
       const analyticsResponse = await fetch(
         `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/analytics/${teacherId}`
       );
       
+      console.log('📡 Analytics API response status:', analyticsResponse.status);
+      
       let analyticsData = null;
       if (analyticsResponse.ok) {
         analyticsData = await analyticsResponse.json();
+        console.log('📈 Analytics data received:', analyticsData);
+      } else {
+        console.log('⚠️ Analytics API failed, continuing with dashboard data only');
       }
       
       // Transform the real data into chart format
@@ -173,9 +194,13 @@ const TeacherAnalyticsGraph = () => {
 
   const transformRealDataToChartFormat = (dashboardData, analyticsData, period) => {
     try {
+      console.log('🔄 Transforming real data:', { dashboardData, analyticsData, period });
+      
       const stats = dashboardData?.data?.stats || {};
       const enrollmentTrends = dashboardData?.data?.enrollment_trends || [];
       const coursePerformance = dashboardData?.data?.course_performance || [];
+      
+      console.log('📊 Real data extracted:', { stats, enrollmentTrends, coursePerformance });
       
       // Generate dates for the selected period
       const now = new Date();
@@ -188,22 +213,50 @@ const TeacherAnalyticsGraph = () => {
         dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
       }
       
-      // Transform enrollment trends data
-      const enrollmentData = enrollmentTrends.map(trend => trend.enrollments || 0);
-      const courseProgressData = coursePerformance.map(course => course.completion_rate || 0);
+      // Use real enrollment trends data, pad with zeros if needed
+      let enrollmentData = enrollmentTrends.map(trend => trend.enrollments || 0);
+      if (enrollmentData.length < days) {
+        // Pad with zeros to match the period
+        while (enrollmentData.length < days) {
+          enrollmentData.unshift(0);
+        }
+      }
       
-      // Generate assignment submission data (simulate based on real stats)
-      const assignmentSubmissionsData = Array.from({ length: days }, (_, i) => 
-        Math.floor(Math.random() * 10) + Math.floor(stats.total_assignments / days)
-      );
+      // Use real course progress data
+      let courseProgressData = coursePerformance.map(course => course.completion_rate || 0);
+      if (courseProgressData.length < days) {
+        // Pad with average completion rate
+        const avgCompletion = courseProgressData.length > 0 ? 
+          courseProgressData.reduce((a, b) => a + b, 0) / courseProgressData.length : 0;
+        while (courseProgressData.length < days) {
+          courseProgressData.unshift(avgCompletion);
+        }
+      }
       
-      // Course distribution data
+      // Generate assignment submission data based on real stats
+      const assignmentSubmissionsData = Array.from({ length: days }, (_, i) => {
+        // Use real assignment count divided by days, with some variation
+        const baseCount = Math.floor((stats.total_assignments || 0) / days);
+        return Math.max(0, baseCount + Math.floor(Math.random() * 3) - 1);
+      });
+      
+      // Course distribution data from real course performance
       const courseDistribution = coursePerformance.map(course => ({
         label: course.course_title || 'Unknown Course',
         students: course.enrollment_count || 0
       }));
       
-      return {
+      // If no real course data, create a simple distribution
+      if (courseDistribution.length === 0) {
+        courseDistribution.push(
+          { label: 'Web Development', students: Math.floor((stats.total_students || 0) * 0.4) },
+          { label: 'React Development', students: Math.floor((stats.total_students || 0) * 0.3) },
+          { label: 'Data Science', students: Math.floor((stats.total_students || 0) * 0.2) },
+          { label: 'Creative Writing', students: Math.floor((stats.total_students || 0) * 0.1) }
+        );
+      }
+      
+      const transformedData = {
         enrollment: {
           labels: dates,
           datasets: [
@@ -273,8 +326,12 @@ const TeacherAnalyticsGraph = () => {
         }
       };
       
+      console.log('✅ Data transformation complete:', transformedData);
+      return transformedData;
+      
     } catch (error) {
-      console.error('Error transforming real data:', error);
+      console.error('❌ Error transforming real data:', error);
+      console.log('🔄 Falling back to mock data...');
       return generateMockAnalyticsData(period);
     }
   };
