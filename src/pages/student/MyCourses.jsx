@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext.jsx';
 import DashboardLayout from '../../components/DashboardLayout.jsx';
 import EnhancedCourseViewModal from '../../components/EnhancedCourseViewModal.jsx';
 import { enrollmentOperations } from '../../utils/supabaseClient.js';
-import { getThumbnailUrl } from '../../utils/thumbnailUtils.jsx';
+import { getThumbnailUrl, CourseThumbnail } from '../../utils/thumbnailUtils.jsx';
 import { toast } from 'react-hot-toast';
 import {
   BookOpen,
@@ -200,22 +200,11 @@ const StudentMyCourses = () => {
 
         {/* Thumbnail */}
         <div className={`relative aspect-video bg-gradient-to-br ${cardColors.thumbnail} overflow-hidden`}>
-          {course?.thumbnail_url ? (
-            <img
-              src={getThumbnailUrl(course)}
-              alt={course.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                // If image fails to load, show fallback
-                e.target.style.display = 'none';
-                const fallback = e.target.nextElementSibling;
-                if (fallback) fallback.style.display = 'flex';
-              }}
-            />
-          ) : null}
-          <div className="w-full h-full flex items-center justify-center" style={{ display: course?.thumbnail_url ? 'none' : 'flex' }}>
-            <BookOpen className="w-12 h-12 text-indigo-400" />
-          </div>
+          <CourseThumbnail 
+            course={course}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            alt={course?.title || 'Course thumbnail'}
+          />
           
           {/* Status Badge */}
           <div className="absolute top-3 left-3">
