@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import TeacherDashboardLayout from '../../layouts/TeacherDashboardLayout.jsx';
-import AdvancedTeacherAnalytics from '../../components/AdvancedTeacherAnalytics.jsx';
 import { toast } from 'react-hot-toast';
 import {
   BookOpen,
@@ -197,9 +196,6 @@ const Dashboard = () => {
             </div>
           </motion.div>
         </div>
-
-        {/* Advanced Analytics Dashboard */}
-        <AdvancedTeacherAnalytics />
 
         {/* Quick Actions */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
