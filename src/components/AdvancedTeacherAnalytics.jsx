@@ -7,22 +7,12 @@ import {
   Area,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  ScatterChart,
-  Scatter,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
+  ResponsiveContainer
 } from 'recharts';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import AnalyticsExport from './AnalyticsExport.jsx';
@@ -32,8 +22,6 @@ import {
   BookOpen,
   Calendar,
   BarChart3,
-  PieChart as PieChartIcon,
-  Activity,
   RefreshCw,
   Zap,
   Download,
@@ -143,42 +131,21 @@ const AdvancedTeacherAnalytics = () => {
     
     // Course performance data
     const coursePerformance = [
-      { course: 'Web Development', students: 45, completion: 87, satisfaction: 92, revenue: 4500 },
-      { course: 'React Fundamentals', students: 32, completion: 91, satisfaction: 89, revenue: 3200 },
-      { course: 'Data Science', students: 28, completion: 78, satisfaction: 85, revenue: 2800 },
-      { course: 'Python Basics', students: 35, completion: 83, satisfaction: 88, revenue: 3500 },
-      { course: 'UI/UX Design', students: 22, completion: 95, satisfaction: 94, revenue: 2200 }
+      { course: 'Web Development', students: 45, completion: 87, satisfaction: 92 },
+      { course: 'React Fundamentals', students: 32, completion: 91, satisfaction: 89 },
+      { course: 'Data Science', students: 28, completion: 78, satisfaction: 85 },
+      { course: 'Python Basics', students: 35, completion: 83, satisfaction: 88 },
+      { course: 'UI/UX Design', students: 22, completion: 95, satisfaction: 94 }
     ];
-    
-    // Student engagement radar data
-    const engagementRadar = [
-      { subject: 'Assignments', A: 85, B: 90, fullMark: 100 },
-      { subject: 'Quizzes', A: 78, B: 85, fullMark: 100 },
-      { subject: 'Projects', A: 92, B: 88, fullMark: 100 },
-      { subject: 'Discussions', A: 70, B: 75, fullMark: 100 },
-      { subject: 'Attendance', A: 95, B: 90, fullMark: 100 },
-      { subject: 'Participation', A: 80, B: 85, fullMark: 100 }
-    ];
-    
-    // Revenue and growth data
-    const revenueData = timeSeriesData.map(item => ({
-      ...item,
-      revenue: Math.floor(Math.random() * 2000) + 1000,
-      growth: Math.floor(Math.random() * 20) - 10
-    }));
     
     return {
       timeSeries: timeSeriesData,
       coursePerformance,
-      engagementRadar,
-      revenueData,
       stats: {
         totalStudents: 162,
         totalCourses: 5,
-        totalRevenue: 16200,
         avgCompletion: 87,
-        avgSatisfaction: 89,
-        growthRate: 12.5
+        avgSatisfaction: 89
       }
     };
   };
@@ -216,33 +183,17 @@ const AdvancedTeacherAnalytics = () => {
         course: course.course_title || 'Unknown Course',
         students: course.enrollment_count || 0,
         completion: course.completion_rate || 0,
-        satisfaction: Math.floor(Math.random() * 20) + 80,
-        revenue: (course.enrollment_count || 0) * 100
+        satisfaction: Math.floor(Math.random() * 20) + 80
       }));
       
       return {
         timeSeries: timeSeriesData,
         coursePerformance: transformedCoursePerformance,
-        engagementRadar: [
-          { subject: 'Assignments', A: stats.total_assignments || 0, B: 90, fullMark: 100 },
-          { subject: 'Quizzes', A: stats.total_quizzes || 0, B: 85, fullMark: 100 },
-          { subject: 'Projects', A: Math.floor((stats.total_assignments || 0) * 0.8), B: 88, fullMark: 100 },
-          { subject: 'Discussions', A: Math.floor((stats.total_students || 0) * 0.6), B: 75, fullMark: 100 },
-          { subject: 'Attendance', A: Math.floor((stats.total_students || 0) * 0.9), B: 90, fullMark: 100 },
-          { subject: 'Participation', A: Math.floor((stats.total_students || 0) * 0.7), B: 85, fullMark: 100 }
-        ],
-        revenueData: timeSeriesData.map(item => ({
-          ...item,
-          revenue: (item.enrollments * 100) + Math.floor(Math.random() * 500),
-          growth: Math.floor(Math.random() * 20) - 10
-        })),
         stats: {
           totalStudents: stats.total_students || 0,
           totalCourses: stats.total_courses || 0,
-          totalRevenue: (stats.total_students || 0) * 100,
           avgCompletion: analyticsData?.averageGrade || 0,
-          avgSatisfaction: 89,
-          growthRate: 12.5
+          avgSatisfaction: 89
         }
       };
     } catch (error) {
@@ -253,9 +204,7 @@ const AdvancedTeacherAnalytics = () => {
 
   const chartTypes = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'performance', label: 'Performance', icon: TrendingUp },
-    { id: 'engagement', label: 'Engagement', icon: Activity },
-    { id: 'revenue', label: 'Revenue', icon: Users }
+    { id: 'performance', label: 'Performance', icon: TrendingUp }
   ];
 
   const periods = [
@@ -370,7 +319,7 @@ const AdvancedTeacherAnalytics = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -419,21 +368,6 @@ const AdvancedTeacherAnalytics = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-4 text-white"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm font-medium">Revenue</p>
-                <p className="text-2xl font-bold">${analyticsData.stats.totalRevenue.toLocaleString()}</p>
-              </div>
-              <Activity className="w-8 h-8 text-orange-200" />
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
             className="bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg p-4 text-white"
           >
             <div className="flex items-center justify-between">
@@ -444,26 +378,11 @@ const AdvancedTeacherAnalytics = () => {
               <Calendar className="w-8 h-8 text-pink-200" />
             </div>
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-lg p-4 text-white"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-cyan-100 text-sm font-medium">Growth Rate</p>
-                <p className="text-2xl font-bold">{analyticsData.stats.growthRate}%</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-cyan-200" />
-            </div>
-          </motion.div>
         </div>
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Time Series Chart */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Trends</h3>
@@ -513,53 +432,6 @@ const AdvancedTeacherAnalytics = () => {
               <Bar dataKey="students" fill="#3B82F6" name="Students" />
               <Bar dataKey="completion" fill="#10B981" name="Completion %" />
             </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Engagement Radar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Student Engagement</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <RadarChart data={analyticsData.engagementRadar}>
-              <PolarGrid stroke="#e5e7eb" />
-              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12 }} />
-              <PolarRadiusAxis tick={{ fontSize: 12 }} />
-              <Radar name="Current" dataKey="A" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
-              <Radar name="Target" dataKey="B" stroke="#10B981" fill="#10B981" fillOpacity={0.3} />
-              <Legend />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Revenue Distribution */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={analyticsData.coursePerformance}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ course, percent }) => `${course} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="revenue"
-              >
-                {analyticsData.coursePerformance.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  border: '1px solid #e5e7eb', 
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                }}
-                formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']}
-              />
-            </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
