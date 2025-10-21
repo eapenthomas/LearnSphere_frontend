@@ -182,6 +182,24 @@ const StudentAssignments = () => {
                          assignment.course_title?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || assignment.submission_status === statusFilter;
     return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    // Priority order: not_submitted first, then submitted, then reviewed
+    const statusPriority = {
+      'not_submitted': 0,
+      'submitted': 1,
+      'reviewed': 2,
+      'late': 3
+    };
+    
+    const aPriority = statusPriority[a.submission_status] || 4;
+    const bPriority = statusPriority[b.submission_status] || 4;
+    
+    // If same priority, sort by due date (earliest first)
+    if (aPriority === bPriority) {
+      return new Date(a.due_date) - new Date(b.due_date);
+    }
+    
+    return aPriority - bPriority;
   });
 
   const formatDate = (dateString) => {

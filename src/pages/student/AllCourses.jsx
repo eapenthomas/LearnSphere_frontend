@@ -297,7 +297,7 @@ const StudentAllCourses = () => {
             </div>
             <div className="flex items-center space-x-1">
               <Users className="w-3 h-3" style={{color: '#000000'}} />
-              <span>0 students</span>
+              <span>{course.enrollment_count || 0} students</span>
             </div>
           </div>
 
