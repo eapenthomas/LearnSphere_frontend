@@ -27,14 +27,6 @@ import {
   Award,
   Clock3,
   UserCheck,
-  PieChart,
-  LineChart,
-  TrendingDown,
-  GraduationCap,
-  BookMarked,
-  CalendarDays,
-  Brain,
-  Lightbulb,
   Trophy,
   Sparkles
 } from 'lucide-react';
@@ -47,17 +39,12 @@ import {
   Area,
   BarChart,
   Bar,
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  RadialBarChart,
-  RadialBar
+  ResponsiveContainer
 } from 'recharts';
 
 const Dashboard = () => {
@@ -224,23 +211,6 @@ const Dashboard = () => {
     grade: course.avgScore >= 90 ? 'A' : course.avgScore >= 80 ? 'B' : course.avgScore >= 70 ? 'C' : 'D'
   }));
 
-  const gradeDistribution = [
-    { name: 'A (90-100)', value: performanceChartData.filter(c => c.avgScore >= 90).length, color: '#10B981' },
-    { name: 'B (80-89)', value: performanceChartData.filter(c => c.avgScore >= 80 && c.avgScore < 90).length, color: '#3B82F6' },
-    { name: 'C (70-79)', value: performanceChartData.filter(c => c.avgScore >= 70 && c.avgScore < 80).length, color: '#F59E0B' },
-    { name: 'D (60-69)', value: performanceChartData.filter(c => c.avgScore >= 60 && c.avgScore < 70).length, color: '#EF4444' },
-    { name: 'F (<60)', value: performanceChartData.filter(c => c.avgScore < 60).length, color: '#DC2626' }
-  ];
-
-  const weeklyActivityData = [
-    { day: 'Mon', assignments: 12, quizzes: 8, submissions: 45 },
-    { day: 'Tue', assignments: 15, quizzes: 6, submissions: 52 },
-    { day: 'Wed', assignments: 18, quizzes: 10, submissions: 38 },
-    { day: 'Thu', assignments: 14, quizzes: 7, submissions: 41 },
-    { day: 'Fri', assignments: 16, quizzes: 9, submissions: 48 },
-    { day: 'Sat', assignments: 8, quizzes: 4, submissions: 22 },
-    { day: 'Sun', assignments: 6, quizzes: 3, submissions: 18 }
-  ];
 
   return (
     <TeacherDashboardLayout>
@@ -534,89 +504,6 @@ const Dashboard = () => {
           </motion.div>
         </div>
 
-        {/* Grade Distribution and Weekly Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Grade Distribution Pie Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-pink-100 rounded-lg">
-                  <PieChart className="w-5 h-5 text-pink-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">Grade Distribution</h3>
-              </div>
-            </div>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsPieChart>
-                  <Pie
-                    data={gradeDistribution}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {gradeDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </RechartsPieChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          {/* Weekly Activity Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-indigo-100 rounded-lg">
-                  <Activity className="w-5 h-5 text-indigo-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">Weekly Activity</h3>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span>Assignments</span>
-                <div className="w-3 h-3 bg-green-500 rounded-full ml-4"></div>
-                <span>Quizzes</span>
-                <div className="w-3 h-3 bg-purple-500 rounded-full ml-4"></div>
-                <span>Submissions</span>
-              </div>
-            </div>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsLineChart data={weeklyActivityData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="day" stroke="#666" />
-                  <YAxis stroke="#666" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'white', 
-                      border: '1px solid #e5e7eb', 
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }} 
-                  />
-                  <Line type="monotone" dataKey="assignments" stroke="#3B82F6" strokeWidth={3} />
-                  <Line type="monotone" dataKey="quizzes" stroke="#10B981" strokeWidth={3} />
-                  <Line type="monotone" dataKey="submissions" stroke="#8B5CF6" strokeWidth={3} />
-                </RechartsLineChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-        </div>
 
         {/* Quick Actions */}
         <motion.div
