@@ -26,8 +26,38 @@ import {
   Target,
   Award,
   Clock3,
-  UserCheck
+  UserCheck,
+  PieChart,
+  LineChart,
+  TrendingDown,
+  GraduationCap,
+  BookMarked,
+  CalendarDays,
+  Brain,
+  Lightbulb,
+  Trophy,
+  Sparkles
 } from 'lucide-react';
+
+// Import chart components
+import {
+  LineChart as RechartsLineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart as RechartsPieChart,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  RadialBarChart,
+  RadialBar
+} from 'recharts';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -37,21 +67,22 @@ const Dashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [realTimeMode, setRealTimeMode] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('connected');
+  const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
 
   useEffect(() => {
     if (user?.id) {
       fetchDashboardData();
       
-      // Set up auto-refresh every 15 seconds for real-time updates
+      // Set up auto-refresh every 30 seconds for real-time updates
       const interval = setInterval(() => {
         if (realTimeMode) {
           fetchDashboardData(true);
         }
-      }, 15000);
+      }, 30000);
 
       return () => clearInterval(interval);
     }
-  }, [user, realTimeMode]);
+  }, [user, realTimeMode, selectedTimeRange]);
 
   const fetchDashboardData = async (silent = false) => {
     try {
@@ -60,39 +91,50 @@ const Dashboard = () => {
         setIsRefreshing(true);
       }
       
-      console.log('🔄 Fetching real-time teacher dashboard data...');
+      console.log('🔄 Fetching enhanced teacher dashboard data...');
       setConnectionStatus('connecting');
       
-      // Get teacher ID from auth context or localStorage
       const teacherId = user?.id || localStorage.getItem('userId') || 'default-teacher-id';
       
-      // Fetch data from the optimized dashboard API
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${teacherId}`,
-        {
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        }
-      );
+      // Fetch comprehensive analytics data
+      const [statsResponse, analyticsResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${teacherId}`, {
+          headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/analytics/${teacherId}`, {
+          headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        })
+      ]);
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Real-time dashboard data loaded:', data);
+      if (statsResponse.ok && analyticsResponse.ok) {
+        const [statsData, analyticsData] = await Promise.all([
+          statsResponse.json(),
+          analyticsResponse.json()
+        ]);
         
-        // Transform the API response to match expected format
+        console.log('✅ Enhanced dashboard data loaded:', { statsData, analyticsData });
+        
+        // Transform and combine data
         const transformedData = {
-          stats: data.data?.stats || {
+          stats: statsData.data?.stats || {
             total_courses: 0,
             total_students: 0,
             active_assignments: 0,
             pending_quizzes: 0,
           },
-          courses: data.data?.courses || [],
-          recent_activity: data.data?.recent_activity || [],
-          enrollment_trends: data.data?.enrollment_trends || [],
-          course_performance: data.data?.course_performance || []
+          analytics: analyticsData || {
+            totalStudents: 0,
+            activeCourses: 0,
+            totalAssignments: 0,
+            averageGrade: 0,
+            enrollmentTrends: [],
+            coursePerformanceData: [],
+            recentActivity: []
+          },
+          courses: statsData.data?.courses || [],
+          recent_activity: statsData.data?.recent_activity || [],
+          enrollment_trends: statsData.data?.enrollment_trends || [],
+          course_performance: statsData.data?.course_performance || []
         };
         
         setDashboardData(transformedData);
@@ -100,34 +142,30 @@ const Dashboard = () => {
         setConnectionStatus('connected');
         
         if (!silent) {
-          toast.success('Dashboard updated with latest data', {
-            icon: '🔄',
+          toast.success('Dashboard updated with latest analytics', {
+            icon: '📊',
             duration: 2000
           });
         }
       } else {
-        throw new Error(`API error: ${response.status}`);
+        throw new Error(`API error: ${statsResponse.status}`);
       }
       
     } catch (error) {
-      console.error('❌ Error fetching real-time dashboard data:', error);
+      console.error('❌ Error fetching enhanced dashboard data:', error);
       setConnectionStatus('error');
       
       if (!silent) {
-        toast.error('Failed to load dashboard data', {
+        toast.error('Failed to load dashboard analytics', {
           icon: '⚠️',
           duration: 3000
         });
       }
       
-      // Set minimal fallback data even on error
+      // Set comprehensive fallback data
       setDashboardData({
-        stats: {
-          total_courses: 0,
-          total_students: 0,
-          active_assignments: 0,
-          pending_quizzes: 0,
-        },
+        stats: { total_courses: 0, total_students: 0, active_assignments: 0, pending_quizzes: 0 },
+        analytics: { totalStudents: 0, activeCourses: 0, totalAssignments: 0, averageGrade: 0, enrollmentTrends: [], coursePerformanceData: [], recentActivity: [] },
         courses: [],
         recent_activity: [],
         enrollment_trends: [],
@@ -156,8 +194,8 @@ const Dashboard = () => {
                 <BarChart3 className="w-6 h-6 text-blue-600" />
               </div>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Dashboard</h3>
-            <p className="text-gray-600">Fetching your latest teaching data...</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Analytics Dashboard</h3>
+            <p className="text-gray-600">Fetching comprehensive teaching insights...</p>
           </motion.div>
         </div>
       </TeacherDashboardLayout>
@@ -165,97 +203,156 @@ const Dashboard = () => {
   }
 
   const stats = dashboardData?.stats || {};
-  const courses = dashboardData?.courses || [];
+  const analytics = dashboardData?.analytics || {};
   const recentActivity = dashboardData?.recent_activity || [];
+  const enrollmentTrends = analytics.enrollmentTrends || [];
+  const coursePerformance = analytics.coursePerformanceData || [];
+
+  // Chart data preparation
+  const enrollmentChartData = enrollmentTrends.map((trend, index) => ({
+    name: trend.name || `Course ${index + 1}`,
+    enrollments: trend.enrollments || 0,
+    activeStudents: trend.active_students || 0,
+    completionRate: Math.round((trend.active_students || 0) / Math.max(trend.enrollments || 1, 1) * 100)
+  }));
+
+  const performanceChartData = coursePerformance.map((course, index) => ({
+    name: course.course?.substring(0, 15) + '...' || `Course ${index + 1}`,
+    students: course.students || 0,
+    avgScore: course.avgScore || 0,
+    grade: course.avgScore >= 90 ? 'A' : course.avgScore >= 80 ? 'B' : course.avgScore >= 70 ? 'C' : 'D'
+  }));
+
+  const gradeDistribution = [
+    { name: 'A (90-100)', value: performanceChartData.filter(c => c.avgScore >= 90).length, color: '#10B981' },
+    { name: 'B (80-89)', value: performanceChartData.filter(c => c.avgScore >= 80 && c.avgScore < 90).length, color: '#3B82F6' },
+    { name: 'C (70-79)', value: performanceChartData.filter(c => c.avgScore >= 70 && c.avgScore < 80).length, color: '#F59E0B' },
+    { name: 'D (60-69)', value: performanceChartData.filter(c => c.avgScore >= 60 && c.avgScore < 70).length, color: '#EF4444' },
+    { name: 'F (<60)', value: performanceChartData.filter(c => c.avgScore < 60).length, color: '#DC2626' }
+  ];
+
+  const weeklyActivityData = [
+    { day: 'Mon', assignments: 12, quizzes: 8, submissions: 45 },
+    { day: 'Tue', assignments: 15, quizzes: 6, submissions: 52 },
+    { day: 'Wed', assignments: 18, quizzes: 10, submissions: 38 },
+    { day: 'Thu', assignments: 14, quizzes: 7, submissions: 41 },
+    { day: 'Fri', assignments: 16, quizzes: 9, submissions: 48 },
+    { day: 'Sat', assignments: 8, quizzes: 4, submissions: 22 },
+    { day: 'Sun', assignments: 6, quizzes: 3, submissions: 18 }
+  ];
 
   return (
     <TeacherDashboardLayout>
-      <div className="space-y-6">
-        {/* Professional Header with Real-time Controls */}
+      <div className="space-y-8">
+        {/* Enhanced Professional Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg p-6 text-white"
+          className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl p-8 text-white relative overflow-hidden"
         >
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                <BarChart3 className="w-8 h-8" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">Teacher Dashboard</h1>
-                <p className="text-blue-100">Welcome back, {user?.name || 'Teacher'}!</p>
-                {lastUpdated && (
-                  <p className="text-sm text-blue-200 mt-1">
-                    Last updated: {lastUpdated.toLocaleTimeString()}
-                  </p>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              {/* Connection Status */}
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  connectionStatus === 'connected' ? 'bg-green-400' :
-                  connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' :
-                  'bg-red-400'
-                }`}></div>
-                <span className="text-sm font-medium">
-                  {connectionStatus === 'connected' ? 'Live' :
-                   connectionStatus === 'connecting' ? 'Connecting...' :
-                   'Offline'}
-                </span>
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-6 lg:space-y-0">
+              <div className="flex items-center space-x-6">
+                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <BarChart3 className="w-10 h-10" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
+                  <p className="text-indigo-100 text-lg">Welcome back, {user?.name || 'Teacher'}!</p>
+                  {lastUpdated && (
+                    <p className="text-sm text-indigo-200 mt-2 flex items-center">
+                      <Clock className="w-4 h-4 mr-2" />
+                      Last updated: {lastUpdated.toLocaleTimeString()}
+                    </p>
+                  )}
+                </div>
               </div>
               
-              {/* Real-time Toggle */}
-              <button
-                onClick={() => setRealTimeMode(!realTimeMode)}
-                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                  realTimeMode
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-white/20 hover:bg-white/30 text-white'
-                }`}
-              >
+              <div className="flex items-center space-x-4">
+                {/* Time Range Selector */}
+                <div className="flex items-center space-x-2 bg-white/20 rounded-lg p-2">
+                  {['7d', '30d', '90d'].map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => setSelectedTimeRange(range)}
+                      className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
+                        selectedTimeRange === range
+                          ? 'bg-white text-indigo-600'
+                          : 'text-white hover:bg-white/20'
+                      }`}
+                    >
+                      {range}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Connection Status */}
                 <div className="flex items-center space-x-2">
-                  <Zap className={`w-4 h-4 ${realTimeMode ? 'animate-pulse' : ''}`} />
+                  <div className={`w-3 h-3 rounded-full ${
+                    connectionStatus === 'connected' ? 'bg-green-400' :
+                    connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' :
+                    'bg-red-400'
+                  }`}></div>
                   <span className="text-sm font-medium">
-                    {realTimeMode ? 'Live' : 'Manual'}
+                    {connectionStatus === 'connected' ? 'Live Data' :
+                     connectionStatus === 'connecting' ? 'Connecting...' :
+                     'Offline'}
                   </span>
                 </div>
-              </button>
-              
-              {/* Refresh Button */}
-              <button
-                onClick={() => fetchDashboardData()}
-                disabled={isRefreshing}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 disabled:opacity-50"
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </button>
+                
+                {/* Real-time Toggle */}
+                <button
+                  onClick={() => setRealTimeMode(!realTimeMode)}
+                  className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                    realTimeMode
+                      ? 'bg-green-500 hover:bg-green-600 text-white'
+                      : 'bg-white/20 hover:bg-white/30 text-white'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Zap className={`w-4 h-4 ${realTimeMode ? 'animate-pulse' : ''}`} />
+                    <span className="text-sm font-medium">
+                      {realTimeMode ? 'Live' : 'Manual'}
+                    </span>
+                  </div>
+                </button>
+                
+                {/* Refresh Button */}
+                <button
+                  onClick={() => fetchDashboardData()}
+                  disabled={isRefreshing}
+                  className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Enhanced Stats Cards */}
+        {/* Enhanced Stats Cards with Animations */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -2, scale: 1.02 }}
-            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+            whileHover={{ y: -4, scale: 1.02 }}
+            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm font-medium mb-1">Total Courses</p>
-                <p className="text-3xl font-bold">{stats.total_courses || 0}</p>
-                <div className="flex items-center mt-2">
-                  <TrendingUp className="w-4 h-4 text-blue-200 mr-1" />
-                  <span className="text-xs text-blue-200">Active</span>
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm font-medium mb-1">Total Courses</p>
+                  <p className="text-4xl font-bold">{stats.total_courses || 0}</p>
+                  <div className="flex items-center mt-2">
+                    <TrendingUp className="w-4 h-4 text-blue-200 mr-1" />
+                    <span className="text-xs text-blue-200">Active</span>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                <BookOpen className="w-8 h-8 text-blue-200" />
+                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <BookOpen className="w-8 h-8 text-blue-200" />
+                </div>
               </div>
             </div>
           </motion.div>
@@ -264,20 +361,23 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            whileHover={{ y: -2, scale: 1.02 }}
-            className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+            whileHover={{ y: -4, scale: 1.02 }}
+            className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-100 text-sm font-medium mb-1">Total Students</p>
-                <p className="text-3xl font-bold">{stats.total_students || 0}</p>
-                <div className="flex items-center mt-2">
-                  <UserCheck className="w-4 h-4 text-green-200 mr-1" />
-                  <span className="text-xs text-green-200">Enrolled</span>
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-emerald-100 text-sm font-medium mb-1">Total Students</p>
+                  <p className="text-4xl font-bold">{stats.total_students || 0}</p>
+                  <div className="flex items-center mt-2">
+                    <UserCheck className="w-4 h-4 text-emerald-200 mr-1" />
+                    <span className="text-xs text-emerald-200">Enrolled</span>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                <Users className="w-8 h-8 text-green-200" />
+                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <Users className="w-8 h-8 text-emerald-200" />
+                </div>
               </div>
             </div>
           </motion.div>
@@ -286,20 +386,23 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            whileHover={{ y: -2, scale: 1.02 }}
-            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+            whileHover={{ y: -4, scale: 1.02 }}
+            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-100 text-sm font-medium mb-1">Assignments</p>
-                <p className="text-3xl font-bold">{stats.active_assignments || 0}</p>
-                <div className="flex items-center mt-2">
-                  <Target className="w-4 h-4 text-purple-200 mr-1" />
-                  <span className="text-xs text-purple-200">Active</span>
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-sm font-medium mb-1">Assignments</p>
+                  <p className="text-4xl font-bold">{stats.active_assignments || 0}</p>
+                  <div className="flex items-center mt-2">
+                    <Target className="w-4 h-4 text-purple-200 mr-1" />
+                    <span className="text-xs text-purple-200">Active</span>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                <ClipboardList className="w-8 h-8 text-purple-200" />
+                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <ClipboardList className="w-8 h-8 text-purple-200" />
+                </div>
               </div>
             </div>
           </motion.div>
@@ -308,43 +411,239 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            whileHover={{ y: -2, scale: 1.02 }}
-            className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+            whileHover={{ y: -4, scale: 1.02 }}
+            className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm font-medium mb-1">Pending Quizzes</p>
-                <p className="text-3xl font-bold">{stats.pending_quizzes || 0}</p>
-                <div className="flex items-center mt-2">
-                  <Clock3 className="w-4 h-4 text-orange-200 mr-1" />
-                  <span className="text-xs text-orange-200">Awaiting</span>
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-100 text-sm font-medium mb-1">Avg Grade</p>
+                  <p className="text-4xl font-bold">{analytics.averageGrade || 0}%</p>
+                  <div className="flex items-center mt-2">
+                    <Award className="w-4 h-4 text-orange-200 mr-1" />
+                    <span className="text-xs text-orange-200">Overall</span>
+                  </div>
                 </div>
-              </div>
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                <FileText className="w-8 h-8 text-orange-200" />
+                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <Trophy className="w-8 h-8 text-orange-200" />
+                </div>
               </div>
             </div>
           </motion.div>
         </div>
 
+        {/* Interactive Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Enrollment Trends Chart */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <LineChart className="w-5 h-5 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Enrollment Trends</h3>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span>Enrollments</span>
+                <div className="w-3 h-3 bg-green-500 rounded-full ml-4"></div>
+                <span>Active Students</span>
+              </div>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={enrollmentChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="name" stroke="#666" />
+                  <YAxis stroke="#666" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #e5e7eb', 
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }} 
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="enrollments" 
+                    stackId="1" 
+                    stroke="#3B82F6" 
+                    fill="#3B82F6" 
+                    fillOpacity={0.6}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="activeStudents" 
+                    stackId="2" 
+                    stroke="#10B981" 
+                    fill="#10B981" 
+                    fillOpacity={0.6}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Course Performance Chart */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <BarChart3 className="w-5 h-5 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Course Performance</h3>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span>Students</span>
+                <div className="w-3 h-3 bg-orange-500 rounded-full ml-4"></div>
+                <span>Avg Score</span>
+              </div>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={performanceChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="name" stroke="#666" />
+                  <YAxis yAxisId="left" stroke="#666" />
+                  <YAxis yAxisId="right" orientation="right" stroke="#666" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #e5e7eb', 
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }} 
+                  />
+                  <Bar yAxisId="left" dataKey="students" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+                  <Line yAxisId="right" type="monotone" dataKey="avgScore" stroke="#F59E0B" strokeWidth={3} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Grade Distribution and Weekly Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Grade Distribution Pie Chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-pink-100 rounded-lg">
+                  <PieChart className="w-5 h-5 text-pink-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Grade Distribution</h3>
+              </div>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPieChart>
+                  <Pie
+                    data={gradeDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {gradeDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Weekly Activity Chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-indigo-100 rounded-lg">
+                  <Activity className="w-5 h-5 text-indigo-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Weekly Activity</h3>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span>Assignments</span>
+                <div className="w-3 h-3 bg-green-500 rounded-full ml-4"></div>
+                <span>Quizzes</span>
+                <div className="w-3 h-3 bg-purple-500 rounded-full ml-4"></div>
+                <span>Submissions</span>
+              </div>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsLineChart data={weeklyActivityData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="day" stroke="#666" />
+                  <YAxis stroke="#666" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #e5e7eb', 
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }} 
+                  />
+                  <Line type="monotone" dataKey="assignments" stroke="#3B82F6" strokeWidth={3} />
+                  <Line type="monotone" dataKey="quizzes" stroke="#10B981" strokeWidth={3} />
+                  <Line type="monotone" dataKey="submissions" stroke="#8B5CF6" strokeWidth={3} />
+                </RechartsLineChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        </div>
+
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8"
+        >
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Quick Actions</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -2 }}
+              whileHover={{ y: -4, scale: 1.02 }}
               className="group"
             >
               <Link
                 to="/teacher/courses/create"
-                className="block p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="block p-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                <div className="flex items-center space-x-3">
-                  <BookOpen className="w-6 h-6" />
+                <div className="flex items-center space-x-4">
+                  <BookOpen className="w-8 h-8" />
                   <div>
-                    <h3 className="font-semibold">Create Course</h3>
+                    <h3 className="font-bold text-lg">Create Course</h3>
                     <p className="text-blue-100 text-sm">Add new course</p>
                   </div>
                 </div>
@@ -355,18 +654,18 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              whileHover={{ y: -2 }}
+              whileHover={{ y: -4, scale: 1.02 }}
               className="group"
             >
               <Link
                 to="/teacher/assignments"
-                className="block p-4 bg-gradient-to-r from-green-500 to-green-600 rounded-lg text-white hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="block p-6 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl text-white hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                <div className="flex items-center space-x-3">
-                  <ClipboardList className="w-6 h-6" />
+                <div className="flex items-center space-x-4">
+                  <ClipboardList className="w-8 h-8" />
                   <div>
-                    <h3 className="font-semibold">Create Assignment</h3>
-                    <p className="text-green-100 text-sm">Add new assignment</p>
+                    <h3 className="font-bold text-lg">Create Assignment</h3>
+                    <p className="text-emerald-100 text-sm">Add new assignment</p>
                   </div>
                 </div>
               </Link>
@@ -376,17 +675,17 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              whileHover={{ y: -2 }}
+              whileHover={{ y: -4, scale: 1.02 }}
               className="group"
             >
               <Link
                 to="/teacher/quizzes"
-                className="block p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="block p-6 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                <div className="flex items-center space-x-3">
-                  <FileText className="w-6 h-6" />
+                <div className="flex items-center space-x-4">
+                  <FileText className="w-8 h-8" />
                   <div>
-                    <h3 className="font-semibold">Create Quiz</h3>
+                    <h3 className="font-bold text-lg">Create Quiz</h3>
                     <p className="text-purple-100 text-sm">Add new quiz</p>
                   </div>
                 </div>
@@ -397,92 +696,64 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              whileHover={{ y: -2 }}
+              whileHover={{ y: -4, scale: 1.02 }}
               className="group"
             >
               <Link
                 to="/teacher/reports"
-                className="block p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg text-white hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="block p-6 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl text-white hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                <div className="flex items-center space-x-3">
-                  <BarChart3 className="w-6 h-6" />
+                <div className="flex items-center space-x-4">
+                  <BarChart3 className="w-8 h-8" />
                   <div>
-                    <h3 className="font-semibold">View Reports</h3>
+                    <h3 className="font-bold text-lg">View Reports</h3>
                     <p className="text-orange-100 text-sm">Analytics & insights</p>
                   </div>
                 </div>
               </Link>
             </motion.div>
           </div>
-        </div>
-
-        {/* Recent Courses */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Courses</h2>
-            <Link
-              to="/teacher/courses"
-              className="text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1"
-            >
-              <span>View All</span>
-              <Eye className="w-4 h-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.slice(0, 6).map((course, index) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900 truncate">{course.title}</h3>
-                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                    {course.students_enrolled} students
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{course.description}</p>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>Created {new Date(course.created_at).toLocaleDateString()}</span>
-                  <Link
-                    to={`/teacher/courses/${course.id}`}
-                    className="text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        </motion.div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
+        >
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Activity className="w-5 h-5 text-green-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+          </div>
           
-          <div className="space-y-3">
-            {recentActivity.slice(0, 5).map((activity, index) => (
+          <div className="space-y-4">
+            {recentActivity.slice(0, 6).map((activity, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                className="flex items-center space-x-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl hover:from-gray-100 hover:to-gray-200 transition-all duration-200"
               >
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Activity className="w-4 h-4 text-blue-600" />
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{activity.message}</p>
-                  <p className="text-xs text-gray-500">{activity.time}</p>
+                  <p className="text-sm font-semibold text-gray-900">{activity.message}</p>
+                  <p className="text-xs text-gray-500 flex items-center">
+                    <Clock className="w-3 h-3 mr-1" />
+                    {activity.time}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 </div>
               </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </TeacherDashboardLayout>
   );
