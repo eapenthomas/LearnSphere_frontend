@@ -599,7 +599,8 @@ const TeacherReports = () => {
             </table>
           </div>
         </div>
-      </TeacherDashboardLayout>
+      </div>
+    </TeacherDashboardLayout>
     );
 };
 
