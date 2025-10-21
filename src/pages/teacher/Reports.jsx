@@ -599,9 +599,8 @@ const TeacherReports = () => {
             </table>
           </div>
         </div>
-      </div>
-    </TeacherDashboardLayout>
-  );
+      </TeacherDashboardLayout>
+    );
 };
 
 export default TeacherReports;
