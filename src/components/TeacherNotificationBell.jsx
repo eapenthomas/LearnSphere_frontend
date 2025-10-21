@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Check, AlertTriangle, Clock, CheckCircle, FileText, GraduationCap, MessageSquare, Users, Eye, TrendingUp } from 'lucide-react';
+import { Bell, X, Check, AlertTriangle, Clock, CheckCircle, FileText, GraduationCap, MessageSquare, Users, Eye, TrendingUp, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const TeacherNotificationBell = () => {
@@ -26,17 +26,51 @@ const TeacherNotificationBell = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/?limit=15`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
       
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data);
+      // Fetch both regular notifications and teacher activity notifications
+      const [regularResponse, activityResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/?limit=5`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher-activity-notifications/?limit=10`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+      
+      let allNotifications = [];
+      
+      if (regularResponse.ok) {
+        const regularData = await regularResponse.json();
+        allNotifications = [...regularData];
       }
+      
+      if (activityResponse.ok) {
+        const activityData = await activityResponse.json();
+        // Convert activity notifications to regular notification format
+        const convertedActivities = activityData.map(activity => ({
+          ...activity,
+          id: activity.id,
+          type: activity.type,
+          title: activity.title,
+          message: activity.message,
+          priority: activity.priority,
+          is_read: activity.is_read,
+          created_at: activity.created_at,
+          action_url: activity.action_url
+        }));
+        allNotifications = [...allNotifications, ...convertedActivities];
+      }
+      
+      // Sort by creation time (most recent first)
+      allNotifications.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      setNotifications(allNotifications.slice(0, 15)); // Limit to 15 total
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -47,17 +81,36 @@ const TeacherNotificationBell = () => {
   const fetchNotificationCount = async () => {
     try {
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/count`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
       
-      if (response.ok) {
-        const data = await response.json();
-        setUnreadCount(data.total_unread || 0);
+      // Fetch both regular and teacher activity notification counts
+      const [regularResponse, activityResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/count`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher-activity-notifications/count`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+      
+      let totalCount = 0;
+      
+      if (regularResponse.ok) {
+        const regularData = await regularResponse.json();
+        totalCount += regularData.total_unread || 0;
       }
+      
+      if (activityResponse.ok) {
+        const activityData = await activityResponse.json();
+        totalCount += activityData.count || 0;
+      }
+      
+      setUnreadCount(totalCount);
     } catch (error) {
       console.error('Error fetching notification count:', error);
     }
@@ -207,9 +260,74 @@ const TeacherNotificationBell = () => {
       markAsRead(notification.id);
     }
 
-    // Navigate based on action_url or type
+    // Navigate based on action_url or type with specific data
     if (notification.action_url) {
-      navigate(notification.action_url);
+      // Check if we have specific data to navigate to a particular item
+      if (notification.data) {
+        const { data } = notification;
+        
+        // Handle specific navigation based on notification type and data
+        switch (notification.type) {
+          case 'student_enrolled':
+            if (data.course_id) {
+              navigate(`/teacher/courses/${data.course_id}/students`);
+            } else {
+              navigate('/teacher/students');
+            }
+            break;
+            
+          case 'assignment_submission_received':
+            if (data.assignment_id) {
+              navigate(`/teacher/assignments/${data.assignment_id}/submissions`);
+            } else if (data.course_id) {
+              navigate(`/teacher/courses/${data.course_id}/assignments`);
+            } else {
+              navigate('/teacher/assignments');
+            }
+            break;
+            
+          case 'quiz_submission_received':
+            if (data.quiz_id) {
+              navigate(`/teacher/quizzes/${data.quiz_id}/results`);
+            } else if (data.course_id) {
+              navigate(`/teacher/courses/${data.course_id}/quizzes`);
+            } else {
+              navigate('/teacher/quizzes');
+            }
+            break;
+            
+          case 'student_question_asked':
+            if (data.post_id && data.course_id) {
+              navigate(`/teacher/courses/${data.course_id}/forum/${data.post_id}`);
+            } else if (data.course_id) {
+              navigate(`/teacher/courses/${data.course_id}/forum`);
+            } else {
+              navigate('/teacher/forum');
+            }
+            break;
+            
+          case 'course_rating_received':
+            if (data.course_id) {
+              navigate(`/teacher/courses/${data.course_id}/ratings`);
+            } else {
+              navigate('/teacher/courses');
+            }
+            break;
+            
+          case 'material_completed':
+            if (data.course_id) {
+              navigate(`/teacher/courses/${data.course_id}/progress`);
+            } else {
+              navigate('/teacher/courses');
+            }
+            break;
+            
+          default:
+            navigate(notification.action_url);
+        }
+      } else {
+        navigate(notification.action_url);
+      }
     } else {
       // Default navigation based on type
       switch (notification.type) {
@@ -340,7 +458,7 @@ const TeacherNotificationBell = () => {
                     key={notification.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 border-l-4 cursor-pointer transition-colors hover:bg-gray-50 ${getPriorityColor(notification.priority)} ${
+                    className={`p-4 border-l-4 cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:shadow-sm ${getPriorityColor(notification.priority)} ${
                       !notification.is_read ? 'bg-blue-50' : ''
                     }`}
                     onClick={() => handleNotificationClick(notification)}
@@ -371,18 +489,24 @@ const TeacherNotificationBell = () => {
                         <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                           {notification.message}
                         </p>
-                        {notification.priority === 'urgent' && (
-                          <div className="flex items-center mt-2 text-xs text-red-600">
-                            <AlertTriangle className="w-3 h-3 mr-1" />
-                            Urgent - Requires immediate attention
+                        <div className="flex items-center justify-between mt-2">
+                          {notification.priority === 'urgent' && (
+                            <div className="flex items-center text-xs text-red-600">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Urgent - Requires immediate attention
+                            </div>
+                          )}
+                          {notification.priority === 'high' && (
+                            <div className="flex items-center text-xs text-orange-600">
+                              <Clock className="w-3 h-3 mr-1" />
+                              High Priority
+                            </div>
+                          )}
+                          <div className="flex items-center text-xs text-blue-600">
+                            <span className="mr-1">Click to view</span>
+                            <ArrowRight className="w-3 h-3" />
                           </div>
-                        )}
-                        {notification.priority === 'high' && (
-                          <div className="flex items-center mt-2 text-xs text-orange-600">
-                            <Clock className="w-3 h-3 mr-1" />
-                            High Priority
-                          </div>
-                        )}
+                        </div>
                       </div>
                       <div className="flex-shrink-0">
                         <button

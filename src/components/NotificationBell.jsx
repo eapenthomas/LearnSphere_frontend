@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Check, AlertTriangle, Clock, CheckCircle, FileText, GraduationCap, MessageSquare, User, Settings, Eye } from 'lucide-react';
+import { Bell, X, Check, AlertTriangle, Clock, CheckCircle, FileText, GraduationCap, MessageSquare, User, Settings, Eye, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const NotificationBell = () => {
@@ -26,17 +26,51 @@ const NotificationBell = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/?limit=10`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
       
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data);
+      // Fetch both regular notifications and activity notifications
+      const [regularResponse, activityResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/?limit=5`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/activity-notifications/?limit=10`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+      
+      let allNotifications = [];
+      
+      if (regularResponse.ok) {
+        const regularData = await regularResponse.json();
+        allNotifications = [...regularData];
       }
+      
+      if (activityResponse.ok) {
+        const activityData = await activityResponse.json();
+        // Convert activity notifications to regular notification format
+        const convertedActivities = activityData.map(activity => ({
+          ...activity,
+          id: activity.id,
+          type: activity.type,
+          title: activity.title,
+          message: activity.message,
+          priority: activity.priority,
+          is_read: activity.is_read,
+          created_at: activity.created_at,
+          action_url: activity.action_url
+        }));
+        allNotifications = [...allNotifications, ...convertedActivities];
+      }
+      
+      // Sort by creation time (most recent first)
+      allNotifications.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      
+      setNotifications(allNotifications.slice(0, 15)); // Limit to 15 total
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -47,17 +81,36 @@ const NotificationBell = () => {
   const fetchNotificationCount = async () => {
     try {
       const token = localStorage.getItem('learnsphere_access_token') || localStorage.getItem('learnsphere_token');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/count`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
       
-      if (response.ok) {
-        const data = await response.json();
-        setUnreadCount(data.total_unread || 0);
+      // Fetch both regular and activity notification counts
+      const [regularResponse, activityResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/notifications/count`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/activity-notifications/count`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+      
+      let totalCount = 0;
+      
+      if (regularResponse.ok) {
+        const regularData = await regularResponse.json();
+        totalCount += regularData.total_unread || 0;
       }
+      
+      if (activityResponse.ok) {
+        const activityData = await activityResponse.json();
+        totalCount += activityData.count || 0;
+      }
+      
+      setUnreadCount(totalCount);
     } catch (error) {
       console.error('Error fetching notification count:', error);
     }
@@ -206,9 +259,67 @@ const NotificationBell = () => {
       markAsRead(notification.id);
     }
 
-    // Navigate based on action_url or type
+    // Navigate based on action_url or type with specific data
     if (notification.action_url) {
-      navigate(notification.action_url);
+      // Check if we have specific data to navigate to a particular item
+      if (notification.data) {
+        const { data } = notification;
+        
+        // Handle specific navigation based on notification type and data
+        switch (notification.type) {
+          case 'assignment_created':
+          case 'assignment_graded':
+            if (data.assignment_id) {
+              navigate(`/student/assignments/${data.assignment_id}`);
+            } else {
+              navigate('/student/assignments');
+            }
+            break;
+            
+          case 'quiz_available':
+          case 'quiz_graded':
+            if (data.quiz_id) {
+              navigate(`/student/quizzes/${data.quiz_id}`);
+            } else {
+              navigate('/student/quizzes');
+            }
+            break;
+            
+          case 'new_material':
+            if (data.material_id && data.course_id) {
+              navigate(`/student/courses/${data.course_id}/materials/${data.material_id}`);
+            } else if (data.course_id) {
+              navigate(`/student/courses/${data.course_id}/materials`);
+            } else {
+              navigate('/student/courses');
+            }
+            break;
+            
+          case 'forum_new_question':
+            if (data.post_id && data.course_id) {
+              navigate(`/student/courses/${data.course_id}/forum/${data.post_id}`);
+            } else if (data.course_id) {
+              navigate(`/student/courses/${data.course_id}/forum`);
+            } else {
+              navigate('/student/forum');
+            }
+            break;
+            
+          case 'course_enrolled':
+          case 'course_updated':
+            if (data.course_id) {
+              navigate(`/student/courses/${data.course_id}`);
+            } else {
+              navigate('/student/courses');
+            }
+            break;
+            
+          default:
+            navigate(notification.action_url);
+        }
+      } else {
+        navigate(notification.action_url);
+      }
     } else {
       // Default navigation based on type
       switch (notification.type) {
@@ -217,7 +328,7 @@ const NotificationBell = () => {
         case 'assignment_due_today':
         case 'assignment_overdue':
         case 'assignment_graded':
-          navigate('/assignments');
+          navigate('/student/assignments');
           break;
         case 'quiz_available':
         case 'quiz_due_soon':
@@ -229,15 +340,15 @@ const NotificationBell = () => {
         case 'course_enrolled':
         case 'course_updated':
         case 'new_material':
-          navigate('/mycourses');
+          navigate('/student/courses');
           break;
         case 'forum_question_answered':
         case 'forum_new_question':
         case 'forum_question_resolved':
-          navigate('/forum');
+          navigate('/student/forum');
           break;
         default:
-          navigate('/dashboard');
+          navigate('/student/dashboard');
       }
     }
     
@@ -319,7 +430,7 @@ const NotificationBell = () => {
                     key={notification.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 border-l-4 cursor-pointer transition-colors hover:bg-background-tertiary ${getPriorityColor(notification.priority)} ${
+                    className={`p-4 border-l-4 cursor-pointer transition-all duration-200 hover:bg-background-tertiary hover:shadow-sm ${getPriorityColor(notification.priority)} ${
                       !notification.is_read ? 'bg-blue-50' : ''
                     }`}
                     onClick={() => handleNotificationClick(notification)}
@@ -345,12 +456,18 @@ const NotificationBell = () => {
                         <p className="text-sm text-text-secondary mt-1 line-clamp-2">
                           {notification.message}
                         </p>
-                        {notification.priority === 'urgent' && (
-                          <div className="flex items-center mt-2 text-xs text-red-600">
-                            <AlertTriangle className="w-3 h-3 mr-1" />
-                            Urgent
+                        <div className="flex items-center justify-between mt-2">
+                          {notification.priority === 'urgent' && (
+                            <div className="flex items-center text-xs text-red-600">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Urgent
+                            </div>
+                          )}
+                          <div className="flex items-center text-xs text-primary-600">
+                            <span className="mr-1">Click to view</span>
+                            <ArrowRight className="w-3 h-3" />
                           </div>
-                        )}
+                        </div>
                       </div>
                       <div className="flex-shrink-0">
                         <button
