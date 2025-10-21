@@ -600,6 +600,7 @@ const TeacherReports = () => {
           </div>
         </div>
       </div>
+    </div>
     </TeacherDashboardLayout>
     );
 };
