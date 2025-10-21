@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext.jsx';
+import TeacherDashboardLayout from '../../layouts/TeacherDashboardLayout.jsx';
 import { toast } from 'react-hot-toast';
 import {
   BarChart3,
@@ -161,6 +162,172 @@ const TeacherReports = () => {
     }
   };
 
+  const downloadStudentPerformancePDF = () => {
+    if (!reportData.studentPerformance || reportData.studentPerformance.length === 0) {
+      toast.error('No student performance data available to download');
+      return;
+    }
+
+    try {
+      // Create a new window with the report content
+      const printWindow = window.open('', '_blank');
+      const currentDate = new Date().toLocaleDateString();
+      const currentTime = new Date().toLocaleTimeString();
+      
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Student Performance Report</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              margin: 20px;
+              color: #333;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+              border-bottom: 3px solid #333;
+              padding-bottom: 20px;
+            }
+            .teacher-info {
+              background-color: #f5f5f5;
+              padding: 15px;
+              border-radius: 8px;
+              margin-bottom: 20px;
+            }
+            .course-section {
+              margin-bottom: 30px;
+              page-break-inside: avoid;
+            }
+            .course-title {
+              background-color: #e3f2fd;
+              padding: 10px;
+              border-left: 4px solid #2196f3;
+              margin-bottom: 15px;
+              font-weight: bold;
+            }
+            .student-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 20px;
+            }
+            .student-table th,
+            .student-table td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: left;
+            }
+            .student-table th {
+              background-color: #f2f2f2;
+              font-weight: bold;
+            }
+            .grade-excellent { color: #4caf50; font-weight: bold; }
+            .grade-good { color: #2196f3; font-weight: bold; }
+            .grade-average { color: #ff9800; font-weight: bold; }
+            .grade-poor { color: #f44336; font-weight: bold; }
+            .summary-stats {
+              background-color: #f9f9f9;
+              padding: 15px;
+              border-radius: 8px;
+              margin-top: 20px;
+            }
+            .footer {
+              margin-top: 30px;
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+              border-top: 1px solid #ccc;
+              padding-top: 20px;
+            }
+            @media print {
+              body { margin: 10px; }
+              .course-section { page-break-inside: avoid; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Student Performance Report</h1>
+            <p>Generated on ${currentDate} at ${currentTime}</p>
+          </div>
+          
+          <div class="teacher-info">
+            <h2>Teacher Information</h2>
+            <p><strong>Teacher:</strong> ${user.fullName || 'Unknown Teacher'}</p>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <p><strong>Report Period:</strong> ${selectedTimeframe}</p>
+            <p><strong>Total Students:</strong> ${reportData.studentPerformance.length}</p>
+          </div>
+          
+          ${reportData.studentPerformance.map(student => `
+            <div class="course-section">
+              <div class="course-title">
+                Student: ${student.studentName || 'Unknown Student'}
+              </div>
+              <table class="student-table">
+                <thead>
+                  <tr>
+                    <th>Course</th>
+                    <th>Assignments Completed</th>
+                    <th>Quizzes Taken</th>
+                    <th>Average Grade</th>
+                    <th>Performance Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>${student.courseName || 'N/A'}</td>
+                    <td>${student.assignmentsCompleted || 0}</td>
+                    <td>${student.quizzesTaken || 0}</td>
+                    <td class="${student.avgGrade >= 90 ? 'grade-excellent' : 
+                                 student.avgGrade >= 80 ? 'grade-good' : 
+                                 student.avgGrade >= 70 ? 'grade-average' : 'grade-poor'}">
+                      ${student.avgGrade || 0}%
+                    </td>
+                    <td>${student.avgGrade >= 90 ? 'Excellent' : 
+                          student.avgGrade >= 80 ? 'Good' : 
+                          student.avgGrade >= 70 ? 'Average' : 'Needs Improvement'}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `).join('')}
+          
+          <div class="summary-stats">
+            <h3>Summary Statistics</h3>
+            <p><strong>Total Students:</strong> ${reportData.studentPerformance.length}</p>
+            <p><strong>Average Grade:</strong> ${(reportData.studentPerformance.reduce((sum, s) => sum + (s.avgGrade || 0), 0) / reportData.studentPerformance.length).toFixed(1)}%</p>
+            <p><strong>Students with 90%+:</strong> ${reportData.studentPerformance.filter(s => s.avgGrade >= 90).length}</p>
+            <p><strong>Students with 80%+:</strong> ${reportData.studentPerformance.filter(s => s.avgGrade >= 80).length}</p>
+            <p><strong>Students needing improvement:</strong> ${reportData.studentPerformance.filter(s => s.avgGrade < 70).length}</p>
+          </div>
+          
+          <div class="footer">
+            <p>Generated by LearnSphere Teacher Reports System</p>
+            <p>Confidential - For Educational Use Only</p>
+          </div>
+        </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      
+      // Wait for content to load, then trigger print dialog
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+      
+      toast.success('Student Performance Report PDF download initiated');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF');
+    }
+  };
+
   const StatCard = ({ title, value, subtitle, icon: Icon, color, trend }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -227,8 +394,9 @@ const TeacherReports = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <TeacherDashboardLayout>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -267,6 +435,14 @@ const TeacherReports = () => {
             >
               <Download className="w-4 h-4" />
               <span>Export Report</span>
+            </button>
+            
+            <button
+              onClick={downloadStudentPerformancePDF}
+              className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download Student Performance PDF</span>
             </button>
             
             <button
@@ -380,7 +556,7 @@ const TeacherReports = () => {
           </div>
         </div>
       </div>
-    </div>
+    </TeacherDashboardLayout>
   );
 };
 
