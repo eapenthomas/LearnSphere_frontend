@@ -435,20 +435,20 @@ const TeacherReports = () => {
   if (loading) {
     return (
       <TeacherDashboardLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="flex items-center space-x-3">
-            <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
-            <span className="text-lg font-medium text-gray-700">Loading reports...</span>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+          <span className="text-lg font-medium text-gray-700">Loading reports...</span>
         </div>
+      </div>
       </TeacherDashboardLayout>
     );
   }
 
   return (
     <TeacherDashboardLayout>
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -599,8 +599,9 @@ const TeacherReports = () => {
             </table>
           </div>
         </div>
-      </TeacherDashboardLayout>
-    );
+      </div>
+    </TeacherDashboardLayout>
+  );
 };
 
 export default TeacherReports;
