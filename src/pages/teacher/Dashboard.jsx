@@ -100,6 +100,9 @@ const Dashboard = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Batch dashboard data loaded:', data);
+        console.log('📊 Stats from API:', data.stats);
+        console.log('📈 Enrollment trends from API:', data.enrollment_trends);
+        console.log('📊 Course performance from API:', data.course_performance);
         
         // Transform the batch API response
         const transformedData = {
@@ -256,23 +259,41 @@ const Dashboard = () => {
   const stats = dashboardData?.stats || {};
   const analytics = dashboardData?.analytics || {};
   const recentActivity = dashboardData?.recent_activity || [];
-  const enrollmentTrends = analytics.enrollmentTrends || [];
-  const coursePerformance = analytics.coursePerformanceData || [];
+  const enrollmentTrends = dashboardData?.enrollment_trends || analytics.enrollmentTrends || [];
+  const coursePerformance = dashboardData?.course_performance || analytics.coursePerformanceData || [];
 
-  // Chart data preparation
-  const enrollmentChartData = enrollmentTrends.map((trend, index) => ({
-    name: trend.name || `Course ${index + 1}`,
+  // Chart data preparation with proper fallbacks
+  const enrollmentChartData = enrollmentTrends.length > 0 ? enrollmentTrends.map((trend, index) => ({
+    name: trend.date || trend.name || `Day ${index + 1}`,
     enrollments: trend.enrollments || 0,
-    activeStudents: trend.active_students || 0,
-    completionRate: Math.round((trend.active_students || 0) / Math.max(trend.enrollments || 1, 1) * 100)
-  }));
+    activeStudents: trend.activeStudents || trend.active_students || 0,
+    completionRate: Math.round((trend.activeStudents || trend.active_students || 0) / Math.max(trend.enrollments || 1, 1) * 100)
+  })) : [
+    { name: 'Mon', enrollments: 0, activeStudents: 0, completionRate: 0 },
+    { name: 'Tue', enrollments: 0, activeStudents: 0, completionRate: 0 },
+    { name: 'Wed', enrollments: 0, activeStudents: 0, completionRate: 0 },
+    { name: 'Thu', enrollments: 0, activeStudents: 0, completionRate: 0 },
+    { name: 'Fri', enrollments: 0, activeStudents: 0, completionRate: 0 },
+    { name: 'Sat', enrollments: 0, activeStudents: 0, completionRate: 0 },
+    { name: 'Sun', enrollments: 0, activeStudents: 0, completionRate: 0 }
+  ];
 
-  const performanceChartData = coursePerformance.map((course, index) => ({
-    name: course.course?.substring(0, 15) + '...' || `Course ${index + 1}`,
-    students: course.students || 0,
-    avgScore: course.avgScore || 0,
-    grade: course.avgScore >= 90 ? 'A' : course.avgScore >= 80 ? 'B' : course.avgScore >= 70 ? 'C' : 'D'
-  }));
+  const performanceChartData = coursePerformance.length > 0 ? coursePerformance.map((course, index) => ({
+    name: course.course_title || course.course?.substring(0, 15) + '...' || `Course ${index + 1}`,
+    students: course.students || course.enrollment_count || 0,
+    avgScore: course.avgScore || course.completion_rate || 0,
+    grade: (course.avgScore || course.completion_rate || 0) >= 90 ? 'A' : (course.avgScore || course.completion_rate || 0) >= 80 ? 'B' : (course.avgScore || course.completion_rate || 0) >= 70 ? 'C' : 'D'
+  })) : [
+    { name: 'No Courses', students: 0, avgScore: 0, grade: 'N/A' }
+  ];
+
+  // Debug logging
+  console.log('🔍 Dashboard Debug Info:');
+  console.log('📊 Stats:', stats);
+  console.log('📈 Enrollment trends raw:', enrollmentTrends);
+  console.log('📈 Enrollment chart data:', enrollmentChartData);
+  console.log('📊 Course performance raw:', coursePerformance);
+  console.log('📊 Performance chart data:', performanceChartData);
 
 
   return (
