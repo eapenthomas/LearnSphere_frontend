@@ -28,7 +28,8 @@ import {
   Clock3,
   UserCheck,
   Trophy,
-  Sparkles
+  Sparkles,
+  LineChart
 } from 'lucide-react';
 
 // Import chart components
@@ -79,12 +80,97 @@ const Dashboard = () => {
         setIsRefreshing(true);
       }
       
-      console.log('🔄 Fetching enhanced teacher dashboard data...');
+      console.log('🔄 Fetching enhanced teacher dashboard data with batch queries...');
       setConnectionStatus('connecting');
       
       const teacherId = user?.id || localStorage.getItem('userId') || 'default-teacher-id';
       
-      // Fetch comprehensive analytics data
+      // Use a single optimized API endpoint that fetches all data in batch
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/batch/${teacherId}?timeRange=${selectedTimeRange}`, 
+        {
+          headers: { 
+            'Cache-Control': 'no-cache', 
+            'Pragma': 'no-cache',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Batch dashboard data loaded:', data);
+        
+        // Transform the batch API response
+        const transformedData = {
+          stats: data.stats || {
+            total_courses: 0,
+            total_students: 0,
+            active_assignments: 0,
+            pending_quizzes: 0,
+          },
+          analytics: data.analytics || {
+            totalStudents: 0,
+            activeCourses: 0,
+            totalAssignments: 0,
+            averageGrade: 0,
+            enrollmentTrends: [],
+            coursePerformanceData: [],
+            recentActivity: []
+          },
+          courses: data.courses || [],
+          recent_activity: data.recent_activity || [],
+          enrollment_trends: data.enrollment_trends || [],
+          course_performance: data.course_performance || []
+        };
+        
+        setDashboardData(transformedData);
+        setLastUpdated(new Date());
+        setConnectionStatus('connected');
+        
+        if (!silent) {
+          toast.success('Dashboard updated with latest analytics', {
+            icon: '📊',
+            duration: 2000
+          });
+        }
+      } else {
+        // Fallback to individual API calls if batch endpoint doesn't exist
+        console.log('Batch endpoint not available, using individual calls...');
+        await fetchIndividualAPIs(teacherId, silent);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error fetching enhanced dashboard data:', error);
+      setConnectionStatus('error');
+      
+      if (!silent) {
+        toast.error('Failed to load dashboard analytics', {
+          icon: '⚠️',
+          duration: 3000
+        });
+      }
+      
+      // Set comprehensive fallback data
+      setDashboardData({
+        stats: { total_courses: 0, total_students: 0, active_assignments: 0, pending_quizzes: 0 },
+        analytics: { totalStudents: 0, activeCourses: 0, totalAssignments: 0, averageGrade: 0, enrollmentTrends: [], coursePerformanceData: [], recentActivity: [] },
+        courses: [],
+        recent_activity: [],
+        enrollment_trends: [],
+        course_performance: []
+      });
+    } finally {
+      if (!silent) {
+        setLoading(false);
+        setIsRefreshing(false);
+      }
+    }
+  };
+
+  const fetchIndividualAPIs = async (teacherId, silent) => {
+    try {
+      // Fetch data from multiple endpoints in parallel for better performance
       const [statsResponse, analyticsResponse] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${teacherId}`, {
           headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
@@ -100,7 +186,7 @@ const Dashboard = () => {
           analyticsResponse.json()
         ]);
         
-        console.log('✅ Enhanced dashboard data loaded:', { statsData, analyticsData });
+        console.log('✅ Individual API data loaded:', { statsData, analyticsData });
         
         // Transform and combine data
         const transformedData = {
@@ -138,32 +224,9 @@ const Dashboard = () => {
       } else {
         throw new Error(`API error: ${statsResponse.status}`);
       }
-      
     } catch (error) {
-      console.error('❌ Error fetching enhanced dashboard data:', error);
-      setConnectionStatus('error');
-      
-      if (!silent) {
-        toast.error('Failed to load dashboard analytics', {
-          icon: '⚠️',
-          duration: 3000
-        });
-      }
-      
-      // Set comprehensive fallback data
-      setDashboardData({
-        stats: { total_courses: 0, total_students: 0, active_assignments: 0, pending_quizzes: 0 },
-        analytics: { totalStudents: 0, activeCourses: 0, totalAssignments: 0, averageGrade: 0, enrollmentTrends: [], coursePerformanceData: [], recentActivity: [] },
-        courses: [],
-        recent_activity: [],
-        enrollment_trends: [],
-        course_performance: []
-      });
-    } finally {
-      if (!silent) {
-        setLoading(false);
-        setIsRefreshing(false);
-      }
+      console.error('❌ Error in individual API calls:', error);
+      throw error;
     }
   };
 
