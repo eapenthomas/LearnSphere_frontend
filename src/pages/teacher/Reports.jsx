@@ -137,48 +137,16 @@ const TeacherReports = () => {
 
   const exportReport = async () => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/reports/export?teacher_id=${user.id}&timeframe=${selectedTimeframe}&course_id=${selectedCourse}`,
-        { method: 'POST' }
-      );
-      
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `teacher-report-${new Date().toISOString().split('T')[0]}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        toast.success('Report exported successfully!');
-      } else {
-        toast.error('Failed to export report');
-      }
-    } catch (error) {
-      console.error('Error exporting report:', error);
-      toast.error('Failed to export report');
-    }
-  };
-
-  const downloadStudentPerformancePDF = () => {
-    if (!reportData.studentPerformance || reportData.studentPerformance.length === 0) {
-      toast.error('No student performance data available to download');
-      return;
-    }
-
-    try {
-      // Create a new window with the report content
+      // Create a comprehensive PDF report using browser's print functionality
       const printWindow = window.open('', '_blank');
-      const currentDate = new Date().toLocaleDateString();
-      const currentTime = new Date().toLocaleTimeString();
+      const reportDate = new Date().toLocaleDateString();
+      const reportTime = new Date().toLocaleTimeString();
       
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
         <head>
-          <title>Student Performance Report</title>
+          <title>Teacher Performance Report</title>
           <style>
             body {
               font-family: Arial, sans-serif;
@@ -189,125 +157,207 @@ const TeacherReports = () => {
             .header {
               text-align: center;
               margin-bottom: 30px;
-              border-bottom: 3px solid #333;
+              border-bottom: 3px solid #2563eb;
               padding-bottom: 20px;
             }
-            .teacher-info {
-              background-color: #f5f5f5;
-              padding: 15px;
-              border-radius: 8px;
-              margin-bottom: 20px;
-            }
-            .course-section {
+            .section {
               margin-bottom: 30px;
               page-break-inside: avoid;
             }
-            .course-title {
-              background-color: #e3f2fd;
-              padding: 10px;
-              border-left: 4px solid #2196f3;
-              margin-bottom: 15px;
+            .section-title {
+              font-size: 18px;
               font-weight: bold;
+              color: #2563eb;
+              margin-bottom: 15px;
+              border-bottom: 2px solid #e5e7eb;
+              padding-bottom: 5px;
             }
-            .student-table {
+            .stats-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 20px;
+              margin-bottom: 20px;
+            }
+            .stat-card {
+              border: 1px solid #d1d5db;
+              border-radius: 8px;
+              padding: 15px;
+              background-color: #f9fafb;
+            }
+            .stat-title {
+              font-size: 14px;
+              color: #6b7280;
+              margin-bottom: 5px;
+            }
+            .stat-value {
+              font-size: 24px;
+              font-weight: bold;
+              color: #111827;
+            }
+            table {
               width: 100%;
               border-collapse: collapse;
               margin-bottom: 20px;
             }
-            .student-table th,
-            .student-table td {
-              border: 1px solid #ddd;
-              padding: 8px;
+            th, td {
+              border: 1px solid #d1d5db;
+              padding: 12px;
               text-align: left;
             }
-            .student-table th {
-              background-color: #f2f2f2;
+            th {
+              background-color: #f3f4f6;
               font-weight: bold;
+              color: #374151;
             }
-            .grade-excellent { color: #4caf50; font-weight: bold; }
-            .grade-good { color: #2196f3; font-weight: bold; }
-            .grade-average { color: #ff9800; font-weight: bold; }
-            .grade-poor { color: #f44336; font-weight: bold; }
-            .summary-stats {
-              background-color: #f9f9f9;
-              padding: 15px;
-              border-radius: 8px;
-              margin-top: 20px;
-            }
+            .grade-excellent { color: #059669; font-weight: bold; }
+            .grade-good { color: #2563eb; font-weight: bold; }
+            .grade-average { color: #d97706; font-weight: bold; }
+            .grade-poor { color: #dc2626; font-weight: bold; }
             .footer {
-              margin-top: 30px;
+              margin-top: 40px;
               text-align: center;
               font-size: 12px;
-              color: #666;
-              border-top: 1px solid #ccc;
+              color: #6b7280;
+              border-top: 1px solid #d1d5db;
               padding-top: 20px;
             }
             @media print {
-              body { margin: 10px; }
-              .course-section { page-break-inside: avoid; }
+              body { margin: 15px; }
+              .section { page-break-inside: avoid; }
             }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>Student Performance Report</h1>
-            <p>Generated on ${currentDate} at ${currentTime}</p>
+            <h1>Teacher Performance Report</h1>
+            <p><strong>Teacher:</strong> ${user?.name || 'Unknown Teacher'}</p>
+            <p><strong>Generated:</strong> ${reportDate} at ${reportTime}</p>
+            <p><strong>Timeframe:</strong> ${selectedTimeframe} | <strong>Course:</strong> ${selectedCourse === 'all' ? 'All Courses' : courses.find(c => c.id === selectedCourse)?.title || 'Selected Course'}</p>
           </div>
-          
-          <div class="teacher-info">
-            <h2>Teacher Information</h2>
-            <p><strong>Teacher:</strong> ${user.fullName || 'Unknown Teacher'}</p>
-            <p><strong>Email:</strong> ${user.email}</p>
-            <p><strong>Report Period:</strong> ${selectedTimeframe}</p>
-            <p><strong>Total Students:</strong> ${reportData.studentPerformance.length}</p>
-          </div>
-          
-          ${reportData.studentPerformance.map(student => `
-            <div class="course-section">
-              <div class="course-title">
-                Student: ${student.studentName || 'Unknown Student'}
+
+          <div class="section">
+            <div class="section-title">Overview Statistics</div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-title">Total Students</div>
+                <div class="stat-value">${reportData.overview.totalStudents || 0}</div>
               </div>
-              <table class="student-table">
-                <thead>
-                  <tr>
-                    <th>Course</th>
-                    <th>Assignments Completed</th>
-                    <th>Quizzes Taken</th>
-                    <th>Average Grade</th>
-                    <th>Performance Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>${student.courseName || 'N/A'}</td>
-                    <td>${student.assignmentsCompleted || 0}</td>
-                    <td>${student.quizzesTaken || 0}</td>
-                    <td class="${student.avgGrade >= 90 ? 'grade-excellent' : 
-                                 student.avgGrade >= 80 ? 'grade-good' : 
-                                 student.avgGrade >= 70 ? 'grade-average' : 'grade-poor'}">
-                      ${student.avgGrade || 0}%
-                    </td>
-                    <td>${student.avgGrade >= 90 ? 'Excellent' : 
-                          student.avgGrade >= 80 ? 'Good' : 
-                          student.avgGrade >= 70 ? 'Average' : 'Needs Improvement'}</td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="stat-card">
+                <div class="stat-title">Courses Teaching</div>
+                <div class="stat-value">${reportData.overview.totalCourses || 0}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-title">Average Grade</div>
+                <div class="stat-value">${reportData.overview.averageGrade || 0}%</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-title">Completion Rate</div>
+                <div class="stat-value">${reportData.overview.completionRate || 0}%</div>
+              </div>
             </div>
-          `).join('')}
-          
-          <div class="summary-stats">
-            <h3>Summary Statistics</h3>
-            <p><strong>Total Students:</strong> ${reportData.studentPerformance.length}</p>
-            <p><strong>Average Grade:</strong> ${(reportData.studentPerformance.reduce((sum, s) => sum + (s.avgGrade || 0), 0) / reportData.studentPerformance.length).toFixed(1)}%</p>
-            <p><strong>Students with 90%+:</strong> ${reportData.studentPerformance.filter(s => s.avgGrade >= 90).length}</p>
-            <p><strong>Students with 80%+:</strong> ${reportData.studentPerformance.filter(s => s.avgGrade >= 80).length}</p>
-            <p><strong>Students needing improvement:</strong> ${reportData.studentPerformance.filter(s => s.avgGrade < 70).length}</p>
           </div>
-          
+
+          <div class="section">
+            <div class="section-title">Course Performance</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Course Name</th>
+                  <th>Students</th>
+                  <th>Completion Rate</th>
+                  <th>Average Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${reportData.courseStats.map(course => `
+                  <tr>
+                    <td>${course.name}</td>
+                    <td>${course.students}</td>
+                    <td>${course.completion}%</td>
+                    <td class="${course.avgGrade >= 90 ? 'grade-excellent' : course.avgGrade >= 80 ? 'grade-good' : course.avgGrade >= 70 ? 'grade-average' : 'grade-poor'}">${course.avgGrade}%</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Student Performance Details</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Student Name</th>
+                  <th>Course</th>
+                  <th>Assignments Completed</th>
+                  <th>Quizzes Taken</th>
+                  <th>Average Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${reportData.studentPerformance.map(student => `
+                  <tr>
+                    <td>${student.name}</td>
+                    <td>${student.course}</td>
+                    <td>${student.assignments}</td>
+                    <td>${student.quizzes}</td>
+                    <td class="${student.avgGrade >= 90 ? 'grade-excellent' : student.avgGrade >= 80 ? 'grade-good' : student.avgGrade >= 70 ? 'grade-average' : 'grade-poor'}">${student.avgGrade}%</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Assignment Performance</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Assignment Title</th>
+                  <th>Submissions</th>
+                  <th>Average Score</th>
+                  <th>Max Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${reportData.assignmentStats.map(assignment => `
+                  <tr>
+                    <td>${assignment.title}</td>
+                    <td>${assignment.submissions}</td>
+                    <td>${assignment.avgScore}</td>
+                    <td>${assignment.maxScore}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Quiz Performance</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Quiz Title</th>
+                  <th>Attempts</th>
+                  <th>Average Score</th>
+                  <th>Max Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${reportData.quizStats.map(quiz => `
+                  <tr>
+                    <td>${quiz.title}</td>
+                    <td>${quiz.attempts}</td>
+                    <td>${quiz.avgScore}</td>
+                    <td>${quiz.maxScore}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
           <div class="footer">
             <p>Generated by LearnSphere Teacher Reports System</p>
-            <p>Confidential - For Educational Use Only</p>
+            <p>This report contains comprehensive performance analytics for teaching effectiveness</p>
           </div>
         </body>
         </html>
@@ -321,10 +371,10 @@ const TeacherReports = () => {
         printWindow.close();
       }, 500);
       
-      toast.success('Student Performance Report PDF download initiated');
+      toast.success('PDF report generated successfully!');
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      toast.error('Failed to generate PDF');
+      console.error('Error generating PDF report:', error);
+      toast.error('Failed to generate PDF report');
     }
   };
 
@@ -384,19 +434,21 @@ const TeacherReports = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex items-center space-x-3">
-          <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
-          <span className="text-lg font-medium text-gray-700">Loading reports...</span>
+      <TeacherDashboardLayout>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="flex items-center space-x-3">
+            <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+            <span className="text-lg font-medium text-gray-700">Loading reports...</span>
+          </div>
         </div>
-      </div>
+      </TeacherDashboardLayout>
     );
   }
 
   return (
     <TeacherDashboardLayout>
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -435,14 +487,6 @@ const TeacherReports = () => {
             >
               <Download className="w-4 h-4" />
               <span>Export Report</span>
-            </button>
-            
-            <button
-              onClick={downloadStudentPerformancePDF}
-              className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download Student Performance PDF</span>
             </button>
             
             <button
