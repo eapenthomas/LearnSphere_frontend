@@ -31,16 +31,7 @@ import ProfileInformation from '../components/ProfileInformation.jsx';
 import PasswordUpdate from '../components/PasswordUpdate.jsx';
 
 const ProfilePage = () => {
-  const [profileData, setProfileData] = useState({
-    full_name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    bio: 'Passionate learner and technology enthusiast',
-    location: 'San Francisco, CA',
-    joinDate: 'January 2024',
-    avatar: null
-  });
-
+  const [profileData, setProfileData] = useState(null);
   const [profileStats, setProfileStats] = useState({
     coursesEnrolled: 0,
     coursesCompleted: 0,
@@ -48,31 +39,45 @@ const ProfilePage = () => {
     quizzesTaken: 0,
     averageScore: 0,
     certificatesEarned: 0,
-    studyStreak: 7
+    studyStreak: 0
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Fetch profile data from Supabase
     const fetchProfileData = async () => {
       try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/profile`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           }
         });
         
         if (response.ok) {
           const data = await response.json();
-          setProfileData(prev => ({
-            ...prev,
-            ...data,
-            bio: data.bio || 'Passionate learner and technology enthusiast',
-            location: data.location || 'San Francisco, CA',
-            joinDate: data.created_at ? new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'January 2024'
-          }));
+          setProfileData({
+            full_name: data.full_name || 'User',
+            email: data.email || '',
+            phone: data.phone || '',
+            bio: data.bio || '',
+            location: data.location || '',
+            joinDate: data.created_at ? new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '',
+            avatar: data.avatar_url || null
+          });
+        } else {
+          console.error('Failed to fetch profile data:', response.status);
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -83,16 +88,34 @@ const ProfilePage = () => {
         if (!userId) return;
 
         // Fetch courses enrolled
-        const coursesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/student/${userId}/enrolled`);
+        const coursesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/student/${userId}/enrolled`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
         const coursesData = coursesResponse.ok ? await coursesResponse.json() : [];
         
         // Fetch assignments submitted
-        const assignmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/student/${userId}/submissions`);
+        const assignmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/student/${userId}/submissions`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
         const assignmentsData = assignmentsResponse.ok ? await assignmentsResponse.json() : [];
         
         // Fetch quizzes taken
-        const quizzesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/quiz/student/${userId}/submissions`);
+        const quizzesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/quiz/student/${userId}/submissions`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
         const quizzesData = quizzesResponse.ok ? await quizzesResponse.json() : [];
+
+        // Calculate study streak (mock for now - would need backend implementation)
+        const studyStreak = 0; // TODO: Implement actual study streak calculation
 
         setProfileStats({
           coursesEnrolled: coursesData.length || 0,
@@ -101,7 +124,7 @@ const ProfilePage = () => {
           quizzesTaken: quizzesData.length || 0,
           averageScore: quizzesData.length > 0 ? Math.round(quizzesData.reduce((sum, quiz) => sum + (quiz.score || 0), 0) / quizzesData.length) : 0,
           certificatesEarned: coursesData.filter(course => course.completed).length || 0,
-          studyStreak: 7 // Mock data for now
+          studyStreak: studyStreak
         });
       } catch (error) {
         console.error('Error fetching profile stats:', error);
@@ -111,6 +134,20 @@ const ProfilePage = () => {
     fetchProfileData();
     fetchProfileStats();
   }, []);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading Profile...</h2>
+            <p className="text-gray-600">Please wait while we fetch your information.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (!profileData) {
     return (
@@ -236,9 +273,9 @@ const ProfilePage = () => {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-4xl font-bold mb-2"
+                  className="text-4xl font-bold mb-2 text-white"
                 >
-                  {profileData.full_name}
+                  {profileData.full_name || 'User'}
                 </motion.h2>
                 
                 <motion.div
@@ -249,15 +286,15 @@ const ProfilePage = () => {
                 >
                   <div className="flex items-center space-x-2">
                     <Mail className="w-5 h-5 text-white/80" />
-                    <span className="text-white/90">{profileData.email}</span>
+                    <span className="text-white/90">{profileData.email || 'No email provided'}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Phone className="w-5 h-5 text-white/80" />
-                    <span className="text-white/90">{profileData.phone}</span>
+                    <span className="text-white/90">{profileData.phone || 'No phone provided'}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <MapPin className="w-5 h-5 text-white/80" />
-                    <span className="text-white/90">{profileData.location}</span>
+                    <span className="text-white/90">{profileData.location || 'No location provided'}</span>
                   </div>
                 </motion.div>
 
@@ -273,7 +310,7 @@ const ProfilePage = () => {
                   </div>
                   <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium">
                     <Calendar className="w-4 h-4 inline mr-2" />
-                    Joined {profileData.joinDate}
+                    Joined {profileData.joinDate || 'Recently'}
                   </div>
                 </motion.div>
               </div>
@@ -366,8 +403,8 @@ const ProfilePage = () => {
                 <Shield className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Account Security</h3>
-                <p className="text-sm text-white">Manage your account security settings</p>
+                <h3 className="text-lg font-bold text-gray-800">Account Security</h3>
+                <p className="text-sm text-gray-600">Manage your account security settings</p>
               </div>
             </div>
             
@@ -407,8 +444,8 @@ const ProfilePage = () => {
                 <Settings className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Learning Preferences</h3>
-                <p className="text-sm text-white">Customize your learning experience</p>
+                <h3 className="text-lg font-bold text-gray-800">Learning Preferences</h3>
+                <p className="text-sm text-gray-600">Customize your learning experience</p>
               </div>
             </div>
             
