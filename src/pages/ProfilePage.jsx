@@ -29,8 +29,10 @@ import {
 import DashboardLayout from '../components/DashboardLayout.jsx';
 import ProfileInformation from '../components/ProfileInformation.jsx';
 import PasswordUpdate from '../components/PasswordUpdate.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const ProfilePage = () => {
+  const { user } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [profileStats, setProfileStats] = useState({
     coursesEnrolled: 0,
@@ -47,24 +49,27 @@ const ProfilePage = () => {
     // Fetch profile data from Supabase
     const fetchProfileData = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
+        if (!user?.accessToken) {
+          console.log('No access token available');
           setLoading(false);
           return;
         }
 
+        console.log('Fetching profile data with token:', user.accessToken ? 'present' : 'missing');
+
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/profile`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${user.accessToken}`,
             'Content-Type': 'application/json'
           }
         });
         
         if (response.ok) {
           const data = await response.json();
+          console.log('Profile data received:', data);
           setProfileData({
-            full_name: data.full_name || 'User',
-            email: data.email || '',
+            full_name: data.full_name || user.fullName || 'User',
+            email: data.email || user.email || '',
             phone: data.phone || '',
             bio: data.bio || '',
             location: data.location || '',
@@ -72,10 +77,30 @@ const ProfilePage = () => {
             avatar: data.avatar_url || null
           });
         } else {
-          console.error('Failed to fetch profile data:', response.status);
+          console.error('Failed to fetch profile data:', response.status, response.statusText);
+          // Use user data from AuthContext as fallback
+          setProfileData({
+            full_name: user.fullName || 'User',
+            email: user.email || '',
+            phone: '',
+            bio: '',
+            location: '',
+            joinDate: '',
+            avatar: null
+          });
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
+        // Use user data from AuthContext as fallback
+        setProfileData({
+          full_name: user.fullName || 'User',
+          email: user.email || '',
+          phone: '',
+          bio: '',
+          location: '',
+          joinDate: '',
+          avatar: null
+        });
       } finally {
         setLoading(false);
       }
@@ -84,31 +109,35 @@ const ProfilePage = () => {
     // Fetch profile statistics
     const fetchProfileStats = async () => {
       try {
-        const userId = localStorage.getItem('user_id');
-        if (!userId) return;
+        if (!user?.id) {
+          console.log('No user ID available');
+          return;
+        }
+
+        console.log('Fetching profile stats for user:', user.id);
 
         // Fetch courses enrolled
-        const coursesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/student/${userId}/enrolled`, {
+        const coursesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/student/${user.id}/enrolled`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Authorization': `Bearer ${user.accessToken}`,
             'Content-Type': 'application/json'
           }
         });
         const coursesData = coursesResponse.ok ? await coursesResponse.json() : [];
         
         // Fetch assignments submitted
-        const assignmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/student/${userId}/submissions`, {
+        const assignmentsResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/student/${user.id}/submissions`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Authorization': `Bearer ${user.accessToken}`,
             'Content-Type': 'application/json'
           }
         });
         const assignmentsData = assignmentsResponse.ok ? await assignmentsResponse.json() : [];
         
         // Fetch quizzes taken
-        const quizzesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/quiz/student/${userId}/submissions`, {
+        const quizzesResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/quiz/student/${user.id}/submissions`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Authorization': `Bearer ${user.accessToken}`,
             'Content-Type': 'application/json'
           }
         });
@@ -116,6 +145,12 @@ const ProfilePage = () => {
 
         // Calculate study streak (mock for now - would need backend implementation)
         const studyStreak = 0; // TODO: Implement actual study streak calculation
+
+        console.log('Profile stats:', {
+          coursesEnrolled: coursesData.length,
+          assignmentsSubmitted: assignmentsData.length,
+          quizzesTaken: quizzesData.length
+        });
 
         setProfileStats({
           coursesEnrolled: coursesData.length || 0,
@@ -133,7 +168,7 @@ const ProfilePage = () => {
 
     fetchProfileData();
     fetchProfileStats();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (
