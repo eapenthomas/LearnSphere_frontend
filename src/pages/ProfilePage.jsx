@@ -604,6 +604,7 @@ const ProfilePage = () => {
               </button>
             </div>
           </div>
+          </div>
         </div>
       </motion.div>
     </DashboardLayout>
