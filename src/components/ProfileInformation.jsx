@@ -129,15 +129,15 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
   };
 
   return (
-    <div className="card p-6 hover:shadow-xl transition-all duration-300">
+    <div className="card p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50 border border-gray-100">
       {/* Card Header */}
       <div className="flex items-center space-x-3 mb-6">
-        <div className="p-2 bg-blue-100 rounded-lg">
-          <User className="w-5 h-5 text-blue-600" />
+        <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg">
+          <User className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white">Profile Information</h2>
-          <p className="text-sm text-white">Update your personal details</p>
+          <h2 className="text-xl font-bold text-gray-800">Profile Information</h2>
+          <p className="text-sm text-gray-600">Update your personal details and preferences</p>
         </div>
       </div>
 
@@ -145,7 +145,7 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Full Name Field */}
         <div>
-          <label className="block text-sm font-semibold text-white mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Full Name *
           </label>
           <div className="relative">
@@ -183,7 +183,7 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
 
         {/* Email Field (Read-only) */}
         <div>
-          <label className="block text-sm font-semibold text-white mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Email Address
           </label>
           <div className="relative">
@@ -196,14 +196,14 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
               placeholder="Email address"
             />
           </div>
-          <p className="mt-2 text-xs text-white">
+          <p className="mt-2 text-xs text-gray-500">
             Email cannot be changed. Contact support if you need to update your email.
           </p>
         </div>
 
         {/* Role Field (Read-only) */}
         <div>
-          <label className="block text-sm font-semibold text-white mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Role
           </label>
           <div className="relative">
@@ -216,14 +216,14 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
               placeholder="Role"
             />
           </div>
-          <p className="mt-2 text-xs text-white">
+          <p className="mt-2 text-xs text-gray-500">
             Role is assigned by administrators and cannot be changed.
           </p>
         </div>
 
         {/* Phone Number Field */}
         <div>
-          <label className="block text-sm font-semibold text-white mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
             Phone Number
           </label>
           <div className="relative">
@@ -257,13 +257,13 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
               <span>{errors.phone.message}</span>
             </motion.p>
           )}
-          <p className="mt-2 text-xs text-white">
+          <p className="mt-2 text-xs text-gray-500">
             Phone number must be exactly 10 digits and start with 6, 7, 8, or 9.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-3 pt-4">
+        <div className="flex space-x-3 pt-6 border-t border-gray-200">
           <motion.button
             type="submit"
             disabled={loading || !isDirty || Object.keys(errors).length > 0}
