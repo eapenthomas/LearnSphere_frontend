@@ -294,6 +294,18 @@ const Dashboard = () => {
   console.log('📈 Enrollment chart data:', enrollmentChartData);
   console.log('📊 Course performance raw:', coursePerformance);
   console.log('📊 Performance chart data:', performanceChartData);
+  console.log('🔍 Raw dashboard data:', dashboardData);
+  
+  // Validate data and show warnings
+  if (stats.total_courses === 0) {
+    console.warn('⚠️ No courses found for teacher');
+  }
+  if (enrollmentTrends.length === 0) {
+    console.warn('⚠️ No enrollment trends data');
+  }
+  if (coursePerformance.length === 0) {
+    console.warn('⚠️ No course performance data');
+  }
 
 
   return (
