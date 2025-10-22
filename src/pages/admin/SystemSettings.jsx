@@ -144,21 +144,35 @@ const SystemSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Debug: Check if user and token exist
+      console.log('User object:', user);
+      console.log('Access token:', user?.accessToken);
+      
+      if (!user?.accessToken) {
+        toast.error('Authentication token not found. Please log in again.');
+        return;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/settings/`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${user?.accessToken || ''}`,
+          'Authorization': `Bearer ${user.accessToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(settings)
       });
 
+      console.log('Save response status:', response.status);
+      
       if (response.ok) {
         setSaved(true);
         toast.success('Settings saved successfully');
         setTimeout(() => setSaved(false), 3000);
+        // Refresh settings after successful save
+        await fetchSettings();
       } else {
         const error = await response.json();
+        console.error('Save error:', error);
         toast.error(error.detail || 'Failed to save settings');
       }
     } catch (error) {
