@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../../components/DashboardLayout.jsx';
 import { useAuth } from '../../contexts/AuthContext.jsx';
@@ -15,8 +15,11 @@ import {
   BookOpen,
   Lightbulb,
   Brain,
-  Sparkles
+  Sparkles,
+  Lock,
+  Loader
 } from 'lucide-react';
+import { isAIFeatureEnabled, getAIFeatureMessage } from '../../utils/aiFeatureChecker.js';
 
 const AITutor = () => {
   const { user } = useAuth();
@@ -25,8 +28,26 @@ const AITutor = () => {
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [aiFeatureEnabled, setAiFeatureEnabled] = useState(true);
+  const [loadingFeatureCheck, setLoadingFeatureCheck] = useState(true);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    const checkAIFeature = async () => {
+      try {
+        const enabled = await isAIFeatureEnabled('ai_tutor');
+        setAiFeatureEnabled(enabled);
+      } catch (error) {
+        console.error('Error checking AI feature status:', error);
+        setAiFeatureEnabled(true); // Default to enabled on error
+      } finally {
+        setLoadingFeatureCheck(false);
+      }
+    };
+
+    checkAIFeature();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -181,7 +202,28 @@ const AITutor = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {loadingFeatureCheck ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <div className="flex items-center justify-center py-8">
+              <Loader className="w-6 h-6 animate-spin mr-3" />
+              <span>Checking feature availability...</span>
+            </div>
+          </div>
+        ) : !aiFeatureEnabled ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <div className="text-center py-8">
+              <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">Feature Temporarily Disabled</h3>
+              <p className="text-gray-600 mb-4">
+                The AI Tutor feature has been temporarily disabled by the administrator.
+              </p>
+              <p className="text-sm text-gray-500">
+                Please contact support if you need assistance or check back later.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Upload Section */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -365,6 +407,7 @@ const AITutor = () => {
             </div>
           </motion.div>
         </div>
+        )}
       </div>
     </DashboardLayout>
   );

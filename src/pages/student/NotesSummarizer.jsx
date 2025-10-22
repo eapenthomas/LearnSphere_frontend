@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../../components/DashboardLayout.jsx';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { toast } from 'react-hot-toast';
-import { FileText, Upload, Loader, AlertTriangle, Download } from 'lucide-react';
+import { FileText, Upload, Loader, AlertTriangle, Download, Lock } from 'lucide-react';
+import { isAIFeatureEnabled, getAIFeatureMessage } from '../../utils/aiFeatureChecker.js';
 
 const NotesSummarizer = () => {
   const { user } = useAuth();
@@ -11,6 +12,24 @@ const NotesSummarizer = () => {
   const [uploading, setUploading] = useState(false);
   const [summary, setSummary] = useState('');
   const [error, setError] = useState('');
+  const [aiFeatureEnabled, setAiFeatureEnabled] = useState(true);
+  const [loadingFeatureCheck, setLoadingFeatureCheck] = useState(true);
+
+  useEffect(() => {
+    const checkAIFeature = async () => {
+      try {
+        const enabled = await isAIFeatureEnabled('notes_summarizer');
+        setAiFeatureEnabled(enabled);
+      } catch (error) {
+        console.error('Error checking AI feature status:', error);
+        setAiFeatureEnabled(true); // Default to enabled on error
+      } finally {
+        setLoadingFeatureCheck(false);
+      }
+    };
+
+    checkAIFeature();
+  }, []);
 
   const onFileChange = (e) => {
     const f = e.target.files?.[0];
@@ -27,6 +46,14 @@ const NotesSummarizer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check if AI feature is enabled
+    if (!aiFeatureEnabled) {
+      const featureMessage = getAIFeatureMessage('notes_summarizer');
+      toast.error(featureMessage.message);
+      return;
+    }
+    
     if (!file) {
       toast.error('Please select a PDF file first.');
       return;
@@ -153,47 +180,69 @@ const NotesSummarizer = () => {
             </p>
           </div>
 
-          <div className="student-card-bg rounded-2xl shadow-elegant p-6 border border-border-primary">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <label className="inline-flex items-center px-4 py-2 rounded-xl bg-white border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50">
-                  <Upload className="w-4 h-4 mr-2" />
-                  <span className="font-medium">Choose PDF</span>
-                  <input type="file" accept="application/pdf" className="hidden" onChange={onFileChange} />
-                </label>
-                <span className="text-sm" style={{color: '#000000'}}>
-                  {file ? file.name : 'No file selected'}
-                </span>
+          {loadingFeatureCheck ? (
+            <div className="student-card-bg rounded-2xl shadow-elegant p-6 border border-border-primary">
+              <div className="flex items-center justify-center py-8">
+                <Loader className="w-6 h-6 animate-spin mr-3" />
+                <span>Checking feature availability...</span>
               </div>
-
-              {error && (
-                <div className="flex items-center space-x-2 text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm">{error}</span>
+            </div>
+          ) : !aiFeatureEnabled ? (
+            <div className="student-card-bg rounded-2xl shadow-elegant p-6 border border-border-primary">
+              <div className="text-center py-8">
+                <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">Feature Temporarily Disabled</h3>
+                <p className="text-gray-600 mb-4">
+                  The Notes Summarizer feature has been temporarily disabled by the administrator.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Please contact support if you need assistance or check back later.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="student-card-bg rounded-2xl shadow-elegant p-6 border border-border-primary">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <label className="inline-flex items-center px-4 py-2 rounded-xl bg-white border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50">
+                    <Upload className="w-4 h-4 mr-2" />
+                    <span className="font-medium">Choose PDF</span>
+                    <input type="file" accept="application/pdf" className="hidden" onChange={onFileChange} />
+                  </label>
+                  <span className="text-sm" style={{color: '#000000'}}>
+                    {file ? file.name : 'No file selected'}
+                  </span>
                 </div>
-              )}
 
-              <div>
-                <button
-                  type="submit"
-                  disabled={uploading}
-                  className="btn-primary px-5 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader className="w-4 h-4 animate-spin" />
-                      <span>Summarizing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="w-4 h-4" />
-                      <span>Generate Summary</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
+                {error && (
+                  <div className="flex items-center space-x-2 text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span className="text-sm">{error}</span>
+                  </div>
+                )}
+
+                <div>
+                  <button
+                    type="submit"
+                    disabled={uploading}
+                    className="btn-primary px-5 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2"
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader className="w-4 h-4 animate-spin" />
+                        <span>Summarizing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-4 h-4" />
+                        <span>Generate Summary</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
           {summary && (
             <motion.div

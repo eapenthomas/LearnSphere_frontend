@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AdminDashboardLayout from '../../layouts/AdminDashboardLayout.jsx';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import { toast } from 'react-hot-toast';
 import { 
   Settings, 
   Database, 
@@ -19,6 +21,7 @@ import {
 } from 'lucide-react';
 
 const SystemSettings = () => {
+  const { user } = useAuth();
   const [settings, setSettings] = useState({
     general: {
       siteName: 'LearnSphere',
@@ -74,6 +77,7 @@ const SystemSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const tabs = [
     { id: 'general', name: 'General', icon: Settings },
@@ -84,15 +88,82 @@ const SystemSettings = () => {
     { id: 'ai', name: 'AI Settings', icon: Server },
   ];
 
+  // Fetch settings from backend
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/settings/`, {
+        headers: {
+          'Authorization': `Bearer ${user?.accessToken || ''}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSettings(data);
+      } else {
+        console.error('Failed to fetch settings');
+        toast.error('Failed to load system settings');
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      toast.error('Error loading system settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initialize default settings
+  const initializeDefaults = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/settings/initialize-defaults`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user?.accessToken || ''}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        toast.success('Default settings initialized');
+        await fetchSettings();
+      } else {
+        toast.error('Failed to initialize default settings');
+      }
+    } catch (error) {
+      console.error('Error initializing defaults:', error);
+      toast.error('Error initializing default settings');
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/admin/settings/`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${user?.accessToken || ''}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(settings)
+      });
+
+      if (response.ok) {
+        setSaved(true);
+        toast.success('Settings saved successfully');
+        setTimeout(() => setSaved(false), 3000);
+      } else {
+        const error = await response.json();
+        toast.error(error.detail || 'Failed to save settings');
+      }
     } catch (error) {
       console.error('Error saving settings:', error);
+      toast.error('Error saving settings');
     } finally {
       setSaving(false);
     }
@@ -365,13 +436,47 @@ const SystemSettings = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <AdminDashboardLayout>
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <RefreshCw className="mx-auto h-8 w-8 text-blue-600 animate-spin mb-4" />
+              <p className="text-gray-600">Loading system settings...</p>
+            </div>
+          </div>
+        </div>
+      </AdminDashboardLayout>
+    );
+  }
+
   return (
     <AdminDashboardLayout>
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">System Settings</h1>
-          <p className="text-gray-600">Configure and manage system-wide settings</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">System Settings</h1>
+              <p className="text-gray-600">Configure and manage system-wide settings</p>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={initializeDefaults}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Initialize Defaults
+              </button>
+              <button
+                onClick={fetchSettings}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <RefreshCw className="h-4 w-4 inline mr-2" />
+                Refresh
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
