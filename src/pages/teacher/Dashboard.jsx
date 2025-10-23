@@ -278,12 +278,18 @@ const Dashboard = () => {
     { name: 'Sun', enrollments: 0, activeStudents: 0, completionRate: 0 }
   ];
 
-  const performanceChartData = coursePerformance.length > 0 ? coursePerformance.map((course, index) => ({
-    name: course.course_title || course.course?.substring(0, 15) + '...' || `Course ${index + 1}`,
-    students: course.students || course.enrollment_count || 0,
-    avgScore: course.avgScore || course.completion_rate || 0,
-    grade: (course.avgScore || course.completion_rate || 0) >= 90 ? 'A' : (course.avgScore || course.completion_rate || 0) >= 80 ? 'B' : (course.avgScore || course.completion_rate || 0) >= 70 ? 'C' : 'D'
-  })) : [
+  const performanceChartData = coursePerformance.length > 0 ? coursePerformance.map((course, index) => {
+    const courseName = course.course_title || course.course || `Course ${index + 1}`;
+    const students = Number(course.students || course.enrollment_count || 0);
+    const avgScore = Number(course.avgScore || course.completion_rate || 0);
+    
+    return {
+      name: courseName.length > 15 ? courseName.substring(0, 15) + '...' : courseName,
+      students: students,
+      avgScore: avgScore,
+      grade: avgScore >= 90 ? 'A' : avgScore >= 80 ? 'B' : avgScore >= 70 ? 'C' : 'D'
+    };
+  }) : [
     { name: 'No Courses', students: 0, avgScore: 0, grade: 'N/A' }
   ];
 
@@ -593,7 +599,7 @@ const Dashboard = () => {
                     }} 
                   />
                   <Bar yAxisId="left" dataKey="students" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-                  <Line yAxisId="right" type="monotone" dataKey="avgScore" stroke="#F59E0B" strokeWidth={3} />
+                  <Bar yAxisId="right" dataKey="avgScore" fill="#F59E0B" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
