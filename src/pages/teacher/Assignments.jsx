@@ -441,7 +441,7 @@ const TeacherAssignments = () => {
                             <span>{stats.submitted}/{stats.total} submitted ({stats.percentage}%)</span>
                           </div>
                           {pendingCounts[assignment.id] > 0 && (
-                            <div className="flex items-center space-x-1 text-orange-600">
+                            <div className="flex items-center space-x-1 text-red-600">
                               <AlertTriangle className="w-4 h-4" />
                               <span>{pendingCounts[assignment.id]} pending</span>
                             </div>
