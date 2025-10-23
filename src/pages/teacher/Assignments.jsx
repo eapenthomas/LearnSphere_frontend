@@ -441,9 +441,9 @@ const TeacherAssignments = () => {
                             <span>{stats.submitted}/{stats.total} submitted ({stats.percentage}%)</span>
                           </div>
                           {pendingCounts[assignment.id] > 0 && (
-                            <div className="flex items-center space-x-1" style={{color: '#dc2626'}}>
-                              <AlertTriangle className="w-4 h-4" />
-                              <span>{pendingCounts[assignment.id]} pending</span>
+                            <div className="flex items-center space-x-1" style={{color: '#ef4444 !important'}}>
+                              <AlertTriangle className="w-4 h-4" style={{color: '#ef4444'}} />
+                              <span style={{color: '#ef4444'}}>{pendingCounts[assignment.id]} pending</span>
                             </div>
                           )}
                           <div className="flex items-center space-x-1" style={{color: '#000000'}}>
