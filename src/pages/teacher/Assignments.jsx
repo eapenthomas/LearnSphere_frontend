@@ -36,6 +36,7 @@ const TeacherAssignments = () => {
   const [submissions, setSubmissions] = useState([]);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [editingGrade, setEditingGrade] = useState(null); // Track which submission is being edited
+  const [pendingCounts, setPendingCounts] = useState({}); // Track pending submissions count for each assignment
 
   // Form state for creating assignments
   const [formData, setFormData] = useState({
@@ -53,8 +54,30 @@ const TeacherAssignments = () => {
     if (user?.id) {
       fetchAssignments();
       fetchCourses();
+      fetchPendingCounts();
     }
   }, [user]);
+
+  const fetchPendingCounts = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/teacher/${user.id}/pending-count`, {
+        headers: {
+          'Authorization': `Bearer ${user.accessToken}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const countsMap = {};
+        data.forEach(item => {
+          countsMap[item.assignment_id] = item.pending_count;
+        });
+        setPendingCounts(countsMap);
+      }
+    } catch (error) {
+      console.error('Error fetching pending counts:', error);
+    }
+  };
 
   const fetchAssignments = async () => {
     try {
@@ -286,7 +309,10 @@ const TeacherAssignments = () => {
             
             <div className="flex items-center space-x-3">
               <button
-                onClick={fetchAssignments}
+                onClick={() => {
+                  fetchAssignments();
+                  fetchPendingCounts();
+                }}
                 disabled={loading}
                 className="btn-primary px-4 py-3 rounded-lg transition-all duration-300 flex items-center space-x-2 font-medium"
               >
@@ -414,6 +440,12 @@ const TeacherAssignments = () => {
                             <Users className="w-4 h-4" />
                             <span>{stats.submitted}/{stats.total} submitted ({stats.percentage}%)</span>
                           </div>
+                          {pendingCounts[assignment.id] > 0 && (
+                            <div className="flex items-center space-x-1 text-orange-600">
+                              <AlertTriangle className="w-4 h-4" />
+                              <span>{pendingCounts[assignment.id]} pending</span>
+                            </div>
+                          )}
                           <div className="flex items-center space-x-1" style={{color: '#000000'}}>
                             <GraduationCap className="w-4 h-4" />
                             <span>Max Score: {assignment.max_score}</span>
