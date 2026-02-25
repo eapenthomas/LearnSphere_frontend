@@ -254,8 +254,8 @@ const StudentDashboard = () => {
 
       setStats(nextStats);
 
-      // Trigger performance prediction
-      fetchPerformancePrediction(enrolledCourses, assignments);
+      // Trigger performance prediction independently to avoid blocking
+      setTimeout(() => fetchPerformancePrediction(enrolledCourses, assignments), 0);
 
       return { stats: nextStats };
     } catch (error) {
