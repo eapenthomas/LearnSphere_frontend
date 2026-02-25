@@ -16,7 +16,8 @@ import {
   ArrowRight,
   Users,
   Target,
-  Zap
+  Zap,
+  Sparkles
 } from 'lucide-react';
 
 const StudentDashboard = () => {
@@ -498,8 +499,8 @@ const StudentDashboard = () => {
                 <div className="flex items-baseline space-x-2">
                   <h3 className="text-heading-lg font-bold mb-1 text-gray-900">{predictionData.predicted_score}%</h3>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${predictionData.risk_level === 'High Risk' ? 'bg-red-100 text-red-600' :
-                      predictionData.risk_level === 'Moderate Risk' ? 'bg-orange-100 text-orange-600' :
-                        'bg-green-100 text-green-600'
+                    predictionData.risk_level === 'Moderate Risk' ? 'bg-orange-100 text-orange-600' :
+                      'bg-green-100 text-green-600'
                     }`}>
                     {predictionData.risk_level}
                   </span>
