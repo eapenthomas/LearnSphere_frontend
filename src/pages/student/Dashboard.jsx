@@ -114,57 +114,26 @@ const StudentDashboard = () => {
 
   const fetchDashboardData = async (forceRefresh = false) => {
     try {
-      // Skip loading state for background refreshes unless it's initial load
-      if (isInitialLoad || forceRefresh) {
-        setLoading(true);
+      if (isInitialLoad || forceRefresh) setLoading(true);
+
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiBaseUrl}/api/dashboard-optimized/student/${user.id}`, {
+        headers: { 'Authorization': `Bearer ${user.accessToken}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Update all states at once
+        setStats(data.stats);
+        setRecentCourses(data.recent_courses || []);
+        setUpcomingAssignments(data.upcoming_assignments || []);
+
+        // Trigger performance prediction independently (non-blocking)
+        setTimeout(() => fetchPerformancePrediction(data.recent_courses, data.upcoming_assignments), 0);
       }
-
-      // Check cache validity (5 minutes for non-critical data)
-      const cacheKey = `student_dashboard_${user.id}`;
-      const cacheTime = 5 * 60 * 1000; // 5 minutes
-      const now = Date.now();
-
-      if (!forceRefresh && cachedData[cacheKey] && (now - cachedData[cacheKey].timestamp) < cacheTime) {
-        console.log('📦 Using cached dashboard data');
-        setStats(cachedData[cacheKey].stats);
-        setRecentCourses(cachedData[cacheKey].recentCourses);
-        setUpcomingAssignments(cachedData[cacheKey].upcomingAssignments);
-        setLoading(false);
-        setIsInitialLoad(false);
-        return;
-      }
-
-      // Fetch all data in parallel with optimized endpoints
-      const [statsData, coursesData, assignmentsData] = await Promise.allSettled([
-        fetchOptimizedStats(),
-        fetchRecentCourses(),
-        fetchUpcomingAssignments()
-      ]);
-
-      // Safely resolve results and update cache
-      const resolvedStats = (statsData.status === 'fulfilled' && Array.isArray(statsData.value?.stats))
-        ? statsData.value.stats
-        : stats;
-
-      const resolvedRecentCourses = (coursesData.status === 'fulfilled' && Array.isArray(coursesData.value))
-        ? coursesData.value
-        : recentCourses;
-
-      const resolvedUpcomingAssignments = (assignmentsData.status === 'fulfilled' && Array.isArray(assignmentsData.value))
-        ? assignmentsData.value
-        : upcomingAssignments;
-
-      const newCacheData = {
-        timestamp: now,
-        stats: resolvedStats,
-        recentCourses: resolvedRecentCourses,
-        upcomingAssignments: resolvedUpcomingAssignments
-      };
-
-      setCachedData(prev => ({ ...prev, [cacheKey]: newCacheData }));
-
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('Error fetching optimized dashboard data:', error);
     } finally {
       setLoading(false);
       setLastUpdated(new Date().toLocaleTimeString());
