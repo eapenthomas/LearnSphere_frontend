@@ -54,6 +54,8 @@ const StudentDashboard = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [cachedData, setCachedData] = useState({});
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [predictionData, setPredictionData] = useState(null);
+  const [isPredicting, setIsPredicting] = useState(false);
 
   // Fetch real-time data
   useEffect(() => {
@@ -120,7 +122,7 @@ const StudentDashboard = () => {
       const cacheKey = `student_dashboard_${user.id}`;
       const cacheTime = 5 * 60 * 1000; // 5 minutes
       const now = Date.now();
-      
+
       if (!forceRefresh && cachedData[cacheKey] && (now - cachedData[cacheKey].timestamp) < cacheTime) {
         console.log('📦 Using cached dashboard data');
         setStats(cachedData[cacheKey].stats);
@@ -157,7 +159,7 @@ const StudentDashboard = () => {
         recentCourses: resolvedRecentCourses,
         upcomingAssignments: resolvedUpcomingAssignments
       };
-      
+
       setCachedData(prev => ({ ...prev, [cacheKey]: newCacheData }));
 
     } catch (error) {
@@ -172,7 +174,7 @@ const StudentDashboard = () => {
   const fetchOptimizedStats = async () => {
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-      
+
       // Fetch data from backend APIs that provide accurate stats
       const [enrolledCoursesRes, assignmentsRes] = await Promise.all([
         // Get enrolled courses with progress data
@@ -209,7 +211,7 @@ const StudentDashboard = () => {
         const materialsCompleted = course.materials_completed || 0;
         const totalCourseMaterials = course.total_materials || 0;
         const progress = course.progress || 0;
-        
+
         totalMaterialsCompleted += materialsCompleted;
         totalMaterials += totalCourseMaterials;
         totalProgress += progress;
@@ -251,10 +253,79 @@ const StudentDashboard = () => {
 
       setStats(nextStats);
 
+      // Trigger performance prediction
+      fetchPerformancePrediction(enrolledCourses, assignments);
+
       return { stats: nextStats };
     } catch (error) {
       console.error('Error fetching enrollment stats:', error);
       return { stats };
+    }
+  };
+
+  const fetchPerformancePrediction = async (enrolledCourses, assignments) => {
+    try {
+      setIsPredicting(true);
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+      // Calculate inputs for prediction
+      const enrollmentCount = enrolledCourses.length;
+      if (enrollmentCount === 0) {
+        setPredictionData(null);
+        return;
+      }
+
+      // 1. Completion Rate
+      let totalProgress = 0;
+      enrolledCourses.forEach(c => totalProgress += (c.progress || 0));
+      const avgCompletion = totalProgress / enrollmentCount;
+
+      // 2. Quiz Performance (Fetch if not in enrolledCourses)
+      // For simplicity, let's assume we have a basic average or fetch it
+      const quizRes = await fetch(`${apiBaseUrl}/api/quizzes/student/${user.id}/submissions`, {
+        headers: { 'Authorization': `Bearer ${user.accessToken}` }
+      });
+      const quizSubmissions = quizRes.ok ? await quizRes.json() : [];
+
+      const avgQuizScore = quizSubmissions.length > 0
+        ? quizSubmissions.reduce((acc, s) => acc + (s.score / s.total_marks * 100), 0) / quizSubmissions.length
+        : 60; // Fallback to neutral
+
+      const quizAttemptCount = quizSubmissions.length;
+
+      // 3. Assignment Performance
+      const submitted = assignments.filter(a => ['submitted', 'graded', 'reviewed'].includes((a.submission_status || '').toLowerCase()));
+      const subRate = assignments.length > 0 ? submitted.length / assignments.length : 0;
+
+      const graded = assignments.filter(a => (a.submission_status || '').toLowerCase() === 'graded');
+      const avgAssignScore = graded.length > 0
+        ? graded.reduce((acc, a) => acc + (a.score || 0), 0) / graded.length
+        : 65; // Fallback to neutral
+
+      // Call ML API
+      const predictionRes = await fetch(`${apiBaseUrl}/api/ml/predict-performance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.accessToken}`
+        },
+        body: JSON.stringify({
+          avg_quiz_score: avgQuizScore,
+          avg_assignment_score: avgAssignScore,
+          completion_rate: avgCompletion,
+          assignment_submission_rate: subRate,
+          quiz_attempt_count: quizAttemptCount
+        })
+      });
+
+      if (predictionRes.ok) {
+        const data = await predictionRes.json();
+        setPredictionData(data);
+      }
+    } catch (err) {
+      console.error("ML Prediction Error:", err);
+    } finally {
+      setIsPredicting(false);
     }
   };
 
@@ -379,7 +450,7 @@ const StudentDashboard = () => {
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.title}
@@ -396,10 +467,49 @@ const StudentDashboard = () => {
                   {typeof stat.change === 'string' ? stat.change : ''}
                 </span>
               </div>
-              <h3 className="text-heading-lg font-bold mb-1" style={{color: '#000000'}}>{stat.value}</h3>
-              <p className="text-body-md font-medium" style={{color: '#000000'}}>{stat.title}</p>
+              <h3 className="text-heading-lg font-bold mb-1" style={{ color: '#000000' }}>{stat.value}</h3>
+              <p className="text-body-md font-medium" style={{ color: '#000000' }}>{stat.title}</p>
             </motion.div>
           ))}
+
+          {/* ML Prediction Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="course-card rounded-xl p-3 transition-all duration-300 group bg-white border-2 border-primary-100"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2 bg-gradient-to-br from-indigo-500 to-primary-600 rounded-xl">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
+                <span className="text-[10px] font-bold text-primary-600 uppercase">AI Insighit</span>
+              </div>
+            </div>
+            {isPredicting ? (
+              <div className="animate-pulse space-y-2">
+                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            ) : predictionData ? (
+              <>
+                <div className="flex items-baseline space-x-2">
+                  <h3 className="text-heading-lg font-bold mb-1 text-gray-900">{predictionData.predicted_score}%</h3>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${predictionData.risk_level === 'High Risk' ? 'bg-red-100 text-red-600' :
+                      predictionData.risk_level === 'Moderate Risk' ? 'bg-orange-100 text-orange-600' :
+                        'bg-green-100 text-green-600'
+                    }`}>
+                    {predictionData.risk_level}
+                  </span>
+                </div>
+                <p className="text-body-md font-medium text-gray-600">Predicted Performance</p>
+              </>
+            ) : (
+              <p className="text-xs text-gray-400 mt-2 italic">Add more activity data to get AI insights</p>
+            )}
+          </motion.div>
         </div>
 
         {/* Main Content Grid */}
@@ -412,7 +522,7 @@ const StudentDashboard = () => {
               className="course-card rounded-xl p-3 transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-heading-md font-semibold" style={{color: '#ffffffff'}}>
+                <h2 className="text-heading-md font-semibold" style={{ color: '#ffffffff' }}>
                   Continue Learning
                 </h2>
                 <button
@@ -474,9 +584,9 @@ const StudentDashboard = () => {
             className="card p-3 hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-100"
           >
             <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
-                    Upcoming Deadlines
-                  </h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+                Upcoming Deadlines
+              </h2>
               <Clock className="w-4 h-4 text-gray-400" />
             </div>
             <div className="space-y-2">
@@ -492,46 +602,45 @@ const StudentDashboard = () => {
                 </div>
               ) : (
                 upcomingAssignments.map((deadline, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 1, x: 0 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="p-2 bg-white dark:bg-gray-800 rounded-lg border-l-4 border-red-500 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-                  onClick={() => navigate(deadline.type === 'quiz' ? '/student/quizzes' : '/assignments')}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-900 dark:text-white text-base">
-                        {deadline.title}
-                      </h3>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className={`text-sm px-3 py-1 rounded-full font-bold ${
-                          deadline.type === 'quiz' ? 'bg-purple-500 text-white' : 'bg-blue-500 text-white'
-                        }`}>
-                          {deadline.type === 'quiz' ? 'Quiz' : 'Assignment'}
-                        </span>
-                        {deadline.daysUntil <= 1 && (
-                          <span className="text-sm bg-red-500 text-white px-3 py-1 rounded-full font-bold">
-                            {deadline.daysUntil === 0 ? 'Due Today' : 'Due Tomorrow'}
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 1, x: 0 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="p-2 bg-white dark:bg-gray-800 rounded-lg border-l-4 border-red-500 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+                    onClick={() => navigate(deadline.type === 'quiz' ? '/student/quizzes' : '/assignments')}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 dark:text-white text-base">
+                          {deadline.title}
+                        </h3>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className={`text-sm px-3 py-1 rounded-full font-bold ${deadline.type === 'quiz' ? 'bg-purple-500 text-white' : 'bg-blue-500 text-white'
+                            }`}>
+                            {deadline.type === 'quiz' ? 'Quiz' : 'Assignment'}
                           </span>
-                        )}
+                          {deadline.daysUntil <= 1 && (
+                            <span className="text-sm bg-red-500 text-white px-3 py-1 rounded-full font-bold">
+                              {deadline.daysUntil === 0 ? 'Due Today' : 'Due Tomorrow'}
+                            </span>
+                          )}
+                        </div>
                       </div>
+                      <span className="text-sm text-white font-bold bg-red-600 px-3 py-1 rounded-full">
+                        {deadline.dueDate}
+                      </span>
                     </div>
-                    <span className="text-sm text-white font-bold bg-red-600 px-3 py-1 rounded-full">
-                      {deadline.dueDate}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-800 dark:text-gray-200 font-bold">
-                    {deadline.course}
-                  </p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-sm text-gray-700 dark:text-gray-300 capitalize font-bold">
-                      {deadline.type}
-                    </span>
-                    <ArrowRight className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                  </div>
-                </motion.div>
+                    <p className="text-sm text-gray-800 dark:text-gray-200 font-bold">
+                      {deadline.course}
+                    </p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-sm text-gray-700 dark:text-gray-300 capitalize font-bold">
+                        {deadline.type}
+                      </span>
+                      <ArrowRight className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                    </div>
+                  </motion.div>
                 ))
               )}
             </div>

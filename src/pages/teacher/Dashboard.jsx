@@ -57,11 +57,14 @@ const Dashboard = () => {
   const [realTimeMode, setRealTimeMode] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('connected');
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
+  const [riskAnalysis, setRiskAnalysis] = useState([]);
+  const [isRiskLoading, setIsRiskLoading] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
       fetchDashboardData();
-      
+      fetchRiskAnalysis();
+
       // Set up auto-refresh every 30 seconds for real-time updates
       const interval = setInterval(() => {
         if (realTimeMode) {
@@ -79,31 +82,31 @@ const Dashboard = () => {
         setLoading(true);
         setIsRefreshing(true);
       }
-      
+
       console.log('🔄 Fetching enhanced teacher dashboard data with batch queries...');
       setConnectionStatus('connecting');
-      
+
       const teacherId = user?.id || localStorage.getItem('userId') || 'default-teacher-id';
-      
+
       // Use a single optimized API endpoint that fetches all data in batch
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/batch/${teacherId}?timeRange=${selectedTimeRange}`, 
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/batch/${teacherId}?timeRange=${selectedTimeRange}`,
         {
-          headers: { 
-            'Cache-Control': 'no-cache', 
+          headers: {
+            'Cache-Control': 'no-cache',
             'Pragma': 'no-cache',
             'Content-Type': 'application/json'
           }
         }
       );
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Batch dashboard data loaded:', data);
         console.log('📊 Stats from API:', data.stats);
         console.log('📈 Enrollment trends from API:', data.enrollment_trends);
         console.log('📊 Course performance from API:', data.course_performance);
-        
+
         // Transform the batch API response
         const transformedData = {
           stats: data.stats || {
@@ -126,11 +129,11 @@ const Dashboard = () => {
           enrollment_trends: data.enrollment_trends || [],
           course_performance: data.course_performance || []
         };
-        
+
         setDashboardData(transformedData);
         setLastUpdated(new Date());
         setConnectionStatus('connected');
-        
+
         if (!silent) {
           toast.success('Dashboard updated with latest analytics', {
             icon: '📊',
@@ -142,18 +145,18 @@ const Dashboard = () => {
         console.log('Batch endpoint not available, using individual calls...');
         await fetchIndividualAPIs(teacherId, silent);
       }
-      
+
     } catch (error) {
       console.error('❌ Error fetching enhanced dashboard data:', error);
       setConnectionStatus('error');
-      
+
       if (!silent) {
         toast.error('Failed to load dashboard analytics', {
           icon: '⚠️',
           duration: 3000
         });
       }
-      
+
       // Set comprehensive fallback data
       setDashboardData({
         stats: { total_courses: 0, total_students: 0, active_assignments: 0, pending_quizzes: 0 },
@@ -182,15 +185,15 @@ const Dashboard = () => {
           headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
         })
       ]);
-      
+
       if (statsResponse.ok && analyticsResponse.ok) {
         const [statsData, analyticsData] = await Promise.all([
           statsResponse.json(),
           analyticsResponse.json()
         ]);
-        
+
         console.log('✅ Individual API data loaded:', { statsData, analyticsData });
-        
+
         // Transform and combine data
         const transformedData = {
           stats: statsData.data?.stats || {
@@ -213,11 +216,11 @@ const Dashboard = () => {
           enrollment_trends: statsData.data?.enrollment_trends || [],
           course_performance: statsData.data?.course_performance || []
         };
-        
+
         setDashboardData(transformedData);
         setLastUpdated(new Date());
         setConnectionStatus('connected');
-        
+
         if (!silent) {
           toast.success('Dashboard updated with latest analytics', {
             icon: '📊',
@@ -230,6 +233,27 @@ const Dashboard = () => {
     } catch (error) {
       console.error('❌ Error in individual API calls:', error);
       throw error;
+    }
+  };
+
+  const fetchRiskAnalysis = async () => {
+    try {
+      setIsRiskLoading(true);
+      const teacherId = user?.id || localStorage.getItem('userId');
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+      const response = await fetch(`${apiBaseUrl}/api/ml/teacher/risk-analysis/${teacherId}`, {
+        headers: { 'Authorization': `Bearer ${user.accessToken}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setRiskAnalysis(data);
+      }
+    } catch (error) {
+      console.error('Error fetching risk analysis:', error);
+    } finally {
+      setIsRiskLoading(false);
     }
   };
 
@@ -282,7 +306,7 @@ const Dashboard = () => {
     const courseName = course.course_title || course.course || `Course ${index + 1}`;
     const students = Number(course.students || course.enrollment_count || 0);
     const avgScore = Number(course.avgScore || course.completion_rate || 0);
-    
+
     return {
       name: courseName.length > 15 ? courseName.substring(0, 15) + '...' : courseName,
       students: students,
@@ -301,7 +325,7 @@ const Dashboard = () => {
   console.log('📊 Course performance raw:', coursePerformance);
   console.log('📊 Performance chart data:', performanceChartData);
   console.log('🔍 Raw dashboard data:', dashboardData);
-  
+
   // Validate data and show warnings
   if (stats.total_courses === 0) {
     console.warn('⚠️ No courses found for teacher');
@@ -341,7 +365,7 @@ const Dashboard = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-4">
                 {/* Time Range Selector */}
                 <div className="flex items-center space-x-2 bg-white/20 rounded-lg p-2">
@@ -349,39 +373,36 @@ const Dashboard = () => {
                     <button
                       key={range}
                       onClick={() => setSelectedTimeRange(range)}
-                      className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
-                        selectedTimeRange === range
+                      className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${selectedTimeRange === range
                           ? 'bg-white text-indigo-600'
                           : 'text-white hover:bg-white/20'
-                      }`}
+                        }`}
                     >
                       {range}
                     </button>
                   ))}
                 </div>
-                
+
                 {/* Connection Status */}
                 <div className="flex items-center space-x-2">
-                  <div className={`w-3 h-3 rounded-full ${
-                    connectionStatus === 'connected' ? 'bg-green-400' :
-                    connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' :
-                    'bg-red-400'
-                  }`}></div>
+                  <div className={`w-3 h-3 rounded-full ${connectionStatus === 'connected' ? 'bg-green-400' :
+                      connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' :
+                        'bg-red-400'
+                    }`}></div>
                   <span className="text-sm font-medium">
                     {connectionStatus === 'connected' ? 'Live Data' :
-                     connectionStatus === 'connecting' ? 'Connecting...' :
-                     'Offline'}
+                      connectionStatus === 'connecting' ? 'Connecting...' :
+                        'Offline'}
                   </span>
                 </div>
-                
+
                 {/* Real-time Toggle */}
                 <button
                   onClick={() => setRealTimeMode(!realTimeMode)}
-                  className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                    realTimeMode
+                  className={`px-4 py-2 rounded-lg transition-all duration-200 ${realTimeMode
                       ? 'bg-green-500 hover:bg-green-600 text-white'
                       : 'bg-white/20 hover:bg-white/30 text-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     <Zap className={`w-4 h-4 ${realTimeMode ? 'animate-pulse' : ''}`} />
@@ -390,7 +411,7 @@ const Dashboard = () => {
                     </span>
                   </div>
                 </button>
-                
+
                 {/* Refresh Button */}
                 <button
                   onClick={() => fetchDashboardData()}
@@ -534,28 +555,28 @@ const Dashboard = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="name" stroke="#666" />
                   <YAxis stroke="#666" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'white', 
-                      border: '1px solid #e5e7eb', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
                       borderRadius: '8px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }} 
+                    }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="enrollments" 
-                    stackId="1" 
-                    stroke="#3B82F6" 
-                    fill="#3B82F6" 
+                  <Area
+                    type="monotone"
+                    dataKey="enrollments"
+                    stackId="1"
+                    stroke="#3B82F6"
+                    fill="#3B82F6"
                     fillOpacity={0.6}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="activeStudents" 
-                    stackId="2" 
-                    stroke="#10B981" 
-                    fill="#10B981" 
+                  <Area
+                    type="monotone"
+                    dataKey="activeStudents"
+                    stackId="2"
+                    stroke="#10B981"
+                    fill="#10B981"
                     fillOpacity={0.6}
                   />
                 </AreaChart>
@@ -590,13 +611,13 @@ const Dashboard = () => {
                   <XAxis dataKey="name" stroke="#666" />
                   <YAxis yAxisId="left" stroke="#666" />
                   <YAxis yAxisId="right" orientation="right" stroke="#666" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'white', 
-                      border: '1px solid #e5e7eb', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
                       borderRadius: '8px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }} 
+                    }}
                   />
                   <Bar yAxisId="left" dataKey="students" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
                   <Bar yAxisId="right" dataKey="avgScore" fill="#F59E0B" radius={[4, 4, 0, 0]} />
@@ -717,7 +738,7 @@ const Dashboard = () => {
             </div>
             <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
           </div>
-          
+
           <div className="space-y-4">
             {recentActivity.slice(0, 6).map((activity, index) => (
               <motion.div
@@ -742,6 +763,92 @@ const Dashboard = () => {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </motion.div>
+
+        {/* Student Risk Analysis Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Student Risk Analysis (AI Powered)</h2>
+            </div>
+            <button
+              onClick={fetchRiskAnalysis}
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center"
+            >
+              <RefreshCw className={`w-4 h-4 mr-1 ${isRiskLoading ? 'animate-spin' : ''}`} />
+              Refresh Analysis
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="pb-3 font-semibold text-gray-600">Student</th>
+                  <th className="pb-3 font-semibold text-gray-600">Course</th>
+                  <th className="pb-3 font-semibold text-gray-600">Avg Quiz</th>
+                  <th className="pb-3 font-semibold text-gray-600">Comp. Rate</th>
+                  <th className="pb-3 font-semibold text-gray-600">Predicted Score</th>
+                  <th className="pb-3 font-semibold text-gray-600 text-right">Risk Level</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {isRiskLoading ? (
+                  Array(3).fill(0).map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td colSpan="6" className="py-4 h-12 bg-gray-50 rounded-lg mb-2"></td>
+                    </tr>
+                  ))
+                ) : riskAnalysis.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="py-8 text-center text-gray-400 italic">
+                      No student data available for analysis.
+                    </td>
+                  </tr>
+                ) : (
+                  riskAnalysis.map((item, index) => (
+                    <tr key={index} className={`hover:bg-gray-50 transition-colors ${item.risk_level === 'High Risk' ? 'bg-red-50/30' : ''}`}>
+                      <td className="py-4">
+                        <p className="font-bold text-gray-900">{item.student_name}</p>
+                      </td>
+                      <td className="py-4 text-sm text-gray-600">{item.course_name}</td>
+                      <td className="py-4 text-sm font-medium">{item.metrics.quiz_score}%</td>
+                      <td className="py-4 text-sm font-medium">{item.metrics.comp_rate}%</td>
+                      <td className="py-4">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-gray-900">{item.predicted_score}%</span>
+                          <div className="w-16 bg-gray-200 rounded-full h-1.5 hidden md:block">
+                            <div
+                              className={`h-1.5 rounded-full ${item.predicted_score < 40 ? 'bg-red-500' :
+                                  item.predicted_score <= 60 ? 'bg-orange-500' :
+                                    'bg-green-500'
+                                }`}
+                              style={{ width: `${item.predicted_score}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 text-right">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${item.risk_level === 'High Risk' ? 'bg-red-100 text-red-600' :
+                            item.risk_level === 'Moderate Risk' ? 'bg-orange-100 text-orange-600' :
+                              'bg-green-100 text-green-600'
+                          }`}>
+                          {item.risk_level}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </motion.div>
       </div>
