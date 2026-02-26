@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import TeacherDashboardLayout from '../../layouts/TeacherDashboardLayout.jsx';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import {
   FileText,
   Calendar,
@@ -20,11 +21,20 @@ import {
   BookOpen,
   Edit,
   Trash2,
-  GraduationCap
+  GraduationCap,
+  ShieldAlert,
+  ShieldQuestion,
+  ExternalLink
 } from 'lucide-react';
+
+const RISK_CONFIG = {
+  High: { badge: 'bg-red-100 text-red-700 border border-red-300', icon: ShieldAlert },
+  Moderate: { badge: 'bg-orange-100 text-orange-700 border border-orange-300', icon: ShieldQuestion },
+};
 
 const TeacherAssignments = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +75,7 @@ const TeacherAssignments = () => {
           'Authorization': `Bearer ${user.accessToken}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         const countsMap = {};
@@ -83,7 +93,7 @@ const TeacherAssignments = () => {
     try {
       setLoading(true);
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/teacher/${user.id}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         setAssignments(data);
@@ -101,7 +111,7 @@ const TeacherAssignments = () => {
   const fetchCourses = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/courses/teacher/${user.id}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         // Backend returns { success: boolean, data: Course[] }
@@ -119,7 +129,7 @@ const TeacherAssignments = () => {
     try {
       setSubmissionsLoading(true);
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/assignments/submissions/${assignmentId}?teacher_id=${user.id}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         setSubmissions(data);
@@ -150,20 +160,20 @@ const TeacherAssignments = () => {
 
     try {
       setCreating(true);
-      
+
       const formDataToSend = new FormData();
-      
+
       // Add assignment data
       const assignmentData = {
         ...formData,
         due_date: dueDate.toISOString()
       };
-      
+
       // Append assignment data as JSON
       Object.keys(assignmentData).forEach(key => {
         formDataToSend.append(key, assignmentData[key]);
       });
-      
+
       // Add file if provided
       if (assignmentFile) {
         formDataToSend.append('file', assignmentFile);
@@ -223,7 +233,7 @@ const TeacherAssignments = () => {
           'Authorization': `Bearer ${user.accessToken}`
         }
       });
-      
+
       if (response.ok) {
         // Get filename from response headers
         const contentDisposition = response.headers.get('content-disposition');
@@ -234,7 +244,7 @@ const TeacherAssignments = () => {
             filename = filenameMatch[1];
           }
         }
-        
+
         // Create blob and download
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -245,7 +255,7 @@ const TeacherAssignments = () => {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-        
+
         toast.success('Download started!');
       } else {
         throw new Error('Failed to download file');
@@ -270,7 +280,7 @@ const TeacherAssignments = () => {
 
   const filteredAssignments = assignments.filter(assignment => {
     const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assignment.course_title?.toLowerCase().includes(searchTerm.toLowerCase());
+      assignment.course_title?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCourse = courseFilter === 'all' || assignment.course_id === courseFilter;
     return matchesSearch && matchesCourse;
   });
@@ -299,14 +309,14 @@ const TeacherAssignments = () => {
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div className="mb-4 lg:mb-0">
-              <h1 className="text-heading-xl font-bold mb-2 font-serif" style={{color: '#000000'}}>
+              <h1 className="text-heading-xl font-bold mb-2 font-serif" style={{ color: '#000000' }}>
                 Assignment Management
               </h1>
-              <p className="text-body-lg" style={{color: '#000000'}}>
+              <p className="text-body-lg" style={{ color: '#000000' }}>
                 Create and manage assignments for your courses. {filteredAssignments.length} assignment{filteredAssignments.length !== 1 ? 's' : ''} found.
               </p>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
@@ -319,7 +329,7 @@ const TeacherAssignments = () => {
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>Refresh</span>
               </button>
-              
+
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="btn-primary px-6 py-3 rounded-lg font-medium transition-all duration-300 flex items-center space-x-2 shadow-elegant hover:shadow-lg"
@@ -335,25 +345,25 @@ const TeacherAssignments = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
               {/* Search */}
               <div className="relative flex-1 lg:max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{color: '#000000'}} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#000000' }} />
                 <input
                   type="text"
                   placeholder="Search assignments..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                  style={{color: '#000000', backgroundColor: '#ffffff'}}
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                 />
               </div>
 
               {/* Course Filter */}
               <div className="flex items-center space-x-4">
-                <label className="text-sm font-medium" style={{color: '#000000'}}>Filter by course:</label>
+                <label className="text-sm font-medium" style={{ color: '#000000' }}>Filter by course:</label>
                 <select
                   value={courseFilter}
                   onChange={(e) => setCourseFilter(e.target.value)}
                   className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                  style={{color: '#000000', backgroundColor: '#ffffff'}}
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                 >
                   <option value="all">All Courses</option>
                   {courses.map(course => (
@@ -368,7 +378,7 @@ const TeacherAssignments = () => {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <RefreshCw className="w-8 h-8 text-primary-500 animate-spin" />
-              <span className="ml-3" style={{color: '#000000'}}>Loading assignments...</span>
+              <span className="ml-3" style={{ color: '#000000' }}>Loading assignments...</span>
             </div>
           ) : filteredAssignments.length === 0 ? (
             <motion.div
@@ -376,11 +386,11 @@ const TeacherAssignments = () => {
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-12"
             >
-              <FileText className="w-16 h-16 mx-auto mb-4" style={{color: '#000000'}} />
-              <h3 className="text-heading-md font-semibold mb-2" style={{color: '#000000'}}>
+              <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: '#000000' }} />
+              <h3 className="text-heading-md font-semibold mb-2" style={{ color: '#000000' }}>
                 {searchTerm || courseFilter !== 'all' ? 'No assignments found' : 'No assignments created yet'}
               </h3>
-              <p className="text-body-lg mb-6" style={{color: '#000000'}}>
+              <p className="text-body-lg mb-6" style={{ color: '#000000' }}>
                 {searchTerm || courseFilter !== 'all'
                   ? 'Try adjusting your search or filter criteria'
                   : 'Create your first assignment to get started'
@@ -413,10 +423,10 @@ const TeacherAssignments = () => {
                         {/* Assignment Title and Course */}
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h3 className="text-lg font-semibold mb-1" style={{color: '#000000'}}>
+                            <h3 className="text-lg font-semibold mb-1" style={{ color: '#000000' }}>
                               {assignment.title}
                             </h3>
-                            <div className="flex items-center space-x-2 text-sm" style={{color: '#000000'}}>
+                            <div className="flex items-center space-x-2 text-sm" style={{ color: '#000000' }}>
                               <BookOpen className="w-4 h-4" />
                               <span>{assignment.course_title}</span>
                             </div>
@@ -425,28 +435,28 @@ const TeacherAssignments = () => {
 
                         {/* Description */}
                         {assignment.description && (
-                          <p className="text-sm mb-3 line-clamp-2" style={{color: '#000000'}}>
+                          <p className="text-sm mb-3 line-clamp-2" style={{ color: '#000000' }}>
                             {assignment.description}
                           </p>
                         )}
 
                         {/* Stats and Due Date */}
                         <div className="flex items-center space-x-4 text-sm">
-                          <div className="flex items-center space-x-1" style={{color: '#000000'}}>
+                          <div className="flex items-center space-x-1" style={{ color: '#000000' }}>
                             <Calendar className="w-4 h-4" />
                             <span>Due: {formatDate(assignment.due_date)}</span>
                           </div>
-                          <div className="flex items-center space-x-1" style={{color: '#000000'}}>
+                          <div className="flex items-center space-x-1" style={{ color: '#000000' }}>
                             <Users className="w-4 h-4" />
                             <span>{stats.submitted}/{stats.total} submitted ({stats.percentage}%)</span>
                           </div>
                           {pendingCounts[assignment.id] > 0 && (
-                            <div className="flex items-center space-x-1" style={{color: '#ef4444 !important'}}>
-                              <AlertTriangle className="w-4 h-4" style={{color: '#ef4444'}} />
-                              <span style={{color: '#ef4444'}}>{pendingCounts[assignment.id]} pending</span>
+                            <div className="flex items-center space-x-1" style={{ color: '#ef4444 !important' }}>
+                              <AlertTriangle className="w-4 h-4" style={{ color: '#ef4444' }} />
+                              <span style={{ color: '#ef4444' }}>{pendingCounts[assignment.id]} pending</span>
                             </div>
                           )}
-                          <div className="flex items-center space-x-1" style={{color: '#000000'}}>
+                          <div className="flex items-center space-x-1" style={{ color: '#000000' }}>
                             <GraduationCap className="w-4 h-4" />
                             <span>Max Score: {assignment.max_score}</span>
                           </div>
@@ -464,7 +474,7 @@ const TeacherAssignments = () => {
                             <span>Download</span>
                           </button>
                         )}
-                        
+
                         <button
                           onClick={() => {
                             setSelectedAssignment(assignment);
@@ -504,7 +514,7 @@ const TeacherAssignments = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold" style={{color: '#000000'}}>
+                <h3 className="text-xl font-semibold" style={{ color: '#000000' }}>
                   Create New Assignment
                 </h3>
                 <button
@@ -520,14 +530,14 @@ const TeacherAssignments = () => {
               <div className="space-y-6">
                 {/* Course Selection */}
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{color: '#000000'}}>
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#000000' }}>
                     Course *
                   </label>
                   <select
                     value={formData.course_id}
-                    onChange={(e) => setFormData({...formData, course_id: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    style={{color: '#000000', backgroundColor: '#ffffff'}}
+                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
                     required
                   >
                     <option value="">Select a course</option>
@@ -539,15 +549,15 @@ const TeacherAssignments = () => {
 
                 {/* Assignment Title */}
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{color: '#000000'}}>
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#000000' }}>
                     Assignment Title *
                   </label>
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    style={{color: '#000000', backgroundColor: '#ffffff'}}
+                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
                     placeholder="Enter assignment title"
                     required
                   />
@@ -555,14 +565,14 @@ const TeacherAssignments = () => {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{color: '#000000'}}>
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#000000' }}>
                     Description
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    style={{color: '#000000', backgroundColor: '#ffffff'}}
+                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
                     placeholder="Enter assignment description"
                     rows={4}
                   />
@@ -570,15 +580,15 @@ const TeacherAssignments = () => {
 
                 {/* Due Date */}
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{color: '#000000'}}>
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#000000' }}>
                     Due Date *
                   </label>
                   <input
                     type="datetime-local"
                     value={formData.due_date}
-                    onChange={(e) => setFormData({...formData, due_date: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    style={{color: '#000000', backgroundColor: '#ffffff'}}
+                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
                     required
                   />
                   <p className="text-xs text-gray-500 mt-1">Please select a future date and time</p>
@@ -586,15 +596,15 @@ const TeacherAssignments = () => {
 
                 {/* Max Score */}
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{color: '#000000'}}>
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#000000' }}>
                     Maximum Score
                   </label>
                   <input
                     type="number"
                     value={formData.max_score}
-                    onChange={(e) => setFormData({...formData, max_score: parseInt(e.target.value)})}
+                    onChange={(e) => setFormData({ ...formData, max_score: parseInt(e.target.value) })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    style={{color: '#000000', backgroundColor: '#ffffff'}}
+                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
                     min="1"
                     max="1000"
                   />
@@ -602,7 +612,7 @@ const TeacherAssignments = () => {
 
                 {/* File Upload */}
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{color: '#000000'}}>
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#000000' }}>
                     Assignment File (PDF or DOCX, max 10MB)
                   </label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -618,7 +628,7 @@ const TeacherAssignments = () => {
                       className="cursor-pointer flex flex-col items-center space-y-2"
                     >
                       <Upload className="w-8 h-8 text-gray-400" />
-                      <span className="text-sm" style={{color: '#000000'}}>
+                      <span className="text-sm" style={{ color: '#000000' }}>
                         {assignmentFile ? assignmentFile.name : 'Click to upload file (optional)'}
                       </span>
                     </label>
@@ -631,10 +641,10 @@ const TeacherAssignments = () => {
                     type="checkbox"
                     id="allow-late"
                     checked={formData.allow_late_submission}
-                    onChange={(e) => setFormData({...formData, allow_late_submission: e.target.checked})}
+                    onChange={(e) => setFormData({ ...formData, allow_late_submission: e.target.checked })}
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label htmlFor="allow-late" className="text-sm" style={{color: '#000000'}}>
+                  <label htmlFor="allow-late" className="text-sm" style={{ color: '#000000' }}>
                     Allow late submissions
                   </label>
                 </div>
@@ -689,10 +699,10 @@ const TeacherAssignments = () => {
             >
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-xl font-semibold" style={{color: '#000000'}}>
+                  <h3 className="text-xl font-semibold" style={{ color: '#000000' }}>
                     Submissions for: {selectedAssignment.title}
                   </h3>
-                  <p className="text-sm" style={{color: '#000000'}}>
+                  <p className="text-sm" style={{ color: '#000000' }}>
                     Course: {selectedAssignment.course_title}
                   </p>
                 </div>
@@ -709,46 +719,78 @@ const TeacherAssignments = () => {
               {submissionsLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <RefreshCw className="w-8 h-8 text-primary-500 animate-spin" />
-                  <span className="ml-3" style={{color: '#000000'}}>Loading submissions...</span>
+                  <span className="ml-3" style={{ color: '#000000' }}>Loading submissions...</span>
                 </div>
               ) : submissions.length === 0 ? (
                 <div className="text-center py-12">
-                  <FileText className="w-16 h-16 mx-auto mb-4" style={{color: '#000000'}} />
-                  <h4 className="text-lg font-semibold mb-2" style={{color: '#000000'}}>
+                  <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: '#000000' }} />
+                  <h4 className="text-lg font-semibold mb-2" style={{ color: '#000000' }}>
                     No submissions yet
                   </h4>
-                  <p style={{color: '#000000'}}>
+                  <p style={{ color: '#000000' }}>
                     Students haven't submitted their assignments yet.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {/* Plagiarism alert banner */}
+                  {submissions.some(s => s.plagiarism_risk === 'High' || s.plagiarism_risk === 'Moderate') && (
+                    <div className="flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-red-700 text-sm font-medium">
+                        <ShieldAlert className="w-4 h-4" />
+                        {submissions.filter(s => s.plagiarism_risk === 'High').length} high-risk,{' '}
+                        {submissions.filter(s => s.plagiarism_risk === 'Moderate').length} moderate-risk submission(s) detected
+                      </div>
+                      <button
+                        onClick={() => { setShowSubmissionsModal(false); navigate('/teacher/plagiarism-review'); }}
+                        className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-semibold underline"
+                      >
+                        <ExternalLink className="w-3 h-3" /> Review All
+                      </button>
+                    </div>
+                  )}
                   {submissions.map((submission) => (
                     <div
                       key={submission.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                      className={`border rounded-lg p-4 transition-colors ${submission.plagiarism_risk === 'High'
+                          ? 'border-red-300 bg-red-50/50 hover:bg-red-50'
+                          : submission.plagiarism_risk === 'Moderate'
+                            ? 'border-orange-300 bg-orange-50/40 hover:bg-orange-50'
+                            : 'border-gray-200 hover:bg-gray-50'
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center space-x-4 mb-2">
-                            <h5 className="font-medium" style={{color: '#000000'}}>
+                          <div className="flex items-center flex-wrap gap-2 mb-2">
+                            <h5 className="font-medium" style={{ color: '#000000' }}>
                               {submission.student_name}
                             </h5>
-                            <span className="text-sm" style={{color: '#000000'}}>
+                            <span className="text-sm" style={{ color: '#000000' }}>
                               {submission.student_email}
                             </span>
-                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              submission.status === 'reviewed'
+                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${submission.status === 'reviewed'
                                 ? 'bg-green-100 text-green-700'
                                 : submission.is_late_submission
-                                ? 'bg-orange-100 text-orange-700'
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
+                                  ? 'bg-orange-100 text-orange-700'
+                                  : 'bg-blue-100 text-blue-700'
+                              }`}>
                               {submission.is_late_submission && submission.status !== 'reviewed' ? 'Late' : submission.status}
                             </div>
+                            {/* Plagiarism risk badge */}
+                            {submission.plagiarism_risk && submission.plagiarism_risk !== 'Low' && (() => {
+                              const rc = RISK_CONFIG[submission.plagiarism_risk];
+                              const RiskIcon = rc?.icon || ShieldAlert;
+                              const sim = Math.round((submission.plagiarism_similarity || 0) * 100);
+                              return (
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${rc?.badge}`}>
+                                  <RiskIcon className="w-3 h-3" />
+                                  {submission.plagiarism_risk} Risk · {sim}%
+                                </span>
+                              );
+                            })()}
                           </div>
 
-                          <div className="flex items-center space-x-4 text-sm" style={{color: '#000000'}}>
+                          <div className="flex items-center space-x-4 text-sm" style={{ color: '#000000' }}>
                             <span>Submitted: {formatDate(submission.submitted_at)}</span>
                             {submission.score !== null && (
                               <span className="font-medium text-green-600">
@@ -758,7 +800,7 @@ const TeacherAssignments = () => {
                           </div>
 
                           {submission.feedback && (
-                            <div className="mt-2 p-2 bg-gray-100 rounded text-sm" style={{color: '#000000'}}>
+                            <div className="mt-2 p-2 bg-gray-100 rounded text-sm" style={{ color: '#000000' }}>
                               <strong>Feedback:</strong> {submission.feedback}
                             </div>
                           )}
@@ -781,7 +823,7 @@ const TeacherAssignments = () => {
                                 min="0"
                                 max={selectedAssignment.max_score}
                                 className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                                style={{color: '#000000', backgroundColor: '#ffffff'}}
+                                style={{ color: '#000000', backgroundColor: '#ffffff' }}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') {
                                     const score = parseInt(e.target.value);
@@ -816,7 +858,7 @@ const TeacherAssignments = () => {
                                     min="0"
                                     max={selectedAssignment.max_score}
                                     className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                                    style={{color: '#000000', backgroundColor: '#ffffff'}}
+                                    style={{ color: '#000000', backgroundColor: '#ffffff' }}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
                                         const score = parseInt(e.target.value);
