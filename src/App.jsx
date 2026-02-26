@@ -24,6 +24,7 @@ import TeacherDashboard from './pages/teacher/Dashboard.jsx';
 import TeacherMyCourses from './pages/teacher/MyCourses.jsx';
 import TeacherAllCourses from './pages/teacher/AllCourses.jsx';
 import TeacherAssignments from './pages/teacher/Assignments.jsx';
+import TeacherPlagiarismReview from './pages/teacher/PlagiarismReview.jsx';
 import TeacherQuizzes from './pages/teacher/Quizzes.jsx';
 import TeacherCalendar from './pages/teacher/Calendar.jsx';
 import TeacherForum from './pages/teacher/Forum.jsx';
@@ -217,6 +218,14 @@ const AppContent = () => {
                 }
             />
             <Route
+                path="/teacher/plagiarism-review"
+                element={
+                    <ProtectedRoute>
+                        <TeacherPlagiarismReview />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path="/teacher/quizzes"
                 element={
                     <ProtectedRoute>
@@ -322,10 +331,10 @@ const AppContent = () => {
                 }
             />
             <Route path="/admin/activity" element={
-                    <ProtectedRoute>
-                        <ActivityLogs />
-                    </ProtectedRoute>
-                }
+                <ProtectedRoute>
+                    <ActivityLogs />
+                </ProtectedRoute>
+            }
             />
             <Route
                 path="/admin/emails"

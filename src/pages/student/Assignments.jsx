@@ -17,7 +17,10 @@ import {
   RefreshCw,
   BookOpen,
   User,
-  Timer
+  Timer,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldQuestion
 } from 'lucide-react';
 
 const StudentAssignments = () => {
@@ -30,6 +33,9 @@ const StudentAssignments = () => {
   const [showSubmissionModal, setShowSubmissionModal] = useState(false);
   const [submissionFile, setSubmissionFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [plagiarismResult, setPlagiarismResult] = useState(null);
+  const [checkingPlagiarism, setCheckingPlagiarism] = useState(false);
+  const [lastSubmissionId, setLastSubmissionId] = useState(null);
 
   useEffect(() => {
     if (user?.id) {
@@ -45,7 +51,7 @@ const StudentAssignments = () => {
           'Authorization': `Bearer ${user.accessToken}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setAssignments(data);
@@ -65,7 +71,7 @@ const StudentAssignments = () => {
 
     try {
       setSubmitting(true);
-      
+
       const formData = new FormData();
       formData.append('assignment_id', selectedAssignment.id);
       formData.append('student_id', user.id);
@@ -80,11 +86,39 @@ const StudentAssignments = () => {
       });
 
       if (response.ok) {
-        toast.success('Assignment submitted successfully!');
-        setShowSubmissionModal(false);
-        setSubmissionFile(null);
-        setSelectedAssignment(null);
-        fetchAssignments(); // Refresh assignments
+        const submitData = await response.json();
+        const submissionId = submitData?.submission_id || submitData?.id;
+        setLastSubmissionId(submissionId);
+        toast.success('Assignment submitted! Running plagiarism check...');
+        fetchAssignments();
+
+        // Run plagiarism check asynchronously
+        if (submissionId && submissionFile) {
+          setCheckingPlagiarism(true);
+          setPlagiarismResult(null);
+          try {
+            const plagFormData = new FormData();
+            plagFormData.append('assignment_id', selectedAssignment.id);
+            plagFormData.append('submission_id', submissionId);
+            plagFormData.append('file', submissionFile);
+            const plagRes = await fetch(
+              `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/plagiarism/check`,
+              { method: 'POST', headers: { Authorization: `Bearer ${user.accessToken}` }, body: plagFormData }
+            );
+            if (plagRes.ok) {
+              const result = await plagRes.json();
+              setPlagiarismResult(result);
+            }
+          } catch (pErr) {
+            console.error('Plagiarism check failed:', pErr);
+          } finally {
+            setCheckingPlagiarism(false);
+          }
+        } else {
+          setShowSubmissionModal(false);
+          setSubmissionFile(null);
+          setSelectedAssignment(null);
+        }
       } else {
         const error = await response.json();
         throw new Error(error.detail || 'Failed to submit assignment');
@@ -105,7 +139,7 @@ const StudentAssignments = () => {
           'Authorization': `Bearer ${user.accessToken}`
         }
       });
-      
+
       if (response.ok) {
         // Get filename from response headers
         const contentDisposition = response.headers.get('content-disposition');
@@ -116,7 +150,7 @@ const StudentAssignments = () => {
             filename = filenameMatch[1];
           }
         }
-        
+
         // Create blob and download
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -127,7 +161,7 @@ const StudentAssignments = () => {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-        
+
         toast.success('Download started!');
       } else {
         throw new Error('Failed to download assignment');
@@ -179,7 +213,7 @@ const StudentAssignments = () => {
 
   const filteredAssignments = assignments.filter(assignment => {
     const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assignment.course_title?.toLowerCase().includes(searchTerm.toLowerCase());
+      assignment.course_title?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || assignment.submission_status === statusFilter;
     return matchesSearch && matchesStatus;
   }).sort((a, b) => {
@@ -190,15 +224,15 @@ const StudentAssignments = () => {
       'reviewed': 2,
       'late': 3
     };
-    
+
     const aPriority = statusPriority[a.submission_status] || 4;
     const bPriority = statusPriority[b.submission_status] || 4;
-    
+
     // If same priority, sort by due date (earliest first)
     if (aPriority === bPriority) {
       return new Date(a.due_date) - new Date(b.due_date);
     }
-    
+
     return aPriority - bPriority;
   });
 
@@ -219,14 +253,14 @@ const StudentAssignments = () => {
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-3">
             <div className="mb-2 lg:mb-0">
-              <h1 className="text-lg font-bold mb-1 font-serif" style={{color: '#000000'}}>
+              <h1 className="text-lg font-bold mb-1 font-serif" style={{ color: '#000000' }}>
                 My Assignments
               </h1>
-              <p className="text-sm" style={{color: '#000000'}}>
+              <p className="text-sm" style={{ color: '#000000' }}>
                 View and submit assignments for your enrolled courses. {filteredAssignments.length} assignment{filteredAssignments.length !== 1 ? 's' : ''} found.
               </p>
             </div>
-            
+
             <button
               onClick={fetchAssignments}
               disabled={loading}
@@ -242,25 +276,25 @@ const StudentAssignments = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
               {/* Search */}
               <div className="relative flex-1 lg:max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{color: '#000000'}} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: '#000000' }} />
                 <input
                   type="text"
                   placeholder="Search assignments..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                  style={{color: '#000000', backgroundColor: '#ffffff'}}
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                 />
               </div>
 
               {/* Status Filter */}
               <div className="flex items-center space-x-4">
-                <label className="text-sm font-medium" style={{color: '#000000'}}>Filter by status:</label>
+                <label className="text-sm font-medium" style={{ color: '#000000' }}>Filter by status:</label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                  style={{color: '#000000', backgroundColor: '#ffffff'}}
+                  style={{ color: '#000000', backgroundColor: '#ffffff' }}
                 >
                   <option value="all">All Assignments</option>
                   <option value="not_submitted">Not Submitted</option>
@@ -276,7 +310,7 @@ const StudentAssignments = () => {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <RefreshCw className="w-8 h-8 text-primary-500 animate-spin" />
-              <span className="ml-3" style={{color: '#000000'}}>Loading assignments...</span>
+              <span className="ml-3" style={{ color: '#000000' }}>Loading assignments...</span>
             </div>
           ) : filteredAssignments.length === 0 ? (
             <motion.div
@@ -284,11 +318,11 @@ const StudentAssignments = () => {
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-12"
             >
-              <FileText className="w-16 h-16 mx-auto mb-4" style={{color: '#000000'}} />
-              <h3 className="text-heading-md font-semibold mb-2" style={{color: '#000000'}}>
+              <FileText className="w-16 h-16 mx-auto mb-4" style={{ color: '#000000' }} />
+              <h3 className="text-heading-md font-semibold mb-2" style={{ color: '#000000' }}>
                 {searchTerm || statusFilter !== 'all' ? 'No assignments found' : 'No assignments available'}
               </h3>
-              <p className="text-body-lg mb-6" style={{color: '#000000'}}>
+              <p className="text-body-lg mb-6" style={{ color: '#000000' }}>
                 {searchTerm || statusFilter !== 'all'
                   ? 'Try adjusting your search or filter criteria'
                   : 'Check back later for new assignments from your teachers'
@@ -310,15 +344,15 @@ const StudentAssignments = () => {
                       {/* Assignment Title and Course */}
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="text-lg font-semibold mb-1" style={{color: '#000000'}}>
+                          <h3 className="text-lg font-semibold mb-1" style={{ color: '#000000' }}>
                             {assignment.title}
                           </h3>
-                          <div className="flex items-center space-x-2 text-sm" style={{color: '#000000'}}>
+                          <div className="flex items-center space-x-2 text-sm" style={{ color: '#000000' }}>
                             <BookOpen className="w-4 h-4" />
                             <span>{assignment.course_title}</span>
                           </div>
                         </div>
-                        
+
                         {/* Status Badge */}
                         <div className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(assignment.submission_status)}`}>
                           {getStatusIcon(assignment.submission_status)}
@@ -330,14 +364,14 @@ const StudentAssignments = () => {
 
                       {/* Description */}
                       {assignment.description && (
-                        <p className="text-sm mb-3 line-clamp-2" style={{color: '#000000'}}>
+                        <p className="text-sm mb-3 line-clamp-2" style={{ color: '#000000' }}>
                           {assignment.description}
                         </p>
                       )}
 
                       {/* Due Date and Time Remaining */}
                       <div className="flex items-center space-x-4 text-sm">
-                        <div className="flex items-center space-x-1" style={{color: '#000000'}}>
+                        <div className="flex items-center space-x-1" style={{ color: '#000000' }}>
                           <Calendar className="w-4 h-4" />
                           <span>Due: {formatDate(assignment.due_date)}</span>
                         </div>
@@ -365,7 +399,7 @@ const StudentAssignments = () => {
                           <span>Download</span>
                         </button>
                       )}
-                      
+
                       {assignment.submission_status === 'not_submitted' && !isOverdue(assignment.due_date) && (
                         <button
                           onClick={() => {
@@ -405,7 +439,7 @@ const StudentAssignments = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold" style={{color: '#000000'}}>
+                <h3 className="text-lg font-semibold" style={{ color: '#000000' }}>
                   Submit Assignment
                 </h3>
                 <button
@@ -419,19 +453,19 @@ const StudentAssignments = () => {
               </div>
 
               <div className="mb-4">
-                <h4 className="font-medium mb-2" style={{color: '#000000'}}>
+                <h4 className="font-medium mb-2" style={{ color: '#000000' }}>
                   {selectedAssignment.title}
                 </h4>
-                <p className="text-sm" style={{color: '#000000'}}>
+                <p className="text-sm" style={{ color: '#000000' }}>
                   Course: {selectedAssignment.course_title}
                 </p>
-                <p className="text-sm" style={{color: '#000000'}}>
+                <p className="text-sm" style={{ color: '#000000' }}>
                   Due: {formatDate(selectedAssignment.due_date)}
                 </p>
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium mb-2" style={{color: '#000000'}}>
+                <label className="block text-sm font-medium mb-2" style={{ color: '#000000' }}>
                   Upload File (PDF or DOCX, max 10MB)
                 </label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -447,37 +481,66 @@ const StudentAssignments = () => {
                     className="cursor-pointer flex flex-col items-center space-y-2"
                   >
                     <Upload className="w-8 h-8 text-gray-400" />
-                    <span className="text-sm" style={{color: '#000000'}}>
+                    <span className="text-sm" style={{ color: '#000000' }}>
                       {submissionFile ? submissionFile.name : 'Click to upload file'}
                     </span>
                   </label>
                 </div>
               </div>
 
+              {/* Plagiarism Result Card */}
+              {checkingPlagiarism && (
+                <div className="mb-4 p-4 rounded-lg bg-blue-50 border border-blue-200 flex items-center space-x-3">
+                  <RefreshCw className="w-5 h-5 text-blue-500 animate-spin flex-shrink-0" />
+                  <span className="text-sm text-blue-700 font-medium">Running plagiarism check...</span>
+                </div>
+              )}
+
+              {plagiarismResult && !checkingPlagiarism && (() => {
+                const risk = plagiarismResult.risk_level;
+                const sim = Math.round((plagiarismResult.semantic_similarity ?? plagiarismResult.structural_similarity ?? 0) * 100);
+                const config = {
+                  High: { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-700', icon: <ShieldAlert className="w-5 h-5 text-red-500 flex-shrink-0" />, msg: 'Your submission has been flagged for manual review due to high similarity with an existing submission.' },
+                  Moderate: { bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-700', icon: <ShieldQuestion className="w-5 h-5 text-orange-500 flex-shrink-0" />, msg: 'Moderate similarity detected. Your submission has been marked for review.' },
+                  Low: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', icon: <ShieldCheck className="w-5 h-5 text-green-500 flex-shrink-0" />, msg: 'Your submission looks original! No significant similarity detected.' },
+                }[risk] || { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', icon: <ShieldCheck className="w-5 h-5 text-gray-400 flex-shrink-0" />, msg: 'Plagiarism check complete.' };
+
+                return (
+                  <div className={`mb-4 p-4 rounded-lg ${config.bg} border ${config.border}`}>
+                    <div className="flex items-start space-x-3">
+                      {config.icon}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`font-semibold text-sm ${config.text}`}>{risk} Risk</span>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${config.bg} ${config.text} border ${config.border}`}>{sim}% similarity</span>
+                        </div>
+                        <p className={`text-xs ${config.text}`}>{config.msg}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div className="flex items-center justify-end space-x-3">
                 <button
-                  onClick={() => setShowSubmissionModal(false)}
+                  onClick={() => { setShowSubmissionModal(false); setSubmissionFile(null); setSelectedAssignment(null); setPlagiarismResult(null); }}
                   className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {plagiarismResult ? 'Close' : 'Cancel'}
                 </button>
-                <button
-                  onClick={handleSubmitAssignment}
-                  disabled={!submissionFile || submitting}
-                  className="btn-primary px-6 py-2 rounded-lg flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {submitting ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Submitting...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      <span>Submit Assignment</span>
-                    </>
-                  )}
-                </button>
+                {!plagiarismResult && (
+                  <button
+                    onClick={handleSubmitAssignment}
+                    disabled={!submissionFile || submitting || checkingPlagiarism}
+                    className="btn-primary px-6 py-2 rounded-lg flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? (
+                      <><RefreshCw className="w-4 h-4 animate-spin" /><span>Submitting...</span></>
+                    ) : (
+                      <><Upload className="w-4 h-4" /><span>Submit Assignment</span></>
+                    )}
+                  </button>
+                )}
               </div>
             </motion.div>
           </motion.div>
