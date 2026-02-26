@@ -18,7 +18,7 @@ const syncCourseProgress = async (accessToken) => {
             },
             credentials: 'include'
         });
-        
+
         if (response.ok) {
             const result = await response.json();
             console.log('Course progress synced:', result);
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }) => {
                 if (tokenParts.length === 3) {
                     const payload = JSON.parse(atob(tokenParts[1]));
                     const currentTime = Math.floor(Date.now() / 1000);
-                    
+
                     if (payload.exp && payload.exp > currentTime) {
                         console.log('Stored access token is still valid');
                         return { userData, token: storedAccessToken };
@@ -119,14 +119,14 @@ export const AuthProvider = ({ children }) => {
                     if (refreshResponse.ok) {
                         const refreshData = await refreshResponse.json();
                         console.log('Token refreshed successfully');
-                        
+
                         // Update stored tokens
                         localStorage.setItem('learnsphere_access_token', refreshData.access_token);
-                        
+
                         // Update stored user data with new token
                         const updatedUserData = { ...userData, accessToken: refreshData.access_token };
                         localStorage.setItem('learnsphere_user', JSON.stringify(updatedUserData));
-                        
+
                         return { userData: updatedUserData, token: refreshData.access_token };
                     } else {
                         console.log('Token refresh failed, clearing session');
@@ -216,21 +216,21 @@ export const AuthProvider = ({ children }) => {
 
                 // Step 2: Check localStorage for persistent session and validate tokens
                 const sessionValidation = await validateStoredSession();
-                
+
                 if (sessionValidation) {
                     console.log('AuthContext - Valid session restored from localStorage');
                     const { userData, token } = sessionValidation;
-                    
+
                     // Validate and set user data
                     if (userData.id && userData.email) {
                         const finalRole = userData.email === 'eapentkadamapuzha@gmail.com' ? 'admin' : (userData.role || 'student');
                         const restoredUser = { ...userData, role: finalRole, accessToken: token };
                         setUser(restoredUser);
                         setAuthToken(token);
-                        
+
                         // Update localStorage with the restored user data
                         localStorage.setItem('learnsphere_user', JSON.stringify(restoredUser));
-                        
+
                         console.log('AuthContext - Session restored for:', userData.fullName, 'Role:', finalRole);
                     }
                 } else {
@@ -401,7 +401,7 @@ export const AuthProvider = ({ children }) => {
                 approvalStatus: response.data.approval_status,
                 isActive: response.data.is_active
             }));
-            
+
             // Store both tokens
             localStorage.setItem('learnsphere_access_token', access_token);
             if (refresh_token) {
@@ -416,9 +416,14 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             // Also set loading to false on error
             setLoading(false);
+            const detail = error.response?.data?.detail;
+            // FastAPI 422 returns detail as an array of validation error objects
+            const errorMsg = Array.isArray(detail)
+                ? detail.map(e => e.msg || JSON.stringify(e)).join('; ')
+                : (typeof detail === 'string' ? detail : (detail?.message || error.message || 'Login failed'));
             return {
                 success: false,
-                error: error.response?.data?.detail || 'Login failed'
+                error: errorMsg
             };
         }
     };
@@ -426,7 +431,7 @@ export const AuthProvider = ({ children }) => {
     const loginWithGoogle = async () => {
         try {
             console.log('🔵 Starting Google login process...');
-            
+
             // Check if Supabase is properly configured
             if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') {
                 console.error('❌ Supabase not configured');
@@ -472,7 +477,7 @@ export const AuthProvider = ({ children }) => {
 
             // Redirect to Google OAuth page
             window.location.href = data.url;
-            
+
             // Return success (though redirect will happen)
             return { success: true };
 
