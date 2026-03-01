@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext.jsx';
-import StudentDashboardLayout from '../../layouts/StudentDashboardLayout.jsx';
+import StudentDashboardLayout from '../../components/DashboardLayout.jsx';
 import axios from 'axios';
 import {
     Users, BookOpen, Star, TrendingUp, TrendingDown,
