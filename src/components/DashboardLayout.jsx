@@ -32,7 +32,8 @@ import {
   Brain,
   MessageSquare,
   CalendarDays,
-  UserCog
+  UserCog,
+  Users2
 } from 'lucide-react';
 
 const DashboardLayout = ({ children }) => {
@@ -54,6 +55,7 @@ const DashboardLayout = ({ children }) => {
 
     { name: 'Notes Summarizer', href: '/student/notes-summarizer', icon: FileText },
     { name: 'AI Tutor', href: '/student/ai-tutor', icon: Bot },
+    { name: 'Study Buddy', href: '/student/peer-match', icon: Users2 },
     { name: 'Doubt Forum', href: '/forum', icon: MessageSquare },
     { name: 'Calendar', href: '/calendar', icon: CalendarDays },
     { name: 'Profile & Settings', href: '/profile', icon: UserCog },
@@ -162,11 +164,10 @@ const DashboardLayout = ({ children }) => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 relative group ${
-                    isActive
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 relative group ${isActive
                       ? 'bg-secondary-600 text-white shadow-elegant'
                       : 'text-navy-200 hover:text-white hover:bg-navy-800'
-                  }`}
+                    }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.name}</span>
