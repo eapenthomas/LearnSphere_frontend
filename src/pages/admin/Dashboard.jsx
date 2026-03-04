@@ -68,14 +68,7 @@ const AdminDashboard = () => {
     window.addEventListener('systemUpdate', handleSystemUpdate);
     window.addEventListener('newRegistration', handleNewRegistration);
 
-    // Set up auto-refresh every 15 seconds for real-time updates
-    const interval = setInterval(() => {
-      console.log('🔄 Auto-refreshing admin dashboard...');
-      fetchDashboardData();
-    }, 15000);
-
     return () => {
-      clearInterval(interval);
       window.removeEventListener('userActivity', handleUserActivity);
       window.removeEventListener('systemUpdate', handleSystemUpdate);
       window.removeEventListener('newRegistration', handleNewRegistration);
@@ -114,7 +107,7 @@ const AdminDashboard = () => {
       const cacheKey = 'admin_dashboard';
       const cacheTime = 2 * 60 * 1000; // 2 minutes
       const now = Date.now();
-      
+
       if (!forceRefresh && cachedData[cacheKey] && (now - cachedData[cacheKey].timestamp) < cacheTime) {
         console.log('📦 Using cached admin dashboard data');
         setStats(cachedData[cacheKey].stats);
@@ -155,7 +148,7 @@ const AdminDashboard = () => {
         recentActivity: recentActivity,
         userGrowthData: userGrowthData
       };
-      
+
       setCachedData(prev => ({ ...prev, [cacheKey]: newCacheData }));
 
     } catch (error) {
@@ -268,13 +261,13 @@ const AdminDashboard = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Unknown Date';
-    
+
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
         return 'Invalid Date';
       }
-      
+
       return date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -654,7 +647,7 @@ const AdminDashboard = () => {
               <h3 className="font-semibold text-yellow-800">Review Approvals</h3>
               <p className="text-sm text-yellow-600">{stats?.pending_approvals || 0} pending</p>
             </button>
-            
+
             <button
               onClick={() => window.location.href = '/admin/users'}
               className="p-4 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 transition-colors group"
@@ -663,7 +656,7 @@ const AdminDashboard = () => {
               <h3 className="font-semibold text-blue-800">Manage Users</h3>
               <p className="text-sm text-blue-600">Enable/disable accounts</p>
             </button>
-            
+
             <button
               onClick={() => window.location.href = '/admin/activity'}
               className="p-4 bg-green-50 hover:bg-green-100 rounded-xl border border-green-200 transition-colors group"
@@ -672,7 +665,7 @@ const AdminDashboard = () => {
               <h3 className="font-semibold text-green-800">View Activity</h3>
               <p className="text-sm text-green-600">Monitor system logs</p>
             </button>
-            
+
             <button
               onClick={() => window.location.href = '/admin/emails'}
               className="p-4 bg-purple-50 hover:bg-purple-100 rounded-xl border border-purple-200 transition-colors group"

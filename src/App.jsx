@@ -18,6 +18,7 @@ import StudentForum from './pages/student/Forum.jsx';
 import NotesSummarizer from './pages/student/NotesSummarizer.jsx';
 import AITutor from './pages/student/AITutor.jsx';
 import PeerMatch from './pages/student/PeerMatch.jsx';
+import MyBuddies from './pages/student/MyBuddies.jsx';
 
 import TakeQuiz from './pages/student/TakeQuiz.jsx';
 import QuizResult from './pages/student/QuizResult.jsx';
@@ -161,6 +162,14 @@ const AppContent = () => {
                 element={
                     <ProtectedRoute>
                         <PeerMatch />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/student/my-buddies"
+                element={
+                    <ProtectedRoute>
+                        <MyBuddies />
                     </ProtectedRoute>
                 }
             />

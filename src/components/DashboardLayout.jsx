@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import ProfilePictureUpload from './ProfilePictureUpload.jsx';
 import LearnSphereLogo from './LearnSphereLogo.jsx';
 import VoiceNavigation from './VoiceNavigation.jsx';
-import NotificationBell from './NotificationBell.jsx';
+
 import {
   BookOpen,
   Home,
@@ -56,6 +56,7 @@ const DashboardLayout = ({ children }) => {
     { name: 'Notes Summarizer', href: '/student/notes-summarizer', icon: FileText },
     { name: 'AI Tutor', href: '/student/ai-tutor', icon: Bot },
     { name: 'Study Buddy', href: '/student/peer-match', icon: Users2 },
+    { name: 'My Buddies', href: '/student/my-buddies', icon: UserCheck },
     { name: 'Doubt Forum', href: '/forum', icon: MessageSquare },
     { name: 'Calendar', href: '/calendar', icon: CalendarDays },
     { name: 'Profile & Settings', href: '/profile', icon: UserCog },
@@ -165,8 +166,8 @@ const DashboardLayout = ({ children }) => {
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 relative group ${isActive
-                      ? 'bg-secondary-600 text-white shadow-elegant'
-                      : 'text-navy-200 hover:text-white hover:bg-navy-800'
+                    ? 'bg-secondary-600 text-white shadow-elegant'
+                    : 'text-navy-200 hover:text-white hover:bg-navy-800'
                     }`}
                 >
                   <item.icon className="w-5 h-5" />
@@ -186,9 +187,17 @@ const DashboardLayout = ({ children }) => {
         {/* User Profile Section */}
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-200">
           <div className="relative">
-            <button
+            <div
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+              role="button"
+              tabIndex="0"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setUserMenuOpen(!userMenuOpen);
+                  e.preventDefault();
+                }
+              }}
             >
               <ProfilePictureUpload
                 currentPictureUrl={profilePictureUrl}
@@ -205,7 +214,7 @@ const DashboardLayout = ({ children }) => {
               </div>
               <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${userMenuOpen ? 'rotate-180' : ''
                 }`} />
-            </button>
+            </div>
 
             <AnimatePresence>
               {userMenuOpen && (
@@ -253,8 +262,7 @@ const DashboardLayout = ({ children }) => {
               </div>
 
 
-              {/* Notifications */}
-              <NotificationBell />
+              {/* Notifications removed for performance */}
 
               {/* User Profile Picture/Initials */}
               <div className="flex items-center space-x-3">

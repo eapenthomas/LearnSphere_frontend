@@ -55,8 +55,6 @@ const StudentDashboard = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [cachedData, setCachedData] = useState({});
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [predictionData, setPredictionData] = useState(null);
-  const [isPredicting, setIsPredicting] = useState(false);
 
   // Fetch real-time data
   useEffect(() => {
@@ -100,17 +98,7 @@ const StudentDashboard = () => {
     };
   }, [user]);
 
-  // Auto-refresh every 15 seconds for real-time updates
-  useEffect(() => {
-    if (user?.id) {
-      const interval = setInterval(() => {
-        console.log('🔄 Auto-refreshing student dashboard...');
-        fetchDashboardData();
-      }, 15000); // Update every 15 seconds
-
-      return () => clearInterval(interval);
-    }
-  }, [user]);
+  // Removed auto-refresh polling every 15 seconds to improve site performance per user request
 
   const fetchDashboardData = async (forceRefresh = false) => {
     try {
@@ -125,12 +113,17 @@ const StudentDashboard = () => {
         const data = await response.json();
 
         // Update all states at once
-        setStats(data.stats);
+        if (data.stats && Array.isArray(data.stats)) {
+          setStats(prevStats => prevStats.map((stat, i) => ({
+            ...stat,
+            title: data.stats[i]?.title || stat.title,
+            value: data.stats[i]?.value || stat.value,
+            change: data.stats[i]?.change || stat.change,
+            color: data.stats[i]?.color || stat.color
+          })));
+        }
         setRecentCourses(data.recent_courses || []);
         setUpcomingAssignments(data.upcoming_assignments || []);
-
-        // Trigger performance prediction independently (non-blocking)
-        setTimeout(() => fetchPerformancePrediction(data.recent_courses, data.upcoming_assignments), 0);
       }
     } catch (error) {
       console.error('Error fetching optimized dashboard data:', error);
@@ -141,233 +134,8 @@ const StudentDashboard = () => {
     }
   };
 
-  const fetchOptimizedStats = async () => {
-    try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-      // Fetch data from backend APIs that provide accurate stats
-      const [enrolledCoursesRes, assignmentsRes] = await Promise.all([
-        // Get enrolled courses with progress data
-        fetch(`${apiBaseUrl}/api/courses/student/${user.id}/enrolled`, {
-          headers: { 'Authorization': `Bearer ${user.accessToken}` }
-        }),
-        // Get assignments for student
-        fetch(`${apiBaseUrl}/api/assignments/student/${user.id}`, {
-          headers: { 'Authorization': `Bearer ${user.accessToken}` }
-        })
-      ]);
 
-      let enrolledCourses = [];
-      let assignments = [];
-
-      if (enrolledCoursesRes.ok) {
-        const enrolledData = await enrolledCoursesRes.json();
-        enrolledCourses = enrolledData.data || [];
-      }
-
-      if (assignmentsRes.ok) {
-        assignments = await assignmentsRes.json();
-      }
-
-      // Calculate enrolled courses count
-      const enrolledCount = enrolledCourses.length;
-
-      // Calculate course progress and materials from backend data
-      let totalMaterialsCompleted = 0;
-      let totalMaterials = 0;
-      let totalProgress = 0;
-
-      enrolledCourses.forEach(course => {
-        const materialsCompleted = course.materials_completed || 0;
-        const totalCourseMaterials = course.total_materials || 0;
-        const progress = course.progress || 0;
-
-        totalMaterialsCompleted += materialsCompleted;
-        totalMaterials += totalCourseMaterials;
-        totalProgress += progress;
-      });
-
-      const averageProgress = enrolledCount > 0 ? Math.round(totalProgress / enrolledCount) : 0;
-
-      // Calculate assignment progress from backend data
-      const totalAssignments = assignments.length;
-      const completedAssignments = assignments.filter(assignment => {
-        const status = (assignment.submission_status || '').toLowerCase();
-        return status === 'submitted' || status === 'graded' || status === 'reviewed';
-      }).length;
-      const assignmentPercentage = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
-
-      const nextStats = [
-        {
-          title: 'Enrolled Courses',
-          value: enrolledCount.toString(),
-          change: `${enrolledCount} active`,
-          icon: BookOpen,
-          color: 'from-blue-500 to-blue-600'
-        },
-        {
-          title: 'Course Progress',
-          value: `${averageProgress}%`,
-          change: `${totalMaterialsCompleted}/${totalMaterials} materials`,
-          icon: TrendingUp,
-          color: 'from-green-500 to-green-600'
-        },
-        {
-          title: 'Assignment Progress',
-          value: `${assignmentPercentage}%`,
-          change: `${completedAssignments}/${totalAssignments} completed`,
-          icon: Target,
-          color: 'from-purple-500 to-purple-600'
-        }
-      ];
-
-      setStats(nextStats);
-
-      // Trigger performance prediction independently to avoid blocking
-      setTimeout(() => fetchPerformancePrediction(enrolledCourses, assignments), 0);
-
-      return { stats: nextStats };
-    } catch (error) {
-      console.error('Error fetching enrollment stats:', error);
-      return { stats };
-    }
-  };
-
-  const fetchPerformancePrediction = async (enrolledCourses, assignments) => {
-    try {
-      setIsPredicting(true);
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-
-      // Calculate inputs for prediction
-      const enrollmentCount = enrolledCourses.length;
-      if (enrollmentCount === 0) {
-        setPredictionData(null);
-        return;
-      }
-
-      // 1. Completion Rate
-      let totalProgress = 0;
-      enrolledCourses.forEach(c => totalProgress += (c.progress || 0));
-      const avgCompletion = totalProgress / enrollmentCount;
-
-      // 2. Quiz Performance (Fetch if not in enrolledCourses)
-      // For simplicity, let's assume we have a basic average or fetch it
-      const quizRes = await fetch(`${apiBaseUrl}/api/quizzes/student/${user.id}/submissions`, {
-        headers: { 'Authorization': `Bearer ${user.accessToken}` }
-      });
-      const quizSubmissions = quizRes.ok ? await quizRes.json() : [];
-
-      const avgQuizScore = quizSubmissions.length > 0
-        ? quizSubmissions.reduce((acc, s) => acc + (s.score / s.total_marks * 100), 0) / quizSubmissions.length
-        : 60; // Fallback to neutral
-
-      const quizAttemptCount = quizSubmissions.length;
-
-      // 3. Assignment Performance
-      const submitted = assignments.filter(a => ['submitted', 'graded', 'reviewed'].includes((a.submission_status || '').toLowerCase()));
-      const subRate = assignments.length > 0 ? submitted.length / assignments.length : 0;
-
-      const graded = assignments.filter(a => (a.submission_status || '').toLowerCase() === 'graded');
-      const avgAssignScore = graded.length > 0
-        ? graded.reduce((acc, a) => acc + (a.score || 0), 0) / graded.length
-        : 65; // Fallback to neutral
-
-      // Call ML API
-      const predictionRes = await fetch(`${apiBaseUrl}/api/ml/predict-performance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.accessToken}`
-        },
-        body: JSON.stringify({
-          avg_quiz_score: avgQuizScore,
-          avg_assignment_score: avgAssignScore,
-          completion_rate: avgCompletion,
-          assignment_submission_rate: subRate,
-          quiz_attempt_count: quizAttemptCount
-        })
-      });
-
-      if (predictionRes.ok) {
-        const data = await predictionRes.json();
-        setPredictionData(data);
-      }
-    } catch (err) {
-      console.error("ML Prediction Error:", err);
-    } finally {
-      setIsPredicting(false);
-    }
-  };
-
-  const fetchRecentCourses = async () => {
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if (!supabaseUrl || !supabaseKey) throw new Error('Supabase env not configured');
-
-      // Join enrollments -> courses -> profiles using PostgREST embedded selects
-      const url = `${supabaseUrl}/rest/v1/enrollments?select=course_id,progress,updated_at,courses(id,title,teacher_id,thumbnail_url,profiles!courses_teacher_id_fkey(full_name))&student_id=eq.${user.id}&order=updated_at.desc&limit=3`;
-      const response = await fetch(url, { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } });
-
-      const rows = response.ok ? await response.json() : [];
-      const recent = rows.map(row => ({
-        id: row.course_id,
-        title: row.courses?.title || 'Unknown Course',
-        instructor: row.courses?.profiles?.full_name || 'Unknown Teacher',
-        progress: row.progress || 0,
-        nextLesson: 'Continue Learning',
-        thumbnail: row.courses?.thumbnail_url || null
-      }));
-
-      setRecentCourses(recent);
-      return recent;
-    } catch (error) {
-      console.error('Error fetching recent courses:', error);
-      return recentCourses;
-    }
-  };
-
-  const fetchUpcomingAssignments = async () => {
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if (!supabaseUrl || !supabaseKey) throw new Error('Supabase env not configured');
-
-      // Get next upcoming assignments for student's enrolled courses
-      const assignmentsUrl = `${supabaseUrl}/rest/v1/assignments?select=id,title,due_date,course_id,courses(title)&order=due_date.asc&due_date=gt.${new Date().toISOString()}`;
-      const response = await fetch(assignmentsUrl, { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } });
-      const rows = response.ok ? await response.json() : [];
-
-      // Fetch student's submitted/graded assignment submissions to exclude from deadlines
-      const submissionsUrl = `${supabaseUrl}/rest/v1/assignment_submissions?select=assignment_id,status&student_id=eq.${user.id}`;
-      const submissionsRes = await fetch(submissionsUrl, { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } });
-      const submissionsRows = submissionsRes.ok ? await submissionsRes.json() : [];
-      const submittedAssignmentIds = new Set(
-        submissionsRows
-          .filter(s => {
-            const status = (s.status || '').toLowerCase();
-            return status === 'submitted' || status === 'graded';
-          })
-          .map(s => s.assignment_id)
-      );
-
-      const filtered = rows.filter(a => !submittedAssignmentIds.has(a.id));
-
-      const upcoming = filtered.slice(0, 5).map(a => ({
-        title: a.title,
-        course: a.courses?.title || 'Unknown Course',
-        dueDate: new Date(a.due_date).toLocaleDateString(),
-        type: 'assignment',
-        daysUntil: Math.ceil((new Date(a.due_date) - new Date()) / (1000 * 60 * 60 * 24))
-      }));
-
-      setUpcomingAssignments(upcoming);
-      return upcoming;
-    } catch (error) {
-      console.error('❌ Error fetching upcoming assignments (Supabase):', error);
-      return upcomingAssignments;
-    }
-  };
 
   // Static data removed - now using dynamic data from state
 
@@ -420,7 +188,7 @@ const StudentDashboard = () => {
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.title}
@@ -442,44 +210,7 @@ const StudentDashboard = () => {
             </motion.div>
           ))}
 
-          {/* ML Prediction Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="course-card rounded-xl p-3 transition-all duration-300 group bg-white border-2 border-primary-100"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-gradient-to-br from-indigo-500 to-primary-600 rounded-xl">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
-                <span className="text-[10px] font-bold text-primary-600 uppercase">AI Insighit</span>
-              </div>
-            </div>
-            {isPredicting ? (
-              <div className="animate-pulse space-y-2">
-                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
-            ) : predictionData ? (
-              <>
-                <div className="flex items-baseline space-x-2">
-                  <h3 className="text-heading-lg font-bold mb-1 text-gray-900">{predictionData.predicted_score}%</h3>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${predictionData.risk_level === 'High Risk' ? 'bg-red-100 text-red-600' :
-                    predictionData.risk_level === 'Moderate Risk' ? 'bg-orange-100 text-orange-600' :
-                      'bg-green-100 text-green-600'
-                    }`}>
-                    {predictionData.risk_level}
-                  </span>
-                </div>
-                <p className="text-body-md font-medium text-gray-600">Predicted Performance</p>
-              </>
-            ) : (
-              <p className="text-xs text-gray-400 mt-2 italic">Add more activity data to get AI insights</p>
-            )}
-          </motion.div>
+
         </div>
 
         {/* Main Content Grid */}

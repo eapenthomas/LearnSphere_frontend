@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import AdminNotificationBell from '../components/AdminNotificationBell.jsx';
+
 import {
   Shield,
   Home,
@@ -91,9 +91,8 @@ const AdminDashboardLayout = ({ children }) => {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 lg:static lg:z-auto ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 lg:static lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}>
         <div className="flex items-center justify-between h-12 px-3 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg">
@@ -118,9 +117,8 @@ const AdminDashboardLayout = ({ children }) => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`sidebar-item group ${
-                    isActive ? 'active' : 'text-gray-700 hover:text-gray-800'
-                  }`}
+                  className={`sidebar-item group ${isActive ? 'active' : 'text-gray-700 hover:text-gray-800'
+                    }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-bold">{item.name}</span>
@@ -157,9 +155,8 @@ const AdminDashboardLayout = ({ children }) => {
                   Administrator
                 </p>
               </div>
-              <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${
-                userMenuOpen ? 'rotate-180' : ''
-              }`} />
+              <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${userMenuOpen ? 'rotate-180' : ''
+                }`} />
             </button>
 
             <AnimatePresence>
@@ -232,8 +229,7 @@ const AdminDashboardLayout = ({ children }) => {
                 </div>
               </div>
 
-              {/* Notifications */}
-              <AdminNotificationBell />
+              {/* Notifications removed */}
 
               {/* User Avatar */}
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full flex items-center justify-center">

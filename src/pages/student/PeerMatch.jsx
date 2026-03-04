@@ -46,28 +46,43 @@ const CompatRing = ({ pct }) => {
 };
 
 // ─── Match card ───────────────────────────────────────────────────────────────
-const MatchCard = ({ match, index }) => {
-    const { name, compatibility_pct, can_help_me, i_help_them, their_strengths } = match;
+const MatchCard = ({ match, index, courseName }) => {
+    const { user } = useAuth();
+    const { name, full_name, email, bio, avatar_url, compatibility_pct, can_help_me, i_help_them, their_strengths } = match;
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [requestStatus, setRequestStatus] = useState('idle'); // 'idle' | 'sending' | 'sent' | 'error'
+    const [errorMessage, setErrorMessage] = useState('');
     const initials = name.charAt(0).toUpperCase();
 
     const avatarColors = ['from-violet-500 to-purple-700', 'from-blue-500 to-cyan-600', 'from-emerald-500 to-teal-600'];
     const gradient = avatarColors[index % avatarColors.length];
 
+    // Check if interaction was explicitly requested for mailto body
+    const mailtoLink = `mailto:${email}?subject=Study Buddy Connection - ${courseName}&body=Hi ${name},%0D%0A%0D%0AI saw we are a great study match for ${courseName} on LearnSphere! Would you be open to studying together sometime?%0D%0A%0D%0ABest,`;
+
     return (
         <motion.div
+            layout
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-xl transition-shadow p-6 flex flex-col gap-4"
+            className={`bg-white rounded-2xl border ${isExpanded ? 'border-indigo-200 ring-4 ring-indigo-50 shadow-xl' : 'border-gray-100 shadow-md hover:shadow-xl hover:border-indigo-100'} transition-all p-6 flex flex-col gap-4 overflow-hidden relative cursor-pointer`}
+            onClick={() => {
+                if (!isExpanded) setIsExpanded(true);
+            }}
         >
             {/* Header */}
             <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-2xl font-bold shadow`}>
-                    {initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900 text-lg">{name}</h3>
-                    <div className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                {avatar_url ? (
+                    <img src={avatar_url} alt={name} className="w-14 h-14 rounded-2xl object-cover shadow" />
+                ) : (
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-2xl font-bold shadow`}>
+                        {initials}
+                    </div>
+                )}
+                <div className="flex-1 min-w-0 pr-8">
+                    <h3 className="font-bold text-gray-900 text-lg">{isExpanded ? full_name : name}</h3>
+                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
                         <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                         {compatibility_pct >= 75 ? 'Excellent match' : compatibility_pct >= 55 ? 'Good match' : 'Potential match'}
                     </div>
@@ -75,40 +90,151 @@ const MatchCard = ({ match, index }) => {
                 <CompatRing pct={compatibility_pct} />
             </div>
 
-            {/* They can help me */}
-            {can_help_me.length > 0 && (
-                <div>
-                    <p className="text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
-                        <TrendingUp className="w-3.5 h-3.5 text-blue-500" /> {name} can help you with:
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                        {can_help_me.map(lbl => <Tag key={lbl} label={lbl} variant="help" />)}
-                    </div>
+            {/* Expander Icon */}
+            {!isExpanded && (
+                <div className="absolute top-6 right-5 text-gray-400 opacity-50 hover:opacity-100 transition-opacity">
+                    <ChevronRight className="w-5 h-5 auto" />
                 </div>
             )}
 
-            {/* I can help them */}
-            {i_help_them.length > 0 && (
-                <div>
-                    <p className="text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
-                        <Award className="w-3.5 h-3.5 text-green-500" /> You can help {name} with:
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                        {i_help_them.map(lbl => <Tag key={lbl} label={lbl} variant="strong" />)}
-                    </div>
-                </div>
-            )}
+            {/* Expanded Content */}
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex flex-col gap-4 pt-2 border-t border-gray-100 mt-1 cursor-default"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {bio && (
+                            <div>
+                                <p className="text-sm text-gray-600 italic border-l-2 border-indigo-200 pl-3 py-0.5 my-1">
+                                    "{bio}"
+                                </p>
+                            </div>
+                        )}
 
-            {/* Their strengths (fallback if no explicit gaps found) */}
-            {can_help_me.length === 0 && i_help_them.length === 0 && their_strengths.length > 0 && (
-                <div>
-                    <p className="text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
-                        <Star className="w-3.5 h-3.5 text-amber-400" /> {name}'s strengths:
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                        {their_strengths.map(lbl => <Tag key={lbl} label={lbl} variant="muted" />)}
-                    </div>
-                </div>
+                        {/* They can help me */}
+                        {can_help_me.length > 0 && (
+                            <div>
+                                <p className="text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                    <TrendingUp className="w-3.5 h-3.5 text-blue-500" /> {name} can help you with:
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {can_help_me.map(lbl => <Tag key={lbl} label={lbl} variant="help" />)}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* I can help them */}
+                        {i_help_them.length > 0 && (
+                            <div>
+                                <p className="text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                    <Award className="w-3.5 h-3.5 text-green-500" /> You can help {name} with:
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {i_help_them.map(lbl => <Tag key={lbl} label={lbl} variant="strong" />)}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Their strengths (fallback if no explicit gaps found) */}
+                        {can_help_me.length === 0 && i_help_them.length === 0 && their_strengths.length > 0 && (
+                            <div>
+                                <p className="text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                    <Star className="w-3.5 h-3.5 text-amber-400" /> {name}'s strengths:
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {their_strengths.map(lbl => <Tag key={lbl} label={lbl} variant="muted" />)}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-2 mt-3 pt-4 border-t border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    disabled={requestStatus === 'sending' || requestStatus === 'sent'}
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        setRequestStatus('sending');
+                                        setErrorMessage('');
+                                        try {
+                                            const res = await axios.post(`${API}/api/study-buddy/request`,
+                                                { receiver_id: match.student_id, course_id: match.course_id || localStorage.getItem('last_selected_course') },
+                                                { headers: { Authorization: `Bearer ${user.accessToken}` } }
+                                            );
+                                            setRequestStatus('sent');
+                                        } catch (err) {
+                                            setErrorMessage(err.response?.data?.detail || "Failed to send request.");
+                                            setRequestStatus('error');
+                                        }
+                                    }}
+                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm ${requestStatus === 'sent' ? 'bg-green-500 hover:bg-green-600' :
+                                            requestStatus === 'sending' ? 'bg-indigo-400 cursor-not-allowed' :
+                                                'bg-indigo-600 hover:bg-indigo-700'
+                                        }`}
+                                >
+                                    {requestStatus === 'sent' ? <><CheckCircle className="w-4 h-4" /> Request Sent</> :
+                                        requestStatus === 'sending' ? <><RefreshCw className="w-4 h-4 animate-spin" /> Sending...</> :
+                                            <><Zap className="w-4 h-4" /> Send Buddy Request</>}
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
+                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                            {/* Error Message */}
+                            {requestStatus === 'error' && (
+                                <p className="text-red-500 text-xs text-center">{errorMessage}</p>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Default Compact View (only if not expanded) */}
+            {!isExpanded && (
+                <>
+                    {/* They can help me */}
+                    {can_help_me.length > 0 && (
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                <TrendingUp className="w-3.5 h-3.5 text-blue-500" /> {name} can help you with:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {can_help_me.map((lbl, idx) => idx < 3 ? <Tag key={lbl} label={lbl} variant="help" /> : (idx === 3 ? <span key="more" className="text-xs text-gray-400 px-1 py-0.5">+{can_help_me.length - 3} more</span> : null))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* I can help them (only show if no 'can help me' to save space in compact mode) */}
+                    {i_help_them.length > 0 && can_help_me.length === 0 && (
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                <Award className="w-3.5 h-3.5 text-green-500" /> You can help {name} with:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {i_help_them.map((lbl, idx) => idx < 3 ? <Tag key={lbl} label={lbl} variant="strong" /> : (idx === 3 ? <span key="more" className="text-xs text-gray-400 px-1 py-0.5">+{i_help_them.length - 3} more</span> : null))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Their strengths (fallback if no explicit gaps found) */}
+                    {can_help_me.length === 0 && i_help_them.length === 0 && their_strengths.length > 0 && (
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                                <Star className="w-3.5 h-3.5 text-amber-400" /> {name}'s strengths:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {their_strengths.map((lbl, idx) => idx < 3 ? <Tag key={lbl} label={lbl} variant="muted" /> : (idx === 3 ? <span key="more" className="text-xs text-gray-400 px-1 py-0.5">+{their_strengths.length - 3} more</span> : null))}
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </motion.div>
     );
@@ -260,7 +386,7 @@ const PeerMatch = () => {
                                         Top {result.matches.length} Study {result.matches.length === 1 ? 'Buddy' : 'Buddies'} for You
                                     </h2>
                                     <div className="grid gap-5 sm:grid-cols-1 lg:grid-cols-1">
-                                        {result.matches.map((m, i) => <MatchCard key={m.student_id} match={m} index={i} />)}
+                                        {result.matches.map((m, i) => <MatchCard key={m.student_id} match={{ ...m, course_id: selectedCourse }} index={i} courseName={courseName} />)}
                                     </div>
                                 </div>
                             )}

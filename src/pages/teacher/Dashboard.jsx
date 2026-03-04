@@ -64,15 +64,6 @@ const Dashboard = () => {
     if (user?.id) {
       fetchDashboardData();
       fetchRiskAnalysis();
-
-      // Set up auto-refresh every 30 seconds for real-time updates
-      const interval = setInterval(() => {
-        if (realTimeMode) {
-          fetchDashboardData(true);
-        }
-      }, 30000);
-
-      return () => clearInterval(interval);
     }
   }, [user, realTimeMode, selectedTimeRange]);
 
@@ -374,8 +365,8 @@ const Dashboard = () => {
                       key={range}
                       onClick={() => setSelectedTimeRange(range)}
                       className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${selectedTimeRange === range
-                          ? 'bg-white text-indigo-600'
-                          : 'text-white hover:bg-white/20'
+                        ? 'bg-white text-indigo-600'
+                        : 'text-white hover:bg-white/20'
                         }`}
                     >
                       {range}
@@ -386,8 +377,8 @@ const Dashboard = () => {
                 {/* Connection Status */}
                 <div className="flex items-center space-x-2">
                   <div className={`w-3 h-3 rounded-full ${connectionStatus === 'connected' ? 'bg-green-400' :
-                      connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' :
-                        'bg-red-400'
+                    connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' :
+                      'bg-red-400'
                     }`}></div>
                   <span className="text-sm font-medium">
                     {connectionStatus === 'connected' ? 'Live Data' :
@@ -400,8 +391,8 @@ const Dashboard = () => {
                 <button
                   onClick={() => setRealTimeMode(!realTimeMode)}
                   className={`px-4 py-2 rounded-lg transition-all duration-200 ${realTimeMode
-                      ? 'bg-green-500 hover:bg-green-600 text-white'
-                      : 'bg-white/20 hover:bg-white/30 text-white'
+                    ? 'bg-green-500 hover:bg-green-600 text-white'
+                    : 'bg-white/20 hover:bg-white/30 text-white'
                     }`}
                 >
                   <div className="flex items-center space-x-2">
@@ -828,8 +819,8 @@ const Dashboard = () => {
                           <div className="w-16 bg-gray-200 rounded-full h-1.5 hidden md:block">
                             <div
                               className={`h-1.5 rounded-full ${item.predicted_score < 40 ? 'bg-red-500' :
-                                  item.predicted_score <= 60 ? 'bg-orange-500' :
-                                    'bg-green-500'
+                                item.predicted_score <= 60 ? 'bg-orange-500' :
+                                  'bg-green-500'
                                 }`}
                               style={{ width: `${item.predicted_score}%` }}
                             ></div>
@@ -838,8 +829,8 @@ const Dashboard = () => {
                       </td>
                       <td className="py-4 text-right">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${item.risk_level === 'High Risk' ? 'bg-red-100 text-red-600' :
-                            item.risk_level === 'Moderate Risk' ? 'bg-orange-100 text-orange-600' :
-                              'bg-green-100 text-green-600'
+                          item.risk_level === 'Moderate Risk' ? 'bg-orange-100 text-orange-600' :
+                            'bg-green-100 text-green-600'
                           }`}>
                           {item.risk_level}
                         </span>

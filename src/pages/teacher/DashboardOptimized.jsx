@@ -30,31 +30,24 @@ const DashboardOptimized = () => {
   useEffect(() => {
     if (user?.id) {
       fetchDashboardData();
-      
-      // Set up auto-refresh every 30 seconds (less aggressive)
-      const interval = setInterval(() => {
-        fetchDashboardData(true); // Silent refresh
-      }, 30000);
-
-      return () => clearInterval(interval);
     }
   }, [user]);
 
   const fetchDashboardData = async (silent = false) => {
     try {
       if (!silent) setLoading(true);
-      
+
       console.log('🚀 Fetching optimized dashboard data...');
       const startTime = Date.now();
-      
+
       // Single API call to get all dashboard data
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/teacher/dashboard/stats/${user.id}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         setDashboardData(data.data);
         setLastUpdated(new Date());
-        
+
         const loadTime = Date.now() - startTime;
         console.log(`✅ Dashboard loaded in ${loadTime}ms`);
       } else {
@@ -236,7 +229,7 @@ const DashboardOptimized = () => {
               <Eye className="w-4 h-4" />
             </Link>
           </div>
-          
+
           <div className="space-y-4">
             {courses.length > 0 ? (
               courses.map((course, index) => (

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import TeacherNotificationBell from '../components/TeacherNotificationBell.jsx';
+
 import {
   BookOpen,
   Home,
@@ -107,9 +107,8 @@ const TeacherDashboardLayout = ({ children }) => {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-background-secondary border-r border-border-primary lg:static lg:z-auto shadow-elegant ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-background-secondary border-r border-border-primary lg:static lg:z-auto shadow-elegant ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}>
         <div className="flex items-center justify-between h-12 px-3 border-b border-border-primary">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-gradient-to-r from-navy-900 to-navy-800 rounded-lg shadow-elegant">
@@ -134,9 +133,8 @@ const TeacherDashboardLayout = ({ children }) => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`sidebar-item group ${
-                    isActive ? 'active' : ''
-                  }`}
+                  className={`sidebar-item group ${isActive ? 'active' : ''
+                    }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.name}</span>
@@ -186,8 +184,7 @@ const TeacherDashboardLayout = ({ children }) => {
 
             <div className="flex items-center space-x-2">
 
-              {/* Notifications */}
-              <TeacherNotificationBell />
+              {/* Notifications removed */}
 
               {/* Profile Dropdown */}
               <div className="relative">
