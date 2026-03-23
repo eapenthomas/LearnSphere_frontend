@@ -48,7 +48,7 @@ const CompatRing = ({ pct }) => {
 // ─── Match card ───────────────────────────────────────────────────────────────
 const MatchCard = ({ match, index, courseName }) => {
     const { user } = useAuth();
-    const { name, full_name, email, bio, avatar_url, compatibility_pct, can_help_me, i_help_them, their_strengths } = match;
+    const { name, full_name, email, bio, avatar_url, compatibility_pct, can_help_me, i_help_them, their_strengths, cluster_name } = match;
     const [isExpanded, setIsExpanded] = useState(false);
     const [requestStatus, setRequestStatus] = useState('idle'); // 'idle' | 'sending' | 'sent' | 'error'
     const [errorMessage, setErrorMessage] = useState('');
@@ -81,10 +81,24 @@ const MatchCard = ({ match, index, courseName }) => {
                     </div>
                 )}
                 <div className="flex-1 min-w-0 pr-8">
-                    <h3 className="font-bold text-gray-900 text-lg">{isExpanded ? full_name : name}</h3>
-                    <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                        {compatibility_pct >= 75 ? 'Excellent match' : compatibility_pct >= 55 ? 'Good match' : 'Potential match'}
+                    <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                        {isExpanded ? full_name : name}
+                        {cluster_name && (
+                            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                {cluster_name}
+                            </span>
+                        )}
+                    </h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-gray-500 mt-1">
+                        <div className="flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                            {compatibility_pct >= 75 ? 'Excellent match' : compatibility_pct >= 55 ? 'Good match' : 'Potential match'}
+                        </div>
+                        {cluster_name && (
+                            <span className="sm:hidden inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-gray-100 text-gray-600 w-max">
+                                {cluster_name}
+                            </span>
+                        )}
                     </div>
                 </div>
                 <CompatRing pct={compatibility_pct} />
@@ -172,8 +186,8 @@ const MatchCard = ({ match, index, courseName }) => {
                                         }
                                     }}
                                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm ${requestStatus === 'sent' ? 'bg-green-500 hover:bg-green-600' :
-                                            requestStatus === 'sending' ? 'bg-indigo-400 cursor-not-allowed' :
-                                                'bg-indigo-600 hover:bg-indigo-700'
+                                        requestStatus === 'sending' ? 'bg-indigo-400 cursor-not-allowed' :
+                                            'bg-indigo-600 hover:bg-indigo-700'
                                         }`}
                                 >
                                     {requestStatus === 'sent' ? <><CheckCircle className="w-4 h-4" /> Request Sent</> :
@@ -346,9 +360,16 @@ const PeerMatch = () => {
 
                             {/* My skill snapshot */}
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
-                                <h2 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-1.5">
-                                    <Search className="w-4 h-4 text-indigo-500" /> Your Skill Snapshot in <span className="text-indigo-600">{courseName}</span>
-                                </h2>
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                                    <h2 className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+                                        <Search className="w-4 h-4 text-indigo-500" /> Your Skill Snapshot in <span className="text-indigo-600">{courseName}</span>
+                                    </h2>
+                                    {result.my_cluster_name && (
+                                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold tracking-widest uppercase bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-100 shadow-sm w-max">
+                                            {result.my_cluster_name}
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="flex flex-wrap gap-3">
                                     {result.my_strengths.length > 0 && (
                                         <div>

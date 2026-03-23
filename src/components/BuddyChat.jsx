@@ -150,11 +150,11 @@ const BuddyChat = ({ buddy, courseId, courseName }) => {
                             return (
                                 <div key={msg.id} className={`flex max-w-[80%] ${isMe ? 'self-end' : 'self-start'}`}>
                                     <div className={`px-4 py-2.5 rounded-2xl ${isMe
-                                            ? 'bg-indigo-600 text-white rounded-tr-sm shadow-sm'
+                                            ? 'bg-indigo-50 border border-indigo-100 text-gray-900 rounded-tr-sm shadow-sm'
                                             : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm shadow-sm'
                                         }`}>
                                         <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                                        <p className={`text-[10px] mt-1.5 text-right ${isMe ? 'text-indigo-200' : 'text-gray-400'}`}>
+                                        <p className={`text-[10px] mt-1.5 text-right ${isMe ? 'text-indigo-400' : 'text-gray-400'}`}>
                                             {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </p>
                                     </div>
