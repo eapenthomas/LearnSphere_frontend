@@ -138,7 +138,7 @@ const PasswordUpdate = () => {
   const passwordStrength = getPasswordStrength(watchedValues.newPassword);
 
   return (
-    <div className="card p-6 hover:shadow-xl transition-all duration-300">
+    <div className="card p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50 border border-gray-100">
       {/* Card Header */}
       <div className="flex items-center space-x-3 mb-6">
         <div className="p-2 bg-red-100 rounded-lg">

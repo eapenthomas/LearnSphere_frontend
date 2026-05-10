@@ -19,11 +19,6 @@ import {
 
 // Validation schema
 const profileSchema = yup.object().shape({
-  full_name: yup
-    .string()
-    .required('Full name is required')
-    .min(3, 'Full name must be at least 3 characters')
-    .max(50, 'Full name must be less than 50 characters'),
   phone: yup
     .string()
     .matches(/^[6-9]\d{9}$/, 'Phone number must be exactly 10 digits and start with 6, 7, 8, or 9')
@@ -57,7 +52,6 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
   React.useEffect(() => {
     if (profileData) {
       reset({
-        full_name: profileData.full_name || '',
         phone: profileData.phone || ''
       });
     }
@@ -73,7 +67,6 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
-          full_name: data.full_name,
           phone: data.phone || null
         })
         .eq('id', user.id);
@@ -87,7 +80,7 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
           .insert({
             id: user.id,
             email: user.email,
-            full_name: data.full_name,
+            full_name: profileData?.full_name || user.fullName || 'User',
             role: user.role || 'student',
             phone: data.phone || null
           });
@@ -123,7 +116,6 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
 
   const handleReset = () => {
     reset({
-      full_name: profileData?.full_name || '',
       phone: profileData?.phone || ''
     });
   };
@@ -146,39 +138,21 @@ const ProfileInformation = ({ profileData, onUpdate }) => {
         {/* Full Name Field */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Full Name *
+            Full Name
           </label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              {...register('full_name')}
-              className={`
-                w-full pl-10 pr-4 py-3 border rounded-lg transition-all duration-200
-                focus:outline-none focus:ring-2 focus:border-transparent bg-white text-gray-800
-                ${errors.full_name 
-                  ? 'border-red-300 focus:ring-red-400' 
-                  : 'border-gray-200 focus:ring-blue-400'
-                }
-              `}
-              placeholder="Enter your full name"
+              value={profileData?.full_name || ''}
+              readOnly
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+              placeholder="Full name"
             />
-            {errors.full_name && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <AlertCircle className="w-5 h-5 text-red-500" />
-              </div>
-            )}
           </div>
-          {errors.full_name && (
-            <motion.p
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-2 text-sm text-red-600 flex items-center space-x-1"
-            >
-              <AlertCircle className="w-4 h-4" />
-              <span>{errors.full_name.message}</span>
-            </motion.p>
-          )}
+          <p className="mt-2 text-xs text-gray-500">
+            Name cannot be changed. Contact support if you need to update your name.
+          </p>
         </div>
 
         {/* Email Field (Read-only) */}
