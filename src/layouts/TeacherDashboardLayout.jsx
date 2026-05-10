@@ -107,7 +107,7 @@ const TeacherDashboardLayout = ({ children }) => {
       </AnimatePresence>
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-background-secondary border-r border-border-primary lg:static lg:z-auto shadow-elegant ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-background-secondary border-r border-border-primary lg:static lg:z-auto shadow-elegant flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}>
         <div className="flex items-center justify-between h-12 px-3 border-b border-border-primary">
           <div className="flex items-center space-x-3">
@@ -124,7 +124,7 @@ const TeacherDashboardLayout = ({ children }) => {
           </button>
         </div>
 
-        <nav className="mt-4 px-3 flex-1">
+        <nav className="mt-4 px-3 flex-1 overflow-y-auto pb-20">
           <div className="space-y-2">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
@@ -133,14 +133,16 @@ const TeacherDashboardLayout = ({ children }) => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`sidebar-item group ${isActive ? 'active' : ''
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 relative group ${isActive
+                    ? 'bg-navy-800 text-navy-900 shadow-elegant font-semibold'
+                    : 'text-text-secondary hover:text-text-heading hover:bg-background-tertiary'
                     }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.name}</span>
                   {isActive && (
                     <motion.div
-                      layoutId="activeTab"
+                      layoutId="teacherActiveTab"
                       className="absolute right-0 w-1 h-8 bg-gradient-to-b from-navy-600 to-navy-700 rounded-l-full"
                     />
                   )}
@@ -150,11 +152,11 @@ const TeacherDashboardLayout = ({ children }) => {
           </div>
         </nav>
 
-        {/* Logout Button */}
-        <div className="p-3 border-t border-gray-200">
+        {/* Logout Button - Fixed at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-border-primary bg-background-secondary">
           <button
             onClick={handleLogout}
-            className="sidebar-item group text-red-600 hover:text-red-700 hover:bg-red-50 w-full"
+            className="flex items-center space-x-3 w-full px-4 py-3 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-300"
           >
             <LogOut className="w-5 h-5" />
             <span className="font-bold">Logout</span>
