@@ -158,120 +158,130 @@ const Quizzes = () => {
     }
   };
 
-  const QuizCard = ({ quiz }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
-    >
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-text-heading mb-2 line-clamp-2">
+  const QuizCard = ({ quiz }) => {
+    const accentColors = {
+      published: 'from-emerald-400 to-teal-500',
+      draft: 'from-amber-400 to-orange-500',
+      archived: 'from-gray-400 to-slate-500',
+    };
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -4 }}
+        className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 overflow-hidden group"
+      >
+        {/* Color Accent Bar */}
+        <div className={`h-1.5 bg-gradient-to-r ${accentColors[quiz.status] || 'from-blue-400 to-indigo-500'}`} />
+
+        <div className="p-6">
+          {/* Header: Title + Status */}
+          <div className="flex items-start justify-between mb-5">
+            <h3 className="text-lg font-bold text-gray-900 line-clamp-2 leading-snug flex-1 pr-3">
               {quiz.title}
             </h3>
-            <div className="flex items-center space-x-4 text-sm text-text-primary mb-3">
-              <div className="flex items-center space-x-1">
-                <BookOpen className="w-4 h-4" />
-                <span>{quiz.courses?.title || 'No Course'}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <FileText className="w-4 h-4" />
-                <span>{quiz.question_count} Questions</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Award className="w-4 h-4" />
-                <span>{quiz.total_marks} Marks</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4 text-sm text-text-secondary">
-              <div className="flex items-center space-x-1">
-                <Clock className="w-4 h-4" />
-                <span>{quiz.duration_minutes} min</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Users className="w-4 h-4" />
-                <span>{quiz.submission_count} submissions</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Calendar className="w-4 h-4" />
-                <span>{new Date(quiz.created_at).toLocaleDateString()}</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-col items-end space-y-2">
-            <div className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center space-x-1 ${getStatusColor(quiz.status)}`}>
+            <div className={`px-3 py-1 rounded-full text-xs font-semibold border flex items-center space-x-1.5 whitespace-nowrap ${getStatusColor(quiz.status)}`}>
               {getStatusIcon(quiz.status)}
               <span className="capitalize">{quiz.status}</span>
             </div>
-            
-            <div className="relative">
-              <button className="p-2 hover:bg-background-tertiary rounded-lg transition-colors">
-                <MoreVertical className="w-4 h-4 text-text-secondary" />
+          </div>
+
+          {/* Course Name */}
+          <div className="flex items-center space-x-2 mb-5">
+            <BookOpen className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+            <span className="text-sm font-medium text-indigo-600 truncate">
+              {quiz.courses?.title || 'No Course'}
+            </span>
+          </div>
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="flex items-center space-x-2 bg-purple-50 rounded-xl px-3 py-2.5">
+              <FileText className="w-4 h-4 text-purple-500" />
+              <span className="text-sm font-semibold text-purple-700">{quiz.question_count} Questions</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-amber-50 rounded-xl px-3 py-2.5">
+              <Award className="w-4 h-4 text-amber-500" />
+              <span className="text-sm font-semibold text-amber-700">{quiz.total_marks} Marks</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-blue-50 rounded-xl px-3 py-2.5">
+              <Clock className="w-4 h-4 text-blue-500" />
+              <span className="text-sm font-semibold text-blue-700">{quiz.duration_minutes} min</span>
+            </div>
+            <div className="flex items-center space-x-2 bg-emerald-50 rounded-xl px-3 py-2.5">
+              <Users className="w-4 h-4 text-emerald-500" />
+              <span className="text-sm font-semibold text-emerald-700">{quiz.submission_count} Submissions</span>
+            </div>
+          </div>
+
+          {/* Description */}
+          {quiz.description && (
+            <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2">
+              {quiz.description}
+            </p>
+          )}
+
+          {/* Date */}
+          <div className="flex items-center space-x-1.5 text-xs text-gray-400 mb-5">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Created {new Date(quiz.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => navigate(`/teacher/quiz/${quiz.id}/edit`)}
+                className="inline-flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Edit</span>
+              </button>
+
+              <button
+                onClick={() => navigate(`/teacher/quiz/${quiz.id}/submissions`)}
+                className="inline-flex items-center space-x-1.5 px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+              >
+                <Eye className="w-4 h-4" />
+                <span>Submissions</span>
+              </button>
+            </div>
+
+            <div className="flex items-center space-x-1.5">
+              {quiz.status === 'draft' && (
+                <button
+                  onClick={() => handleStatusChange(quiz.id, 'published')}
+                  className="inline-flex items-center px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                >
+                  Publish
+                </button>
+              )}
+
+              {quiz.status === 'published' && (
+                <button
+                  onClick={() => handleStatusChange(quiz.id, 'archived')}
+                  className="inline-flex items-center px-3 py-2 text-sm font-semibold text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+                >
+                  Archive
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setSelectedQuiz(quiz);
+                  setShowDeleteModal(true);
+                }}
+                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+              >
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
-
-        {quiz.description && (
-          <p className="text-text-primary text-sm mb-4 line-clamp-2">
-            {quiz.description}
-          </p>
-        )}
-
-        <div className="flex items-center justify-between pt-4 border-t border-border-primary">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => navigate(`/teacher/quiz/${quiz.id}/edit`)}
-              className="btn-ghost-primary btn-sm"
-            >
-              <Edit3 className="w-4 h-4" />
-              <span>Edit</span>
-            </button>
-
-            <button
-              onClick={() => navigate(`/teacher/quiz/${quiz.id}/submissions`)}
-              className="btn-outline-secondary btn-sm"
-            >
-              <Eye className="w-4 h-4" />
-              <span>View Submissions</span>
-            </button>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {quiz.status === 'draft' && (
-              <button
-                onClick={() => handleStatusChange(quiz.id, 'published')}
-                className="btn-success btn-sm"
-              >
-                Publish
-              </button>
-            )}
-            
-            {quiz.status === 'published' && (
-              <button
-                onClick={() => handleStatusChange(quiz.id, 'archived')}
-                className="btn-warning btn-sm"
-              >
-                Archive
-              </button>
-            )}
-            
-            <button
-              onClick={() => {
-                setSelectedQuiz(quiz);
-                setShowDeleteModal(true);
-              }}
-              className="btn-icon-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
+      </motion.div>
+    );
+  };
 
   return (
     <TeacherDashboardLayout>
