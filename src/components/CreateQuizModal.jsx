@@ -390,6 +390,7 @@ const CreateQuizModal = ({ isOpen, onClose, onQuizCreated }) => {
                     type="datetime-local"
                     value={quizData.end_time}
                     onChange={(e) => handleQuizDataChange('end_time', e.target.value)}
+                    min={new Date().toISOString().slice(0, 16)}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-black bg-white"
                     style={{ color: '#000000 !important', backgroundColor: '#ffffff !important' }}
                   />

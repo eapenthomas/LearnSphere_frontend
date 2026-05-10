@@ -404,6 +404,7 @@ const QuizEditor = ({ generatedQuiz, onSave, onCancel, saving }) => {
               type="datetime-local"
               value={quiz.start_time}
               onChange={(e) => handleQuizInfoChange('start_time', e.target.value)}
+              min={new Date().toISOString().slice(0, 16)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -416,6 +417,7 @@ const QuizEditor = ({ generatedQuiz, onSave, onCancel, saving }) => {
               type="datetime-local"
               value={quiz.end_time}
               onChange={(e) => handleQuizInfoChange('end_time', e.target.value)}
+              min={new Date().toISOString().slice(0, 16)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
