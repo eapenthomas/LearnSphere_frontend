@@ -50,23 +50,26 @@ const ProfilePage = () => {
     // Fetch profile data from Supabase
     const fetchProfileData = async () => {
       try {
-        if (!user?.accessToken) {
-          console.log('No access token available');
+        if (!user?.id) {
+          console.log('No user ID available');
           setLoading(false);
           return;
         }
 
-        console.log('Fetching profile data with token:', user.accessToken ? 'present' : 'missing');
+        console.log('Fetching profile data for user:', user.id);
 
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/profile`, {
-          headers: {
-            'Authorization': `Bearer ${user.accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Failed to fetch profile data from Supabase:', error);
+          throw error;
+        }
+
+        if (data) {
           console.log('Profile data received:', data);
           setProfileData({
             full_name: data.full_name || user.fullName || 'User',
@@ -75,19 +78,8 @@ const ProfilePage = () => {
             bio: data.bio || '',
             location: data.location || '',
             joinDate: data.created_at ? new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '',
-            avatar: data.avatar_url || null
-          });
-        } else {
-          console.error('Failed to fetch profile data:', response.status, response.statusText);
-          // Use user data from AuthContext as fallback
-          setProfileData({
-            full_name: user.fullName || 'User',
-            email: user.email || '',
-            phone: '',
-            bio: '',
-            location: '',
-            joinDate: '',
-            avatar: null
+            avatar: data.profile_picture || data.avatar_url || null,
+            role: data.role || 'student'
           });
         }
       } catch (error) {
@@ -100,7 +92,8 @@ const ProfilePage = () => {
           bio: '',
           location: '',
           joinDate: '',
-          avatar: null
+          avatar: null,
+          role: 'student'
         });
       } finally {
         setLoading(false);
@@ -407,7 +400,10 @@ const ProfilePage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 1.0 }}
           >
-            <ProfileInformation />
+            <ProfileInformation 
+              profileData={profileData} 
+              onUpdate={(data) => setProfileData({ ...profileData, ...data })} 
+            />
           </motion.div>
 
           {/* Password Update Card */}
